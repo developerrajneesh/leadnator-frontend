@@ -1,0 +1,44 @@
+# Leadnator — crawler rules
+# Only the marketing surface should be indexed. Authenticated app routes,
+# public share links (forms/booking), API and webhooks are all off-limits.
+
+User-agent: *
+Allow: /$
+Allow: /features
+Allow: /pricing
+Allow: /compare
+Allow: /faq
+Allow: /contact
+Allow: /api-docs
+Allow: /leadnator_logo.png
+Allow: /hero_dashboard.png
+Allow: /favicon.svg
+
+# Auth pages — no SEO value
+Disallow: /login
+Disallow: /signup
+Disallow: /reset-password/
+
+# Authenticated application shell — never index
+Disallow: /dashboard/
+Disallow: /admin/
+Disallow: /leads/
+Disallow: /whatsapp/
+Disallow: /meta/
+Disallow: /email/
+Disallow: /ai/
+Disallow: /calendar/
+Disallow: /storage/
+Disallow: /support/
+Disallow: /settings/
+Disallow: /profile/
+
+# Server surfaces
+Disallow: /api/
+Disallow: /webhooks/
+
+# Shareable links meant for direct visits, not crawling
+Disallow: /form/
+Disallow: /book/
+
+Sitemap: https://leadnator.com/sitemap.xml
