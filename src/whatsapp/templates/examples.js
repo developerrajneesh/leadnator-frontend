@@ -370,7 +370,7 @@ export const UTILITY_TEMPLATE_EXAMPLES = [
     namedParams: [
       { name: "{{customer_name}}", example: "Rohit" },
       { name: "{{document_name}}", example: "Aadhaar card" },
-      { name: "{{upload_link}}", example: "https://leadnator.app/kyc/abc" },
+      { name: "{{upload_link}}", example: "https://leadnator.com/kyc/abc" },
       { name: "{{deadline}}", example: "7 days" },
     ],
     bodyExample: "",
@@ -457,7 +457,7 @@ export const UTILITY_TEMPLATE_EXAMPLES = [
       { name: "{{plan_name}}", example: "Growth" },
       { name: "{{renewal_date}}", example: "12 May 2026" },
       { name: "{{amount}}", example: "₹499" },
-      { name: "{{manage_link}}", example: "https://leadnator.app/billing" },
+      { name: "{{manage_link}}", example: "https://leadnator.com/billing" },
     ],
     bodyExample: "",
   },
@@ -509,7 +509,7 @@ export const UTILITY_TEMPLATE_EXAMPLES = [
       { name: "{{ticket_id}}", example: "DSP-22198" },
       { name: "{{status}}", example: "approved" },
       { name: "{{resolution_note}}", example: "We've credited the amount back to your wallet." },
-      { name: "{{ticket_url}}", example: "https://leadnator.app/help/22198" },
+      { name: "{{ticket_url}}", example: "https://leadnator.com/help/22198" },
     ],
     bodyExample: "",
   },
@@ -917,7 +917,7 @@ export const MARKETING_TEMPLATE_EXAMPLES = [
       { name: "{{season}}", example: "Summer 2026" },
       { name: "{{collection_name}}", example: "Linen Edit" },
       { name: "{{look_count}}", example: "24" },
-      { name: "{{lookbook_link}}", example: "https://leadnator.app/look/summer" },
+      { name: "{{lookbook_link}}", example: "https://leadnator.com/look/summer" },
     ],
     bodyExample: "",
   },
@@ -934,7 +934,7 @@ export const MARKETING_TEMPLATE_EXAMPLES = [
       { name: "{{customer_name}}", example: "Karan" },
       { name: "{{event_date}}", example: "25 Apr 2026" },
       { name: "{{event_time}}", example: "8 PM IST" },
-      { name: "{{event_link}}", example: "https://leadnator.app/live/abc" },
+      { name: "{{event_link}}", example: "https://leadnator.com/live/abc" },
     ],
     bodyExample: "",
   },
@@ -966,7 +966,7 @@ export const MARKETING_TEMPLATE_EXAMPLES = [
     namedParams: [
       { name: "{{content_type}}", example: "Playbook" },
       { name: "{{content_title}}", example: "10 lead-gen hacks for 2026" },
-      { name: "{{content_url}}", example: "https://leadnator.app/blog/lead-gen-2026" },
+      { name: "{{content_url}}", example: "https://leadnator.com/blog/lead-gen-2026" },
     ],
     bodyExample: "",
   },
@@ -983,7 +983,7 @@ export const MARKETING_TEMPLATE_EXAMPLES = [
       { name: "{{product_name}}", example: "Acme Pro Pen" },
       { name: "{{deadline}}", example: "29 Apr 2026" },
       { name: "{{discount}}", example: "20%" },
-      { name: "{{link}}", example: "https://leadnator.app/preorder/acme-pro" },
+      { name: "{{link}}", example: "https://leadnator.com/preorder/acme-pro" },
     ],
     bodyExample: "",
   },
@@ -999,7 +999,7 @@ export const MARKETING_TEMPLATE_EXAMPLES = [
     namedParams: [
       { name: "{{customer_name}}", example: "Tanya" },
       { name: "{{reward}}", example: "₹100 store credit" },
-      { name: "{{survey_link}}", example: "https://leadnator.app/survey/april" },
+      { name: "{{survey_link}}", example: "https://leadnator.com/survey/april" },
     ],
     bodyExample: "",
   },
@@ -1178,7 +1178,7 @@ export const AUTHENTICATION_TEMPLATE_EXAMPLES = [
     namedParams: [
       { name: "{{brand_name}}", example: "Leadnator" },
       { name: "{{change_time}}", example: "19 Apr 2026, 9:42 AM" },
-      { name: "{{secure_link}}", example: "https://leadnator.app/security" },
+      { name: "{{secure_link}}", example: "https://leadnator.com/security" },
     ],
     bodyExample: "",
   },
@@ -1210,7 +1210,7 @@ export const AUTHENTICATION_TEMPLATE_EXAMPLES = [
     namedParams: [
       { name: "{{brand_name}}", example: "Leadnator" },
       { name: "{{attempts}}", example: "5" },
-      { name: "{{unlock_link}}", example: "https://leadnator.app/unlock/abc" },
+      { name: "{{unlock_link}}", example: "https://leadnator.com/unlock/abc" },
     ],
     bodyExample: "",
   },
@@ -1225,7 +1225,7 @@ export const AUTHENTICATION_TEMPLATE_EXAMPLES = [
     parameterFormat: "named",
     namedParams: [
       { name: "{{brand_name}}", example: "Leadnator" },
-      { name: "{{magic_link}}", example: "https://leadnator.app/m/xyz" },
+      { name: "{{magic_link}}", example: "https://leadnator.com/m/xyz" },
       { name: "{{expiry_minutes}}", example: "15" },
     ],
     bodyExample: "",
@@ -1241,7 +1241,7 @@ export const AUTHENTICATION_TEMPLATE_EXAMPLES = [
     parameterFormat: "named",
     namedParams: [
       { name: "{{brand_name}}", example: "Leadnator" },
-      { name: "{{secure_link}}", example: "https://leadnator.app/security" },
+      { name: "{{secure_link}}", example: "https://leadnator.com/security" },
     ],
     bodyExample: "",
   },
@@ -1520,7 +1520,7 @@ export const CTA_TEMPLATE_EXAMPLES = [
       { name: "{{look_count}}", example: "24" },
     ],
     buttons: [
-      { type: "URL", text: "Shop now", url: "https://leadnator.app/shop" },
+      { type: "URL", text: "Shop now", url: "https://leadnator.com/shop" },
     ],
   },
   {
@@ -1568,7 +1568,7 @@ export const CTA_TEMPLATE_EXAMPLES = [
       { name: "{{order_id}}", example: "#88301" },
     ],
     buttons: [
-      { type: "URL", text: "Track order", url: "https://leadnator.app/track/{{order_id}}" },
+      { type: "URL", text: "Track order", url: "https://leadnator.com/track/{{order_id}}" },
       { type: "QUICK_REPLY", text: "Need help?" },
     ],
   },
@@ -1585,7 +1585,7 @@ export const CTA_TEMPLATE_EXAMPLES = [
       { name: "{{product_name}}", example: "Leadnator Pro" },
     ],
     buttons: [
-      { type: "URL", text: "Book a demo", url: "https://leadnator.app/book/demo" },
+      { type: "URL", text: "Book a demo", url: "https://leadnator.com/book/demo" },
     ],
   },
   {
@@ -1603,7 +1603,7 @@ export const CTA_TEMPLATE_EXAMPLES = [
       { name: "{{due_date}}", example: "5 May 2026" },
     ],
     buttons: [
-      { type: "URL", text: "Pay now", url: "https://leadnator.app/pay/{{invoice_id}}" },
+      { type: "URL", text: "Pay now", url: "https://leadnator.com/pay/{{invoice_id}}" },
     ],
   },
   {

@@ -4,7 +4,7 @@ import { copyText } from "../utils";
 
 export default function Utm() {
   const [f, setF] = useState({
-    url: "https://leadnator.app", source: "newsletter", medium: "email",
+    url: "https://leadnator.com", source: "newsletter", medium: "email",
     campaign: "spring_sale", content: "", term: "",
   });
   const built = useMemo(() => {

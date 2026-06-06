@@ -4,10 +4,16 @@ import { FiMoreVertical, FiMail, FiPhone, FiEye, FiEdit2, FiTrash2 } from "react
 import { SiWhatsapp } from "react-icons/si";
 import { waNumber } from "../../constants";
 import { useLeads } from "../../../api/hooks";
+import { getByPath, formatValue, humanize, DEFAULT_CARD_FIELDS } from "../../leadFields";
 import QuickContactModal from "./QuickContactModal";
 import EditLeadModal from "../../all-leads/components/EditLeadModal";
 
-export default function KanbanCard({ lead, stageColor, dragging, onDragStart, onDragEnd }) {
+const KNOWN_FIELDS = new Set(["name", "email", "phone", "source", "value", "tags", "status"]);
+
+export default function KanbanCard({ lead, stageColor, dragging, onDragStart, onDragEnd, fields }) {
+  const F = fields && fields.length ? fields : DEFAULT_CARD_FIELDS;
+  const has = (k) => F.includes(k);
+  const extra = F.filter((k) => !KNOWN_FIELDS.has(k));
   const navigate = useNavigate();
   const { updateLead, removeLead } = useLeads();
 
@@ -84,18 +90,40 @@ export default function KanbanCard({ lead, stageColor, dragging, onDragStart, on
           </div>
         </div>
 
-        <p style={{ fontSize: 12, color: "#6b7280", marginTop: 6 }}>{lead.email}</p>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 10 }}>
-          <span className="badge" style={{ background: "#f3f4f6", color: "#374151", fontSize: 10 }}>{lead.source}</span>
-          <strong style={{ fontSize: 12, color: stageColor }}>₹{lead.value.toLocaleString()}</strong>
-        </div>
-        {lead.tags.length > 0 && (
+        {has("email") && lead.email && <p style={{ fontSize: 12, color: "#6b7280", marginTop: 6, wordBreak: "break-word" }}>{lead.email}</p>}
+        {has("phone") && lead.phone && <p style={{ fontSize: 12, color: "#6b7280", marginTop: 4 }}>{lead.phone}</p>}
+
+        {(has("source") || has("value")) && (
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 10 }}>
+            {has("source") ? <span className="badge" style={{ background: "#f3f4f6", color: "#374151", fontSize: 10 }}>{lead.source}</span> : <span />}
+            {has("value") && <strong style={{ fontSize: 12, color: stageColor }}>₹{Number(lead.value || 0).toLocaleString()}</strong>}
+          </div>
+        )}
+
+        {has("status") && (
           <div style={{ marginTop: 8 }}>
-            {lead.tags.slice(0, 2).map((t) => (
+            <span className="badge" style={{ background: "#f3f4f6", color: "#374151", fontSize: 10, textTransform: "capitalize" }}>{lead.status}</span>
+          </div>
+        )}
+
+        {has("tags") && (lead.tags || []).length > 0 && (
+          <div style={{ marginTop: 8 }}>
+            {lead.tags.slice(0, 3).map((t) => (
               <span key={t} className="badge" style={{ background: "#eef2ff", color: "#4338ca", fontSize: 10, marginRight: 4 }}>{t}</span>
             ))}
           </div>
         )}
+
+        {extra.map((k) => {
+          const v = getByPath(lead, k);
+          if (v == null || v === "") return null;
+          return (
+            <div key={k} style={{ display: "flex", justifyContent: "space-between", gap: 8, marginTop: 6, fontSize: 11 }}>
+              <span style={{ color: "#9ca3af", flexShrink: 0 }}>{humanize(k)}</span>
+              <span style={{ color: "#374151", fontWeight: 600, textAlign: "right", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{formatValue(v, k)}</span>
+            </div>
+          );
+        })}
 
         <div className="kanban-actions">
           <button

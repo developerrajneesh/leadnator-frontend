@@ -9,7 +9,7 @@ export default function Layout({ onLogout }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   return (
-    <div>
+    <div className="app-shell">
       <Header onLogout={onLogout} />
 
       <div className="layout">

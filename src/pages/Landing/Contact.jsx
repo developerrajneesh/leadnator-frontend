@@ -10,7 +10,7 @@ import { useSeo } from "./seo";
 export default function Contact({ onGoto }) {
   useSeo({
     title: "Contact — Talk to the Leadnator team",
-    description: "Get in touch with Leadnator. Sales, support, partnerships. Offices in India, Singapore, UAE and USA. WhatsApp +91 9594 686 906 for instant replies.",
+    description: "Get in touch with Leadnator. Sales, support, partnerships. Offices in India, Singapore, UAE and USA. WhatsApp +917888341096 for instant replies.",
     canonical: "https://leadnator.com/contact",
     keywords: "Leadnator contact, WhatsApp CRM support, sales India, enterprise CRM partnerships",
   });
@@ -43,13 +43,13 @@ function ContactGrid() {
     {
       Icon: FaWhatsapp, title: "WhatsApp us",
       text: "Fastest way to reach the team. Reply typically under 5 minutes during business hours.",
-      cta: "Chat on WhatsApp", href: "https://wa.me/919594686906",
+      cta: "Chat on WhatsApp", href: "https://wa.me/917888341096",
       color: "#22c55e",
     },
     {
       Icon: FiPhone, title: "Call sales",
       text: "Speak to a solutions consultant about Enterprise, migrations, or custom requirements.",
-      cta: "+91 9594 686 906", href: "tel:+919594686906",
+      cta: "+917888341096", href: "tel:+917888341096",
       color: "#1877f2",
     },
     {
@@ -140,7 +140,7 @@ function Form() {
             <li><FiCheck /> No sales automation — real humans</li>
           </ul>
           <div className="ln-form-direct">
-            <FiPhone /> Prefer a call? <a href="tel:+919594686906">+91 9594 686 906</a>
+            <FiPhone /> Prefer a call? <a href="tel:+917888341096">+917888341096</a>
           </div>
         </div>
 

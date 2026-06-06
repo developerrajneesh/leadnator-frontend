@@ -265,7 +265,7 @@ export default function Signature() {
             <input value={f.phone} onChange={(e) => setF({ ...f, phone: e.target.value })} />
           </div>
           <div className="form-group"><label>Website</label>
-            <input value={f.website} onChange={(e) => setF({ ...f, website: e.target.value })} placeholder="leadnator.app" />
+            <input value={f.website} onChange={(e) => setF({ ...f, website: e.target.value })} placeholder="leadnator.com" />
           </div>
 
           <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 8 }}>

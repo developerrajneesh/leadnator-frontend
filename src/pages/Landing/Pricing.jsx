@@ -249,7 +249,7 @@ function Enterprise({ onGoto }) {
             <button className="ln-btn ln-btn-primary ln-btn-lg ln-btn-block" onClick={() => onGoto("/contact")}>
               Talk to sales <FiArrowRight />
             </button>
-            <a className="ln-btn ln-btn-outline ln-btn-lg ln-btn-block" href="https://wa.me/919594686906">
+            <a className="ln-btn ln-btn-outline ln-btn-lg ln-btn-block" href="https://wa.me/917888341096">
               <FaWhatsapp /> WhatsApp sales
             </a>
           </div>

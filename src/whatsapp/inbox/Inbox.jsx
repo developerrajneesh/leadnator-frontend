@@ -580,18 +580,21 @@ export default function Inbox() {
   const scrollRef = useRef(null);
   const inputRef  = useRef(null);
   const fileRef   = useRef(null);
+  const connectedPhoneNumberIdRef = useRef(null);
+  const [connectedDisplayPhone, setConnectedDisplayPhone] = useState("");
 
   async function loadConversations() {
     setLoadingConvs(true); setError("");
     try {
       const res = await waApi.conversations();
-      setConversations(res.conversations || []);
-      // Functional setState avoids a stale closure on `activePhone` — the
-      // ?phone=… URL-param effect races with this fetch, and without the
-      // callback we'd always overwrite a URL-picked chat with the first
-      // conversation in the list.
-      const first = res.conversations?.[0]?.phone;
-      if (first) setActivePhone((cur) => cur || first);
+      connectedPhoneNumberIdRef.current = res.phoneNumberId || null;
+      setConnectedDisplayPhone(res.displayPhone || "");
+      const list = res.conversations || [];
+      setConversations(list);
+      setActivePhone((cur) => {
+        if (cur && list.some((c) => c.phone === cur)) return cur;
+        return list[0]?.phone || "";
+      });
     } catch (err) { setError(err.message); }
     finally { setLoadingConvs(false); }
   }
@@ -608,7 +611,21 @@ export default function Inbox() {
     finally { setLoadingMsgs(false); }
   }
 
-  useEffect(() => { loadConversations(); }, []);
+  async function refreshInbox() {
+    try { await waApi.repairInboxScope(); } catch { /* non-fatal */ }
+    await loadConversations();
+  }
+
+  useEffect(() => { refreshInbox(); }, []);
+
+  // Reload when user returns after switching WhatsApp account in Settings.
+  useEffect(() => {
+    function onVisible() {
+      if (document.visibilityState === "visible") refreshInbox();
+    }
+    document.addEventListener("visibilitychange", onVisible);
+    return () => document.removeEventListener("visibilitychange", onVisible);
+  }, []);
 
   // Auto-open a specific conversation if navigated here with ?phone=…
   // (e.g. from the lead-detail "Open in chat" button).
@@ -662,7 +679,9 @@ export default function Inbox() {
   //   wa.outbound → message we (or the chatbot) sent
   //   wa.status   → delivery/read-tick change for a sent message
   useEffect(() => {
+    const connectedId = connectedPhoneNumberIdRef.current;
     const offInbound = onSocket("wa.inbound", ({ message, contact }) => {
+      if (connectedId && message.phoneNumberId && message.phoneNumberId !== connectedId) return;
       if (message.contactPhone === activePhone) {
         setMessages((cur) => (cur.some((m) => m.id === message.id) ? cur : [...cur, message]));
       }
@@ -670,6 +689,7 @@ export default function Inbox() {
     });
 
     const offOutbound = onSocket("wa.outbound", ({ message }) => {
+      if (connectedId && message.phoneNumberId && message.phoneNumberId !== connectedId) return;
       if (message.contactPhone === activePhone) {
         setMessages((cur) => (cur.some((m) => m.id === message.id) ? cur : [...cur, message]));
       }
@@ -823,6 +843,7 @@ export default function Inbox() {
               <div style={{ minWidth: 0 }}>
                 <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text)" }}>Inbox</div>
                 <div style={{ fontSize: 11, color: "var(--text-muted)" }}>
+                  {connectedDisplayPhone ? `${connectedDisplayPhone} · ` : ""}
                   {conversations.length} conversation{conversations.length === 1 ? "" : "s"}
                 </div>
               </div>
@@ -830,7 +851,7 @@ export default function Inbox() {
             <button
               className="btn btn-ghost"
               style={{ padding: 6, borderRadius: 8 }}
-              onClick={() => { loadConversations(); if (activePhone) loadMessages(activePhone); }}
+              onClick={() => { refreshInbox(); if (activePhone) loadMessages(activePhone); }}
               title="Refresh"
             >
               <FiRefreshCw />

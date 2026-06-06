@@ -7,10 +7,15 @@ import {
 import { SiWhatsapp } from "react-icons/si";
 import { api } from "../../api/client";
 import { useLeads } from "../../api/hooks";
+import { notify } from "../../globalComponents/Toast/Toast";
 import EditLeadModal from "./components/EditLeadModal";
+import LeadChatPanel from "./components/LeadChatPanel";
 import QuickContactModal from "../pipeline/components/QuickContactModal";
+import LeadStatusBadge from "../components/LeadStatusBadge";
+import { usePipelineStages } from "../usePipelineStages";
 
 export default function LeadDetail() {
+  const { stages } = usePipelineStages();
   const { id } = useParams();
   const navigate = useNavigate();
   const { updateLead, removeLead } = useLeads();
@@ -20,6 +25,9 @@ export default function LeadDetail() {
   const [error, setError]   = useState("");
   const [editing, setEdit]  = useState(false);
   const [contactTab, setContactTab] = useState(null);
+  const [notesEditing, setNotesEditing] = useState(false);
+  const [notesDraft, setNotesDraft] = useState("");
+  const [notesSaving, setNotesSaving] = useState(false);
 
   async function load() {
     setLoad(true); setError("");
@@ -28,6 +36,10 @@ export default function LeadDetail() {
     finally { setLoad(false); }
   }
   useEffect(() => { load(); }, [id]);
+  useEffect(() => {
+    setNotesEditing(false);
+    setNotesDraft("");
+  }, [id]);
 
   async function handleSave(patch) {
     try {
@@ -41,6 +53,30 @@ export default function LeadDetail() {
     if (!confirm(`Delete "${lead.name}"? This cannot be undone.`)) return;
     try { await removeLead(id); navigate("/leads/all"); }
     catch (err) { alert(err.message || "Failed to delete."); }
+  }
+
+  function startNotesEdit() {
+    setNotesDraft(lead?.notes || "");
+    setNotesEditing(true);
+  }
+
+  function cancelNotesEdit() {
+    setNotesEditing(false);
+    setNotesDraft("");
+  }
+
+  async function saveNotes() {
+    setNotesSaving(true);
+    try {
+      const updated = await updateLead(id, { notes: notesDraft.trim() });
+      setLead(updated);
+      setNotesEditing(false);
+      notify.success("Notes saved");
+    } catch (err) {
+      notify.error(err.message || "Failed to save notes");
+    } finally {
+      setNotesSaving(false);
+    }
   }
 
   if (loading) {
@@ -88,7 +124,7 @@ export default function LeadDetail() {
           <div style={{ flex: 1, minWidth: 0 }}>
             <h1 style={{ margin: 0, fontSize: 24, display: "flex", alignItems: "center", gap: 10 }}>
               {lead.name}
-              <span className={`badge ${lead.status}`} style={{ fontSize: 11 }}>{lead.status}</span>
+              <LeadStatusBadge status={lead.status} stages={stages} />
             </h1>
             <div style={{ color: "var(--text-muted)", fontSize: 13, marginTop: 4 }}>
               {lead.source} · Added {created}
@@ -131,7 +167,7 @@ export default function LeadDetail() {
           <DetailRow icon={<FiMail />} label="Email" value={lead.email || "—"} />
           <DetailRow icon={<FiPhone />} label="Phone" value={lead.phone || "—"} />
           <DetailRow icon={<FiTrendingUp />} label="Source" value={lead.source || "—"} />
-          <DetailRow icon={<FiMessageCircle />} label="Status" value={<span className={`badge ${lead.status}`}>{lead.status}</span>} />
+          <DetailRow icon={<FiMessageCircle />} label="Status" value={<LeadStatusBadge status={lead.status} stages={stages} />} />
           <DetailRow icon={<FiCalendar />} label="Created" value={created} />
           <DetailRow icon={<FiCalendar />} label="Updated" value={updated} />
         </div>
@@ -151,20 +187,82 @@ export default function LeadDetail() {
             )}
           </div>
           <div>
-            <div style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 6, display: "flex", alignItems: "center", gap: 6 }}>
-              <FiFileText /> Notes
-            </div>
             <div style={{
-              fontSize: 13, lineHeight: 1.55, whiteSpace: "pre-wrap",
-              padding: 12, background: "#f9fafb", borderRadius: 8,
-              minHeight: 80, color: lead.notes ? "var(--text)" : "var(--text-muted)",
-              fontStyle: lead.notes ? "normal" : "italic",
+              fontSize: 12, color: "var(--text-muted)", marginBottom: 6,
+              display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8,
             }}>
-              {lead.notes || "No notes. Click Edit to add notes for this lead."}
+              <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <FiFileText /> Notes
+              </span>
+              {!notesEditing && (
+                <button
+                  type="button"
+                  className="btn btn-ghost"
+                  onClick={startNotesEdit}
+                  title="Edit notes"
+                  aria-label="Edit notes"
+                  style={{ padding: "4px 8px", minHeight: 0, fontSize: 14, color: "var(--text-muted)" }}
+                >
+                  <FiEdit2 />
+                </button>
+              )}
             </div>
+            {notesEditing ? (
+              <div>
+                <textarea
+                  className="input"
+                  rows={5}
+                  value={notesDraft}
+                  onChange={(e) => setNotesDraft(e.target.value)}
+                  placeholder="Add notes for this lead…"
+                  autoFocus
+                  style={{
+                    width: "100%", fontSize: 13, lineHeight: 1.55, resize: "vertical",
+                    minHeight: 100, fontFamily: "inherit",
+                  }}
+                />
+                <div style={{ display: "flex", gap: 8, marginTop: 8, justifyContent: "flex-end" }}>
+                  <button type="button" className="btn btn-outline" onClick={cancelNotesEdit} disabled={notesSaving}>
+                    Cancel
+                  </button>
+                  <button type="button" className="btn btn-primary" onClick={saveNotes} disabled={notesSaving}>
+                    {notesSaving ? "Saving…" : "Save"}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div
+                role="button"
+                tabIndex={0}
+                onClick={startNotesEdit}
+                onKeyDown={(e) => { if (e.key === "Enter") startNotesEdit(); }}
+                title="Click to edit notes"
+                style={{
+                  fontSize: 13, lineHeight: 1.55, whiteSpace: "pre-wrap",
+                  padding: 12, background: "#f9fafb", borderRadius: 8,
+                  minHeight: 80, cursor: "text",
+                  color: lead.notes ? "var(--text)" : "var(--text-muted)",
+                  fontStyle: lead.notes ? "normal" : "italic",
+                  border: "1px solid transparent",
+                  transition: "border-color 0.15s ease, background 0.15s ease",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = "#e5e7eb";
+                  e.currentTarget.style.background = "#f3f4f6";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = "transparent";
+                  e.currentTarget.style.background = "#f9fafb";
+                }}
+              >
+                {lead.notes || "No notes yet. Click the pencil or here to add notes."}
+              </div>
+            )}
           </div>
         </div>
       </div>
+
+      <LeadChatPanel lead={lead} />
 
       {editing && (
         <EditLeadModal lead={lead} onClose={() => setEdit(false)} onSave={handleSave} />

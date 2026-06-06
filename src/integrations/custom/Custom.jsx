@@ -18,7 +18,7 @@ export default function Custom() {
             Use our REST API to build a fully custom integration. Authentication is via API keys (Profile → API keys).
           </p>
           <div style={{ background: "#0f172a", color: "#e2e8f0", padding: 14, borderRadius: 8, fontFamily: "monospace", fontSize: 12, lineHeight: 1.6 }}>
-            {`curl https://api.leadnator.app/v1/leads \\
+            {`curl https://api.leadnator.com/v1/leads \\
   -H "Authorization: Bearer $LEADNATOR_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{"name":"Aarav","email":"a@x.com"}'`}

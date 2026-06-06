@@ -4,12 +4,20 @@ import {
   FiUsers, FiCheckCircle, FiTrendingUp, FiMail, FiArrowUp,
   FiDollarSign, FiTarget, FiClock, FiMessageCircle, FiFolder,
 } from "react-icons/fi";
-import { api } from "../../api/client";
+import { api, getStoredOrg, getStoredUser, isOrganizationLogin } from "../../api/client";
 import BarChart from "./components/BarChart";
 import Donut from "./components/Donut";
 
 const fmtINR = (n) => "₹" + Number(n || 0).toLocaleString("en-IN");
 const initials = (name) => String(name || "?").split(" ").map((p) => p[0]).join("").slice(0, 2).toUpperCase();
+
+function dashboardWelcomeName(apiUser) {
+  if (isOrganizationLogin()) {
+    return getStoredOrg()?.name || "Workspace";
+  }
+  const name = getStoredUser()?.name || apiUser?.name || "";
+  return name.split(" ")[0] || "there";
+}
 
 export default function Overview() {
   const navigate = useNavigate();
@@ -49,8 +57,15 @@ export default function Overview() {
 
   return (
     <>
-      <h1 className="page-title">Welcome back, {user.name.split(" ")[0]}</h1>
-      <p className="page-subtitle">Here's what's happening with your leads today.</p>
+      <div className="dash-hero">
+        <div>
+          <h1 className="page-title" style={{ marginBottom: 6 }}>
+            Welcome back, {dashboardWelcomeName(user)}
+          </h1>
+          <p className="page-subtitle" style={{ margin: 0 }}>Here's what's happening with your leads today.</p>
+        </div>
+        <img className="dash-hero-art" src="/Team goals-amico-flat.png" alt="" />
+      </div>
 
       <div className="stats-grid">
         <Stat icon={<FiUsers />} color="purple" value={total} label="Total leads" />
@@ -75,7 +90,7 @@ export default function Overview() {
           <div className="card-header"><div className="card-title">Source breakdown</div></div>
           {leads.sourceBreakdown.length === 0
             ? <Empty label="No leads yet — add a few to see your source mix." />
-            : <Donut data={leads.sourceBreakdown} />}
+            : <Donut data={leads.sourceBreakdown} centerLabel="Leads" />}
         </div>
       </div>
 
@@ -212,10 +227,17 @@ function Stat({ icon, color, value, label }) {
   );
 }
 
+const ROW_CHIP = {
+  purple: { bg: "#ede9fe", fg: "#6d28d9" },
+  green:  { bg: "#d1fae5", fg: "#047857" },
+  orange: { bg: "#fef3c7", fg: "#b45309" },
+  pink:   { bg: "#fce7f3", fg: "#be185d" },
+};
 function Row({ icon, color, label, value }) {
+  const c = ROW_CHIP[color] || ROW_CHIP.purple;
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-      <div className={`stat-icon ${color}`} style={{ width: 36, height: 36, margin: 0, flexShrink: 0 }}>{icon}</div>
+      <div style={{ width: 36, height: 36, borderRadius: 10, flexShrink: 0, display: "grid", placeItems: "center", fontSize: 18, background: c.bg, color: c.fg }}>{icon}</div>
       <div style={{ flex: 1, fontSize: 13, color: "var(--text-muted)" }}>{label}</div>
       <div style={{ fontWeight: 700, fontSize: 15 }}>{value}</div>
     </div>
@@ -230,13 +252,16 @@ function Empty({ label }) {
    bar + donut pair, funnel + email table, leads tables, WhatsApp +
    storage cards. Uses the global `.skel*` shimmer toolkit. */
 function OverviewSkeleton() {
+  const greetName = dashboardWelcomeName();
   return (
     <>
-      {/* Greeting */}
-      <h1 className="page-title" style={{ display: "flex", alignItems: "center", gap: 10 }}>
-        Welcome back, <span className="skel skel-line" style={{ width: 140, height: 22 }} />
-      </h1>
-      <p className="page-subtitle">Here's what's happening with your leads today.</p>
+      <div className="dash-hero">
+        <div>
+          <h1 className="page-title" style={{ marginBottom: 6 }}>Welcome back, {greetName}</h1>
+          <p className="page-subtitle" style={{ margin: 0 }}>Here's what's happening with your leads today.</p>
+        </div>
+        <span className="skel" style={{ width: 200, height: 120, borderRadius: 12, flexShrink: 0 }} />
+      </div>
 
       {/* 4 × 2 stat cards */}
       {[0, 1].map((row) => (

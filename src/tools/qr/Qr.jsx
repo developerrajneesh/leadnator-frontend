@@ -40,7 +40,7 @@ function roundRect(ctx, x, y, w, h, r) {
 }
 
 export default function Qr() {
-  const [text, setText] = useState("https://leadnator.app");
+  const [text, setText] = useState("https://leadnator.com");
   const [size, setSize] = useState(360);
   const [color, setColor] = useState("7c3aed");
   const [bgColor, setBgColor] = useState("ffffff");

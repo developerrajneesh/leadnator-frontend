@@ -6,6 +6,12 @@ import {
   FiCreditCard, FiHeart, FiStar, FiLink, FiSmartphone, FiClock, FiAward,
 } from "react-icons/fi";
 import { FaWhatsapp, FaFacebook, FaInstagram, FaYoutube, FaLinkedin } from "react-icons/fa";
+
+const SOCIAL_LINKS = {
+  facebook: "https://www.facebook.com/profile.php?id=61588978750821",
+  instagram: "https://www.instagram.com/leadnator.official/",
+  whatsapp: "https://wa.me/917888341096",
+};
 import "./Landing.css";
 
 export default function Landing({ onGoto }) {
@@ -51,8 +57,8 @@ function Topbar() {
           <span className="ln-topbar-dot" /> Powered by Official WhatsApp APIs ⚡
         </span>
         <div className="ln-topbar-right">
-          <a href="tel:+919594686906"><FiPhone /> Sales: +91 9594 686 906</a>
-          <a href="https://wa.me/919594686906" className="ln-topbar-wa"><FaWhatsapp /> Chat on WhatsApp</a>
+          <a href="tel:+917888341096"><FiPhone /> Sales: +917888341096</a>
+          <a href="https://wa.me/917888341096" className="ln-topbar-wa"><FaWhatsapp /> Chat on WhatsApp</a>
         </div>
       </div>
     </div>
@@ -121,7 +127,7 @@ function Hero({ onGoto }) {
             <button className="ln-btn ln-btn-primary ln-btn-lg" onClick={() => onGoto("/signup")}>
               Start FREE Trial <FiArrowRight />
             </button>
-            <a className="ln-btn ln-btn-outline ln-btn-lg" href="https://wa.me/919594686906">
+            <a className="ln-btn ln-btn-outline ln-btn-lg" href="https://wa.me/917888341096">
               <FaWhatsapp /> Book a demo
             </a>
           </div>
@@ -611,7 +617,7 @@ function Faq() {
     { q: "Can I integrate Leadnator with my existing system?",   a: "Yes. Open REST APIs, webhooks, Zapier, Shopify, WooCommerce, Razorpay, Google Sheets and 25+ more native integrations." },
     { q: "Can I use an existing WhatsApp number?",              a: "Yes — if your number is already on WhatsApp Business API, we'll migrate it in under 30 minutes. Otherwise our Embedded Signup creates a fresh one." },
     { q: "Is there a minimum credit balance?",                  a: "No minimum required. Your WhatsApp API stops when your wallet hits ₹0 and resumes instantly once you top up from the billing hub." },
-    { q: "Can I get a demo?",                                   a: "Absolutely. Click \"Book a demo\" above or WhatsApp us at +91 9594 686 906 and we'll walk you through the platform live." },
+    { q: "Can I get a demo?",                                   a: "Absolutely. Click \"Book a demo\" above or WhatsApp us at +917888341096 and we'll walk you through the platform live." },
     { q: "Can I get a refund?",                                 a: "Yearly plans are refundable pro-rata within 14 days. Monthly plans can be cancelled anytime with no questions asked." },
   ];
   const [open, setOpen] = useState(0);
@@ -659,11 +665,11 @@ function ContactCta({ onGoto }) {
             <button className="ln-btn ln-btn-primary ln-btn-lg ln-btn-block" onClick={() => onGoto("/signup")}>
               Start FREE Trial <FiArrowRight />
             </button>
-            <a className="ln-btn ln-btn-outline-dark ln-btn-lg ln-btn-block" href="https://wa.me/919594686906">
+            <a className="ln-btn ln-btn-outline-dark ln-btn-lg ln-btn-block" href="https://wa.me/917888341096">
               <FaWhatsapp /> Chat on WhatsApp
             </a>
             <div className="ln-cta-call">
-              <FiPhone /> Sales: <a href="tel:+919594686906">+91 9594 686 906</a>
+              <FiPhone /> Sales: <a href="tel:+917888341096">+917888341096</a>
             </div>
           </div>
         </div>
@@ -687,11 +693,11 @@ function Footer() {
             AI-powered WhatsApp Marketing & Growth Platform for modern businesses.
           </p>
           <div className="ln-footer-social">
-            <a href="#"><FaFacebook /></a>
-            <a href="#"><FaInstagram /></a>
-            <a href="#"><FaYoutube /></a>
-            <a href="#"><FaLinkedin /></a>
-            <a href="https://wa.me/919594686906"><FaWhatsapp /></a>
+            <a href={SOCIAL_LINKS.facebook} target="_blank" rel="noopener noreferrer" aria-label="Facebook"><FaFacebook /></a>
+            <a href={SOCIAL_LINKS.instagram} target="_blank" rel="noopener noreferrer" aria-label="Instagram"><FaInstagram /></a>
+            <a href="#" aria-label="YouTube"><FaYoutube /></a>
+            <a href="#" aria-label="LinkedIn"><FaLinkedin /></a>
+            <a href={SOCIAL_LINKS.whatsapp} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp"><FaWhatsapp /></a>
           </div>
           <div className="ln-footer-badges">
             <span>🏆 Meta Business Partner</span>
@@ -724,7 +730,7 @@ function FooterCol({ title, items }) {
    ========================================================== */
 function FloatingWhatsApp() {
   return (
-    <a className="ln-float-wa" href="https://wa.me/919594686906" aria-label="Chat on WhatsApp">
+    <a className="ln-float-wa" href="https://wa.me/917888341096" aria-label="Chat on WhatsApp">
       <FaWhatsapp />
     </a>
   );

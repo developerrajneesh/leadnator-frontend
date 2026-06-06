@@ -6,8 +6,8 @@ export default function Shortener() {
   const [url, setUrl] = useState("");
   const [alias, setAlias] = useState("");
   const [links, setLinks] = useState([
-    { id: 1, long: "https://leadnator.app/pricing?utm_source=twitter", short: "ldn.app/p1", clicks: 482, created: "2 days ago" },
-    { id: 2, long: "https://leadnator.app/blog/email-deliverability", short: "ldn.app/deliver", clicks: 124, created: "1 week ago" },
+    { id: 1, long: "https://leadnator.com/pricing?utm_source=twitter", short: "ldn.app/p1", clicks: 482, created: "2 days ago" },
+    { id: 2, long: "https://leadnator.com/blog/email-deliverability", short: "ldn.app/deliver", clicks: 124, created: "1 week ago" },
   ]);
 
   function shorten(e) {

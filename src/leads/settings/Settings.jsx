@@ -3,14 +3,10 @@ import { FiTarget, FiMessageCircle, FiSave, FiAlertCircle } from "react-icons/fi
 import { api } from "../../api/client";
 import { notify } from "../../globalComponents/Toast/Toast";
 
-const STATUSES = [
-  { v: "new",       l: "New" },
-  { v: "contacted", l: "Contacted" },
-  { v: "hot",       l: "Hot" },
-  { v: "qualified", l: "Qualified" },
-];
+import { usePipelineStages } from "../usePipelineStages";
 
 export default function LeadSettings() {
+  const { stages: pipelineStages } = usePipelineStages();
   const [settings, setSettings] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -74,7 +70,7 @@ export default function LeadSettings() {
               value={settings.metaForms.defaultStatus}
               onChange={(e) => patch("metaForms", { defaultStatus: e.target.value })}
             >
-              {STATUSES.map((s) => <option key={s.v} value={s.v}>{s.l}</option>)}
+              {pipelineStages.map((s) => <option key={s.key} value={s.key}>{s.label}</option>)}
             </select>
           </div>
           <div className="form-group">
@@ -133,7 +129,7 @@ export default function LeadSettings() {
               value={settings.whatsapp.defaultStatus}
               onChange={(e) => patch("whatsapp", { defaultStatus: e.target.value })}
             >
-              {STATUSES.map((s) => <option key={s.v} value={s.v}>{s.l}</option>)}
+              {pipelineStages.map((s) => <option key={s.key} value={s.key}>{s.label}</option>)}
             </select>
           </div>
           <div className="form-group">

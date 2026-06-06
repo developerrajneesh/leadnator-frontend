@@ -1,10 +1,12 @@
-import { useState } from "react";
-import { FiSave, FiKey, FiGlobe, FiShield, FiMail } from "react-icons/fi";
+import { useEffect, useState } from "react";
+import { FiSave, FiKey, FiGlobe, FiShield, FiMail, FiAlertTriangle, FiUnlock } from "react-icons/fi";
+import { api } from "../../api/client";
+import { notify } from "../../globalComponents/Toast/Toast";
 
 export default function AdminSettings() {
   const [form, setForm] = useState({
     siteName: "Leadnator",
-    supportEmail: "support@leadnator.app",
+    supportEmail: "support@leadnator.com",
     signupEnabled: true,
     maintenanceMode: false,
     trialDays: 14,
@@ -19,6 +21,8 @@ export default function AdminSettings() {
     <>
       <h1 className="page-title">Settings</h1>
       <p className="page-subtitle">Platform configuration and administrative controls.</p>
+
+      <MasterPasswordCard />
 
       <div className="grid-2-equal">
         <div className="card">
@@ -44,7 +48,7 @@ export default function AdminSettings() {
           </div>
           <div className="form-group"><label>SMTP host</label><input value={form.smtpHost} onChange={(e) => update("smtpHost", e.target.value)} /></div>
           <div className="form-group"><label>SMTP port</label><input type="number" value={form.smtpPort} onChange={(e) => update("smtpPort", +e.target.value)} /></div>
-          <div className="form-group"><label>From address</label><input defaultValue="no-reply@leadnator.app" /></div>
+          <div className="form-group"><label>From address</label><input defaultValue="no-reply@leadnator.com" /></div>
           <button className="auth-submit" style={{ width: "auto", padding: "10px 16px" }}>Send test email</button>
         </div>
       </div>
@@ -90,6 +94,95 @@ export default function AdminSettings() {
         <button className="auth-submit" style={{ width: "auto", padding: "10px 20px" }}><FiSave style={{ marginRight: 6 }} />Save changes</button>
       </div>
     </>
+  );
+}
+
+function MasterPasswordCard() {
+  const [status, setStatus] = useState(null);
+  const [value, setValue] = useState("");
+  const [show, setShow] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    api.admin.masterPassword().then(setStatus).catch(() => setStatus({ enabled: false }));
+  }, []);
+
+  async function save() {
+    if (value.length < 8) return notify.error("Master password must be at least 8 characters.");
+    setSaving(true);
+    try {
+      const r = await api.admin.setMasterPassword(value);
+      setStatus(r);
+      setValue("");
+      notify.success("Master password set. It can now sign into any account.");
+    } catch (err) {
+      notify.error(err.message || "Failed to set master password");
+    } finally { setSaving(false); }
+  }
+  async function disable() {
+    if (!confirm("Disable the master password? It will no longer sign into any account.")) return;
+    setSaving(true);
+    try {
+      const r = await api.admin.clearMasterPassword();
+      setStatus(r);
+      notify.success("Master password disabled.");
+    } catch (err) {
+      notify.error(err.message || "Failed to disable");
+    } finally { setSaving(false); }
+  }
+
+  const fmt = (d) => (d ? new Date(d).toLocaleString("en-IN", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "—");
+
+  return (
+    <div className="card" style={{ marginBottom: 16, border: "1px solid #fde68a", background: "#fffbeb" }}>
+      <div className="card-header">
+        <div className="card-title"><FiUnlock style={{ marginRight: 8, verticalAlign: "middle", color: "#b45309" }} />Master password</div>
+        {status && (
+          <span style={{ fontSize: 12, fontWeight: 700, padding: "3px 10px", borderRadius: 999, color: status.enabled ? "#047857" : "#64748b", background: status.enabled ? "#dcfce7" : "#f1f5f9" }}>
+            {status.enabled ? "Active" : "Not set"}
+          </span>
+        )}
+      </div>
+
+      <div style={{ display: "flex", gap: 8, alignItems: "flex-start", fontSize: 12.5, color: "#92400e", background: "#fef3c7", border: "1px solid #fde68a", borderRadius: 8, padding: "10px 12px", marginBottom: 14, lineHeight: 1.5 }}>
+        <FiAlertTriangle style={{ marginTop: 2, flexShrink: 0 }} />
+        <span>
+          Anyone who knows this password can sign in to <strong>any user account</strong> by entering that account's email and this password.
+          It's stored encrypted (bcrypt) and every master-password login is logged. Use a long, unique password and share it with no one.
+        </span>
+      </div>
+
+      <div className="form-group">
+        <label>{status?.enabled ? "Set a new master password" : "Set a master password"}</label>
+        <div style={{ display: "flex", gap: 8 }}>
+          <input
+            type={show ? "text" : "password"}
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            placeholder="At least 8 characters"
+            style={{ flex: 1 }}
+            autoComplete="new-password"
+          />
+          <button type="button" className="btn btn-outline" onClick={() => setShow((s) => !s)}>{show ? "Hide" : "Show"}</button>
+        </div>
+      </div>
+
+      <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+        <button className="btn btn-primary" onClick={save} disabled={saving || !value}>
+          <FiKey style={{ marginRight: 6 }} /> {saving ? "Saving…" : status?.enabled ? "Update password" : "Set master password"}
+        </button>
+        {status?.enabled && (
+          <button className="btn btn-outline" onClick={disable} disabled={saving} style={{ color: "#ef4444", borderColor: "#fecaca" }}>
+            Disable
+          </button>
+        )}
+        {status?.enabled && (
+          <span style={{ fontSize: 12, color: "var(--text-muted)" }}>
+            Updated {fmt(status.updatedAt)}{status.lastMasterLoginAt ? ` · last used ${fmt(status.lastMasterLoginAt)}` : ""}
+          </span>
+        )}
+      </div>
+    </div>
   );
 }
 

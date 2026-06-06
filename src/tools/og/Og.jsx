@@ -6,7 +6,7 @@ export default function Og() {
   const [f, setF] = useState({
     title: "Leadnator — AI-powered Lead Management",
     description: "Capture, qualify and close leads faster with AI-written emails, ads and WhatsApp broadcasts.",
-    url: "leadnator.app",
+    url: "leadnator.com",
     image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800",
   });
 

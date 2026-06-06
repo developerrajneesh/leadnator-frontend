@@ -1,10 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  FiSearch, FiBell, FiHelpCircle, FiChevronDown,
+  FiBell, FiHelpCircle, FiChevronDown,
   FiUser, FiSettings, FiCreditCard, FiLogOut,
 } from "react-icons/fi";
 import { useCurrentUser } from "../../api/hooks";
+import { getStoredOrg, isOrganizationLogin } from "../../api/client";
+import GlobalSearch from "./GlobalSearch";
+import OrgSwitcher from "../OrgSwitcher/OrgSwitcher";
 
 export default function Header({ onLogout }) {
   const navigate = useNavigate();
@@ -49,13 +52,32 @@ export default function Header({ onLogout }) {
         </div>
       </div>
 
-      <div className="header-search">
-        <FiSearch className="search-icon" />
-        <input placeholder="Search leads, campaigns, templates…" />
-        <kbd>⌘K</kbd>
-      </div>
+      <GlobalSearch />
 
       <div className="header-right">
+        {isOrganizationLogin() ? (
+          <span
+            className="org-login-pill"
+            title="Signed in as workspace"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
+              padding: "6px 12px",
+              fontSize: 13,
+              fontWeight: 600,
+              color: "#5b21b6",
+              background: "#f3e8ff",
+              border: "1px solid #ddd6fe",
+              borderRadius: 8,
+              marginRight: 4,
+            }}
+          >
+            {getStoredOrg()?.name || "Workspace"}
+          </span>
+        ) : (
+          <OrgSwitcher />
+        )}
         <button className="icon-btn" title="Help & docs"><FiHelpCircle /></button>
 
         <div className="header-popover-wrap" ref={notifRef}>
@@ -112,9 +134,11 @@ export default function Header({ onLogout }) {
               <div className="menu-item" onClick={() => { navigate("/settings/account"); setMenuOpen(false); }}>
                 <FiSettings /> Account settings
               </div>
-              <div className="menu-item" onClick={() => { navigate("/pricing/plans"); setMenuOpen(false); }}>
-                <FiCreditCard /> Billing & plan
-              </div>
+              {!isOrganizationLogin() && (
+                <div className="menu-item" onClick={() => { navigate("/pricing/plans"); setMenuOpen(false); }}>
+                  <FiCreditCard /> Billing & plan
+                </div>
+              )}
               <div className="menu-sep" />
               <div className="menu-item danger" onClick={onLogout}>
                 <FiLogOut /> Sign out

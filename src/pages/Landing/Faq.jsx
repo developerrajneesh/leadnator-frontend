@@ -9,7 +9,7 @@ const FAQS = [
   { cat: "Getting started", q: "What does Leadnator do?",                     a: "Leadnator is an all-in-one CRM and growth platform. One login gives you WhatsApp Cloud API with an AI chatbot, Meta Ads manager, email marketing with your own SMTP, a leads pipeline, file storage in your own S3 bucket, a booking calendar, 20+ AI tools and an in-app support system." },
   { cat: "Getting started", q: "How do I sign up?",                            a: "Click \"Start FREE Trial\" on any page and fill in your name, email and password. You'll land in the app in under 30 seconds. No credit card required for the 14-day trial." },
   { cat: "Getting started", q: "How long does setup take?",                    a: "About 12 minutes end-to-end. Embedded Signup creates your WhatsApp Business Account and issues a permanent token in one popup. Meta Ads connects with a single OAuth. Your S3 bucket and SMTP are one-field each." },
-  { cat: "Getting started", q: "Can I see a demo first?",                      a: "Absolutely. Click \"Book a demo\" or WhatsApp us at +91 9594 686 906 — we'll walk you through the full platform live." },
+  { cat: "Getting started", q: "Can I see a demo first?",                      a: "Absolutely. Click \"Book a demo\" or WhatsApp us at +917888341096 — we'll walk you through the full platform live." },
   { cat: "Getting started", q: "Do I need technical skills?",                  a: "No. Every feature is no-code — drag-and-drop chatbot, visual flow builder, click-to-configure integrations. Most customers are marketers and founders, not engineers." },
 
   // WhatsApp
@@ -48,7 +48,7 @@ const FAQS = [
 
   // Support
   { cat: "Support", q: "How do I talk to support?",                            a: "Open a ticket from inside the app (Support → New ticket) or use live chat. Pro plans get <4h first reply SLA. Starter gets <24h. All plans get human responses." },
-  { cat: "Support", q: "Is there a phone number?",                             a: "Yes: +91 9594 686 906 for sales. Support is primarily in-app and over WhatsApp — we find it faster than phone for most cases." },
+  { cat: "Support", q: "Is there a phone number?",                             a: "Yes: +917888341096 for sales. Support is primarily in-app and over WhatsApp — we find it faster than phone for most cases." },
   { cat: "Support", q: "Do you offer onboarding?",                             a: "Yes. Growth and Pro plans include personalised onboarding. We migrate your leads, set up templates and wire up your first campaign together." },
 ];
 
@@ -154,7 +154,7 @@ function StillHave({ onGoto }) {
             <p>Our team replies within minutes during business hours (10am–8pm IST, Mon–Sat).</p>
           </div>
           <div className="ln-cta-actions">
-            <a className="ln-btn ln-btn-primary ln-btn-lg ln-btn-block" href="https://wa.me/919594686906">
+            <a className="ln-btn ln-btn-primary ln-btn-lg ln-btn-block" href="https://wa.me/917888341096">
               <FaWhatsapp /> Chat on WhatsApp
             </a>
             <button className="ln-btn ln-btn-outline-dark ln-btn-lg ln-btn-block" onClick={() => onGoto("/contact")}>

@@ -5,7 +5,7 @@ import {
   FiChevronDown, FiChevronRight, FiArrowRight,
 } from "react-icons/fi";
 import { useLeads } from "../../api/hooks";
-import { PIPELINE_STAGES } from "../constants";
+import { usePipelineStages } from "../usePipelineStages";
 
 const RANGES = [
   { key: "all",  label: "All time" },
@@ -18,6 +18,7 @@ const RANGES = [
 export default function Funnel() {
   const navigate = useNavigate();
   const { leads, loading, error, reload } = useLeads();
+  const { stages: pipelineStages } = usePipelineStages();
   const [range, setRange]   = useState("all");
   const [source, setSource] = useState("all");
   const [expanded, setExpanded] = useState(null); // stage key currently expanded
@@ -41,11 +42,11 @@ export default function Funnel() {
 
   // Build stage data (exclude Lost from the funnel bars)
   const stages = useMemo(() => {
-    return PIPELINE_STAGES.filter((s) => s.key !== "lost").map((s) => {
+    return pipelineStages.filter((s) => s.key !== "lost").map((s) => {
       const bucket = filtered.filter((l) => l.status === s.key);
       return { ...s, leads: bucket, count: bucket.length, value: bucket.reduce((sum, l) => sum + (l.value || 0), 0) };
     });
-  }, [filtered]);
+  }, [filtered, pipelineStages]);
 
   const lost           = filtered.filter((l) => l.status === "lost");
   const totalLeads     = filtered.length;
@@ -231,7 +232,7 @@ const selectStyle = {
 function FunnelSkeleton() {
   // Tapering widths mirror the real funnel shape.
   const BAR_WIDTHS = [92, 76, 58, 42];
-  const STAGE_COLORS = PIPELINE_STAGES.filter((s) => s.key !== "lost").map((s) => s.color);
+  const STAGE_COLORS = ["#3b82f6", "#f59e0b", "#10b981", "#ef4444"];
   return (
     <>
       <h1 className="page-title">Sales funnel</h1>

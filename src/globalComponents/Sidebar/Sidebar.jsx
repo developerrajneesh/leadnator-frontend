@@ -3,6 +3,9 @@ import { useWhatsAppStatus } from "../../whatsapp/useWhatsAppStatus";
 import { useMetaStatus }     from "../../meta/useMetaStatus";
 import { useEmailStatus }    from "../../email/useEmailStatus";
 import { useStorageStatus }  from "../../storage/useStorageStatus";
+import { useCurrentUser }    from "../../api/hooks";
+import { isOrganizationLogin } from "../../api/client";
+import { canAccess }         from "../../profile/team/permissions";
 import {
   FiHome, FiActivity, FiBarChart2, FiFileText,
   FiUsers, FiUpload, FiTag, FiStar, FiFilter,
@@ -19,6 +22,7 @@ import {
   FiHash, FiGlobe, FiTrendingUp,
   FiFolder, FiTrash,
   FiCpu,
+  FiImage,
 } from "react-icons/fi";
 
 export const SECTIONS = {
@@ -37,6 +41,7 @@ export const SECTIONS = {
     base: "/leads",
     title: "Leads",
     items: [
+      { to: "overview",    Icon: FiHome,      label: "Overview" },
       { to: "all",         Icon: FiUsers,     label: "All leads" },
       { to: "pipeline",    Icon: FiLayers,    label: "Pipeline (Kanban)" },
       { to: "funnel",      Icon: FiPieChart,  label: "Funnel" },
@@ -63,10 +68,25 @@ export const SECTIONS = {
       { to: "audiences", Icon: FiUsers,     label: "Audiences" },
     ],
   },
+  instagram: {
+    base: "/instagram",
+    title: "Instagram",
+    items: [
+      { to: "overview",   Icon: FiHome,          label: "Overview" },
+      { to: "inbox",      Icon: FiInbox,         label: "DM Inbox" },
+      { to: "comments",   Icon: FiMessageCircle, label: "Comments" },
+      { to: "automation", Icon: FiZap,           label: "Automation" },
+      { to: "content",    Icon: FiImage,         label: "Content" },
+      { to: "analytics",  Icon: FiBarChart2,     label: "Analytics" },
+      { to: "webhook",    Icon: FiLink,          label: "Webhook" },
+      { to: "settings",   Icon: FiSettings,      label: "Settings" },
+    ],
+  },
   whatsapp: {
     base: "/whatsapp",
     title: "WhatsApp Marketing",
     items: [
+      { to: "overview",   Icon: FiHome,          label: "Overview" },
       { to: "broadcasts", Icon: FiSend,          label: "Broadcasts" },
       { to: "templates",  Icon: FiLayers,        label: "Templates" },
       { to: "inbox",      Icon: FiInbox,         label: "Inbox" },
@@ -84,6 +104,7 @@ export const SECTIONS = {
     base: "/email",
     title: "Email Marketing",
     items: [
+      { to: "overview",    Icon: FiHome,       label: "Overview" },
       { to: "campaigns",   Icon: FiMail,       label: "Campaigns" },
       { to: "create",      Icon: FiEdit,       label: "Create campaign" },
       { to: "templates",   Icon: FiLayers,     label: "Templates" },
@@ -98,6 +119,7 @@ export const SECTIONS = {
     base: "/integrations",
     title: "Integrations",
     items: [
+      { to: "overview",   Icon: FiHome,        label: "Overview" },
       { to: "browse",     Icon: FiGrid,        label: "Browse all" },
       { to: "connected",  Icon: FiCheckCircle, label: "Connected" },
       { to: "webhooks",   Icon: FiLink,        label: "Webhooks" },
@@ -109,6 +131,7 @@ export const SECTIONS = {
     base: "/storage",
     title: "File Storage",
     items: [
+      { to: "overview",  Icon: FiHome,        label: "Overview" },
       { to: "browse",    Icon: FiFolder,      label: "My files" },
       { to: "recent",    Icon: FiClock,       label: "Recent" },
       { to: "shared",    Icon: FiUsers,       label: "Shared with me" },
@@ -117,10 +140,20 @@ export const SECTIONS = {
       { to: "settings",  Icon: FiSettings,    label: "Settings" },
     ],
   },
+  autopilot: {
+    base: "/autopilot",
+    title: "Autopilot",
+    items: [
+      { to: "overview", Icon: FiCpu, label: "Overview" },
+      { to: "flows",    Icon: FiZap, label: "Automations" },
+      { to: "webhooks", Icon: FiLink, label: "Webhooks" },
+    ],
+  },
   tools: {
     base: "/tools",
     title: "Free Tools",
     items: [
+      { to: "overview",    Icon: FiHome,      label: "Overview" },
       { to: "ai-ad-copy",  Icon: FiTarget,    label: "✨ AI Ad copy" },
       { to: "ai-email",    Icon: FiMail,      label: "✨ AI Email writer" },
       { to: "ai-rewriter", Icon: FiEdit,      label: "✨ AI Rewriter" },
@@ -133,6 +166,8 @@ export const SECTIONS = {
       { to: "shortener", Icon: FiZap,          label: "Link shortener" },
       { to: "qr",        Icon: FiGrid,         label: "QR code generator" },
       { to: "signature", Icon: FiEdit,         label: "Email signature" },
+      { to: "signature-creator", Icon: FiEdit, label: "Signature creator" },
+      { to: "stamp-creator", Icon: FiAward,     label: "Stamp creator" },
       { to: "subject",   Icon: FiMail,         label: "Subject line tester" },
       { to: "validator", Icon: FiCheckCircle,  label: "Email validator" },
       { to: "counter",   Icon: FiActivity,     label: "Word counter" },
@@ -147,6 +182,7 @@ export const SECTIONS = {
     base: "/calendar",
     title: "Calendar",
     items: [
+      { to: "overview",     Icon: FiHome,       label: "Overview" },
       { to: "month",        Icon: FiGrid,       label: "Month view" },
       { to: "week",         Icon: FiLayers,     label: "Week view" },
       { to: "agenda",       Icon: FiFileText,   label: "Agenda" },
@@ -160,6 +196,7 @@ export const SECTIONS = {
     base: "/pricing",
     title: "Pricing & Billing",
     items: [
+      { to: "overview",  Icon: FiHome,       label: "Overview" },
       { to: "plans",     Icon: FiAward,      label: "Plans" },
       { to: "current",   Icon: FiStar,       label: "Current subscription" },
       { to: "invoices",  Icon: FiFileText,   label: "Invoices" },
@@ -171,6 +208,7 @@ export const SECTIONS = {
     base: "/support",
     title: "Support",
     items: [
+      { to: "overview", Icon: FiHome,          label: "Overview" },
       { to: "tickets",  Icon: FiLifeBuoy,      label: "My tickets" },
       { to: "new",      Icon: FiPlus,          label: "New ticket" },
       { to: "faq",      Icon: FiHelpCircle,    label: "FAQs" },
@@ -182,6 +220,7 @@ export const SECTIONS = {
     base: "/settings",
     title: "Settings",
     items: [
+      { to: "overview",      Icon: FiHome,           label: "Overview" },
       { to: "info",          Icon: FiUser,           label: "Profile info" },
       { to: "account",       Icon: FiSettings,       label: "Account settings" },
       { to: "password",      Icon: FiLock,           label: "Password & security" },
@@ -202,19 +241,22 @@ export default function Sidebar({ open, onToggle }) {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const conf = currentSection(pathname);
+  const user = useCurrentUser();
   const { status }     = useWhatsAppStatus();
   const { status: ms } = useMetaStatus();
   const { status: es } = useEmailStatus();
   const { status: ss } = useStorageStatus();
 
-  // Inside any integration-gated section, hide the sub-sidebar until the
-  // user has configured credentials. The gate screen has the only action
-  // they can take — an empty sidebar alongside would be noise.
+  // Integration modules: hide sub-sidebar until credentials are set up.
+  // Instagram always shows its full route list — gated pages show connect UI in content.
   const seg = pathname.split("/")[1];
   if (seg === "whatsapp" && !status?.connected) return null;
   if (seg === "meta"     && !ms?.connected)     return null;
   if (seg === "email"    && !es?.configured)    return null;
   if (seg === "storage"  && !ss?.configured)    return null;
+
+  const moduleKey = seg in SECTIONS ? seg : "dashboard";
+  const visibleItems = conf.items.filter(({ to }) => canAccess(user, moduleKey, to));
 
   return (
     <div className={`sidebar ${open ? "" : "closed"}`}>
@@ -225,7 +267,7 @@ export default function Sidebar({ open, onToggle }) {
         </button>
       </div>
       <ul className="menu">
-        {conf.items.map(({ to, Icon, label }) => (
+        {visibleItems.map(({ to, Icon, label }) => (
           <li key={to}>
             <NavLink
               to={`${conf.base}/${to}`}
@@ -237,13 +279,15 @@ export default function Sidebar({ open, onToggle }) {
           </li>
         ))}
       </ul>
-      <div className="sidebar-footer">
-        <div className="upgrade-card">
-          <h4>Unlock Pro</h4>
-          <p>Unlimited leads, AI automation & API access.</p>
-          <button onClick={() => navigate("/pricing/plans")}>Upgrade</button>
+      {!isOrganizationLogin() && (
+        <div className="sidebar-footer">
+          <div className="upgrade-card">
+            <h4>Unlock Pro</h4>
+            <p>Unlimited leads, AI automation & API access.</p>
+            <button onClick={() => navigate("/pricing/plans")}>Upgrade</button>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

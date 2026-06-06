@@ -1,6 +1,6 @@
 export const WA_TEMPLATES = [
   { id: "t1", name: "Welcome Message", preview: "Hi {{name}}! Thanks for connecting with us. Reply YES to get started." },
-  { id: "t2", name: "Offer Blast",     preview: "Flash Sale {{name}}! 30% OFF on all plans. Link: leadnator.app/offer" },
+  { id: "t2", name: "Offer Blast",     preview: "Flash Sale {{name}}! 30% OFF on all plans. Link: leadnator.com/offer" },
   { id: "t3", name: "Follow Up",       preview: "Hey {{name}}, just checking in on your decision. Need any help?" },
   { id: "t4", name: "Appointment",     preview: "Hi {{name}}, your demo is scheduled for {{date}} at {{time}}." },
 ];

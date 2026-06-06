@@ -3,6 +3,12 @@ import { FiArrowRight, FiPhone, FiChevronDown } from "react-icons/fi";
 import { FaWhatsapp, FaFacebook, FaInstagram, FaYoutube, FaLinkedin } from "react-icons/fa";
 import "./Landing.css";
 
+const SOCIAL_LINKS = {
+  facebook: "https://www.facebook.com/profile.php?id=61588978750821",
+  instagram: "https://www.instagram.com/leadnator.official/",
+  whatsapp: "https://wa.me/917888341096",
+};
+
 // Shared chrome for every marketing page — topbar, nav, footer,
 // floating WhatsApp button. The actual page content slots between
 // nav and footer via {children}.
@@ -26,8 +32,8 @@ function Topbar() {
           <span className="ln-topbar-dot" /> Powered by Official WhatsApp APIs, Meta Ads & AI ⚡
         </span>
         <div className="ln-topbar-right">
-          <a href="tel:+919594686906"><FiPhone /> Sales: +91 9594 686 906</a>
-          <a href="https://wa.me/919594686906" className="ln-topbar-wa"><FaWhatsapp /> Chat on WhatsApp</a>
+          <a href="tel:+917888341096"><FiPhone /> Sales: +917888341096</a>
+          <a href="https://wa.me/917888341096" className="ln-topbar-wa"><FaWhatsapp /> Chat on WhatsApp</a>
         </div>
       </div>
     </div>
@@ -40,6 +46,7 @@ function Nav({ onGoto, currentPath }) {
     { to: "/",         label: "Home" },
     { to: "/features", label: "Features" },
     { to: "/pricing",  label: "Pricing" },
+    { to: "/partners", label: "Partners" },
     { to: "/compare",  label: "Compare" },
     { to: "/api-docs", label: "Developer API" },
     { to: "/contact",  label: "Contact" },
@@ -93,11 +100,11 @@ function Footer({ onGoto }) {
             Marketing, Leads CRM, File Storage, Calendar and 20+ AI tools on one login.
           </p>
           <div className="ln-footer-social">
-            <a href="#" aria-label="Facebook"><FaFacebook /></a>
-            <a href="#" aria-label="Instagram"><FaInstagram /></a>
+            <a href={SOCIAL_LINKS.facebook} target="_blank" rel="noopener noreferrer" aria-label="Facebook"><FaFacebook /></a>
+            <a href={SOCIAL_LINKS.instagram} target="_blank" rel="noopener noreferrer" aria-label="Instagram"><FaInstagram /></a>
             <a href="#" aria-label="YouTube"><FaYoutube /></a>
             <a href="#" aria-label="LinkedIn"><FaLinkedin /></a>
-            <a href="https://wa.me/919594686906" aria-label="WhatsApp"><FaWhatsapp /></a>
+            <a href={SOCIAL_LINKS.whatsapp} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp"><FaWhatsapp /></a>
           </div>
           <div className="ln-footer-badges">
             <span>🏆 Meta Business Partner</span>
@@ -169,7 +176,7 @@ function FooterCol({ title, items, onGoto }) {
 
 function FloatingWhatsApp() {
   return (
-    <a className="ln-float-wa" href="https://wa.me/919594686906" aria-label="Chat on WhatsApp">
+    <a className="ln-float-wa" href="https://wa.me/917888341096" aria-label="Chat on WhatsApp">
       <FaWhatsapp />
     </a>
   );

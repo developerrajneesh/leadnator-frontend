@@ -52,6 +52,19 @@ export const MODULE_PERMISSIONS = [
     ],
   },
   {
+    key: "instagram", label: "Instagram", color: "#e1306c", Icon: FiMessageCircle,
+    routes: [
+      { key: "overview",   label: "Overview" },
+      { key: "inbox",      label: "DM Inbox" },
+      { key: "comments",   label: "Comments" },
+      { key: "automation", label: "Automation flows" },
+      { key: "content",    label: "Content" },
+      { key: "analytics",  label: "Analytics" },
+      { key: "webhook",    label: "Webhook" },
+      { key: "settings",   label: "Settings" },
+    ],
+  },
+  {
     key: "whatsapp", label: "WhatsApp Marketing", color: "#25d366", Icon: FiMessageCircle,
     routes: [
       { key: "broadcasts", label: "Broadcasts" },
@@ -115,6 +128,8 @@ export const MODULE_PERMISSIONS = [
       { key: "shortener",     label: "Link shortener" },
       { key: "qr",            label: "QR code" },
       { key: "signature",     label: "Email signature" },
+      { key: "signature-creator", label: "Signature creator" },
+      { key: "stamp-creator", label: "Stamp creator" },
       { key: "subject",       label: "Subject tester" },
       { key: "validator",     label: "Email validator" },
       { key: "counter",       label: "Word counter" },
@@ -190,6 +205,7 @@ export function presetForRole(role) {
     p.dashboard = makeAllPermissions(true).dashboard;
     p.leads.all = p.leads.pipeline = p.leads.funnel = p.leads.hot = true;
     p.meta.overview = p.meta.analytics = true;
+    p.instagram.inbox = p.instagram.comments = p.instagram.analytics = true;
     p.whatsapp.inbox = p.whatsapp.contacts = p.whatsapp.analytics = true;
     p.email.campaigns = p.email.analytics = true;
     p.calendar.month = p.calendar.week = p.calendar.agenda = p.calendar.upcoming = true;
@@ -222,8 +238,10 @@ export function countEnabled(perms, moduleKey) {
    ============================================================ */
 
 // Is the current user a TeamMember (rather than the Owner)?
+// Backend flags this in the /auth/me + /auth/login response when the
+// session belongs to a TeamMember (see TeamMember.toSafeJSON).
 export function isTeamMember(user) {
-  return !!user?.teamMemberId;
+  return !!(user?.isTeamMember || user?.teamMemberId);
 }
 
 // Check a single (module, subroute) pair against a permissions map.
@@ -231,6 +249,12 @@ export function canAccess(user, moduleKey, subRouteKey) {
   if (!user || !isTeamMember(user)) return true;                 // owner = full access
   const perms = user.permissions || {};
   if (!perms[moduleKey]) return false;
+  // Module-level "overview" pages are read-only landing pages that just
+  // describe what's inside. Anyone with ANY access to the module can see
+  // them — the granular sub-route grants then control real actions.
+  if (subRouteKey === "overview") {
+    return Object.values(perms[moduleKey]).some((v) => v);
+  }
   return !!perms[moduleKey][subRouteKey];
 }
 
@@ -250,6 +274,8 @@ export function firstAllowedRoute(user, moduleKey) {
     return MODULE_PERMISSIONS.find((m) => m.key === moduleKey)?.routes[0]?.key || null;
   }
   const mod = user.permissions?.[moduleKey] || {};
-  const entry = Object.entries(mod).find(([, v]) => v);
-  return entry ? entry[0] : null;
+  // Prefer the overview page when the member has any access to this
+  // module — it's the natural landing page (and always allowed).
+  if (Object.values(mod).some((v) => v)) return "overview";
+  return null;
 }

@@ -131,7 +131,7 @@ export default function InvoicePreview({ inv, totals, currency }) {
       )}
 
       <div style={{ textAlign: "center", color: "#9ca3af", fontSize: 11, marginTop: 28, paddingTop: 16, borderTop: "1px solid #f3f4f6" }}>
-        Generated with Leadnator · leadnator.app
+        Generated with Leadnator · leadnator.com
       </div>
     </div>
   );

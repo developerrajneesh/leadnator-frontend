@@ -38,12 +38,17 @@ export default function MetaGate({ children }) {
   return (
     <div style={{ maxWidth: 520, margin: "40px auto", textAlign: "center" }}>
       <div className="card" style={{ padding: 40 }}>
+        <img
+          src="/Generating new leads-rafiki-flat.png"
+          alt=""
+          style={{ width: 180, height: "auto", marginBottom: 8, filter: "drop-shadow(0 8px 18px rgba(15, 23, 42, .08))" }}
+        />
         <div style={{
-          width: 76, height: 76, borderRadius: "50%",
+          width: 64, height: 64, borderRadius: "50%",
           background: "#1877f2",
           display: "inline-flex", alignItems: "center", justifyContent: "center",
-          color: "white", fontSize: 36, fontWeight: 800, marginBottom: 18,
-          boxShadow: "0 12px 30px rgba(24, 119, 242, 0.3)",
+          color: "white", fontSize: 30, fontWeight: 800, marginBottom: 14,
+          boxShadow: "0 10px 26px rgba(24, 119, 242, 0.3)",
         }}>f</div>
         <h2 style={{ margin: "0 0 8px", fontSize: 22 }}>Connect Meta Ads first</h2>
         <p style={{ color: "var(--text-muted)", fontSize: 13, lineHeight: 1.6, marginBottom: 18 }}>

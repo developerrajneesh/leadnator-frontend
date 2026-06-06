@@ -158,7 +158,7 @@ Leadnator turns every click into a conversation — with AI that writes your ads
 ✅ Meta + Google Ads leads piped straight in
 ✅ Automated drip that closes while you sleep
 
-Start free → leadnator.app`,
+Start free → leadnator.com`,
   email: `Subject: A 3-minute favour (worth ₹10k in saved time)
 
 Hi {{firstName}},

@@ -119,7 +119,7 @@ export default function Chat() {
         <span>
           Prefer async? <a onClick={() => nav("/support/new")} style={{ color: "var(--primary)", cursor: "pointer" }}><FiPlus style={{ verticalAlign: "middle" }} /> open a structured ticket</a>.
         </span>
-        <span>Email: <a href="mailto:support@leadnator.app" style={{ color: "var(--primary)" }}>support@leadnator.app</a></span>
+        <span>Email: <a href="mailto:support@leadnator.com" style={{ color: "var(--primary)" }}>support@leadnator.com</a></span>
       </div>
     </>
   );

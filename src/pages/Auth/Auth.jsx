@@ -2,7 +2,7 @@ import { useState } from "react";
 import { api } from "../../api/client";
 
 export default function Auth({ mode = "login", onAuth, onSwitch }) {
-  const [form, setForm] = useState({ name: "", email: "", password: "" });
+  const [form, setForm] = useState({ name: "", email: "", phone: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   // Local-only "forgot password" view — no route change needed. When a user
@@ -21,8 +21,8 @@ export default function Auth({ mode = "login", onAuth, onSwitch }) {
     try {
       const res = mode === "login"
         ? await api.auth.login(form.email.trim(), form.password)
-        : await api.auth.signup(form.name || "User", form.email.trim(), form.password);
-      onAuth({ token: res.token, user: res.user });
+        : await api.auth.signup(form.name.trim() || "User", form.email.trim(), form.password, form.phone.trim());
+      onAuth(res);
     } catch (err) {
       setError(err.message || "Authentication failed. Is the backend running on :8080?");
     } finally {
@@ -107,7 +107,9 @@ export default function Auth({ mode = "login", onAuth, onSwitch }) {
           <>
             <h1>{activeMode === "login" ? "Welcome back" : "Create your account"}</h1>
             <p className="sub">
-              {activeMode === "login" ? "Sign in to manage your leads and campaigns." : "Start your 14-day trial — no credit card needed."}
+              {activeMode === "login"
+                ? "Sign in with your account email or your workspace login email (set when you created an organization)."
+                : "Start your 14-day trial — no credit card needed."}
             </p>
             <form onSubmit={handleSubmit}>
               {activeMode === "signup" && (
@@ -117,6 +119,12 @@ export default function Auth({ mode = "login", onAuth, onSwitch }) {
                 </div>
               )}
               <div className="form-group"><label>Email</label><input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required /></div>
+              {activeMode === "signup" && (
+                <div className="form-group">
+                  <label>Phone number</label>
+                  <input type="tel" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="+91 98765 43210" required />
+                </div>
+              )}
               <div className="form-group">
                 <label>Password</label>
                 <input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required />

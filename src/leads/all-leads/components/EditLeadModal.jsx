@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { createPortal } from "react-dom";
 import { FiX, FiSave } from "react-icons/fi";
-import { STATUSES } from "../../constants";
+import { usePipelineStages } from "../../usePipelineStages";
 
 export default function EditLeadModal({ lead, onClose, onSave }) {
+  const { stages } = usePipelineStages();
   const [name, setName]     = useState(lead.name || "");
   const [email, setEmail]   = useState(lead.email || "");
   const [phone, setPhone]   = useState(lead.phone || "");
@@ -78,7 +79,7 @@ export default function EditLeadModal({ lead, onClose, onSave }) {
           <div className="form-group">
             <label>Status</label>
             <select value={status} onChange={(e) => setStatus(e.target.value)}>
-              {STATUSES.filter((s) => s !== "all").map((s) => <option key={s} value={s}>{s}</option>)}
+              {stages.map((s) => <option key={s.key} value={s.key}>{s.label}</option>)}
             </select>
           </div>
         </div>

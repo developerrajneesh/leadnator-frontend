@@ -1,14 +1,59 @@
 const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8080/api";
 const TOKEN_KEY = "leadnator_token";
 const USER_KEY = "leadnator_user";
+const ORG_KEY = "leadnator_org";
+const LOGIN_AS_KEY = "leadnator_login_as";
 
 export function getToken() {
   return localStorage.getItem(TOKEN_KEY);
 }
 
-export function setAuth(token, user) {
+/** "user" = personal/owner login; "organization" = workspace email login */
+export function getLoginAs() {
+  return localStorage.getItem(LOGIN_AS_KEY) || "user";
+}
+
+export function isOrganizationLogin() {
+  return getLoginAs() === "organization";
+}
+
+export function setAuth(token, user, organization, loginAs = "user") {
   localStorage.setItem(TOKEN_KEY, token);
   localStorage.setItem(USER_KEY, JSON.stringify(user));
+  localStorage.setItem(LOGIN_AS_KEY, loginAs === "organization" ? "organization" : "user");
+  if (organization) {
+    localStorage.setItem(ORG_KEY, JSON.stringify(organization));
+  } else {
+    localStorage.removeItem(ORG_KEY);
+  }
+}
+
+export function getStoredOrg() {
+  try {
+    const raw = localStorage.getItem(ORG_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+export function setStoredOrg(organization) {
+  if (organization) {
+    localStorage.setItem(ORG_KEY, JSON.stringify(organization));
+  } else {
+    localStorage.removeItem(ORG_KEY);
+  }
+}
+
+export function hasOrgSelected() {
+  const token = getToken();
+  if (!token) return false;
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    return !!payload.orgId;
+  } catch {
+    return false;
+  }
 }
 
 export function getStoredUser() {
@@ -23,6 +68,8 @@ export function getStoredUser() {
 export function clearAuth() {
   localStorage.removeItem(TOKEN_KEY);
   localStorage.removeItem(USER_KEY);
+  localStorage.removeItem(ORG_KEY);
+  localStorage.removeItem(LOGIN_AS_KEY);
 }
 
 async function request(path, { method = "GET", body, headers = {}, query } = {}) {
@@ -34,14 +81,15 @@ async function request(path, { method = "GET", body, headers = {}, query } = {})
   }
 
   const token = getToken();
+  const isFormData = typeof FormData !== "undefined" && body instanceof FormData;
   const res = await fetch(url.toString(), {
     method,
     headers: {
-      "Content-Type": "application/json",
+      ...(isFormData ? {} : { "Content-Type": "application/json" }),
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...headers,
     },
-    body: body ? JSON.stringify(body) : undefined,
+    body: isFormData ? body : (body ? JSON.stringify(body) : undefined),
   });
 
   let data = null;
@@ -62,9 +110,15 @@ export const api = {
   put:  (path, body)  => request(path, { method: "PUT", body }),
   del:  (path, query) => request(path, { method: "DELETE", query }),
 
+  orgs: {
+    list:   () => request("/orgs"),
+    create: (body) => request("/orgs", { method: "POST", body }),
+    switch: (organizationId) => request("/orgs/switch", { method: "POST", body: { organizationId } }),
+    remove: (id) => request(`/orgs/${id}`, { method: "DELETE" }),
+  },
   auth: {
     login:  (email, password) => request("/auth/login",  { method: "POST", body: { email, password } }),
-    signup: (name, email, password) => request("/auth/signup", { method: "POST", body: { name, email, password } }),
+    signup: (name, email, password, phone = "") => request("/auth/signup", { method: "POST", body: { name, email, password, phone } }),
     me:     () => request("/auth/me"),
     forgotPassword:   (email)           => request("/auth/forgot-password", { method: "POST", body: { email } }),
     verifyResetToken: (token)           => request(`/auth/verify-reset-token/${encodeURIComponent(token)}`),
@@ -73,6 +127,7 @@ export const api = {
   leads: {
     list:   (query)   => request("/leads", { query }),
     get:    (id)      => request(`/leads/${id}`),
+    chat:   (id)      => request(`/leads/${id}/chat`),
     create: (body)    => request("/leads", { method: "POST", body }),
     update: (id, body) => request(`/leads/${id}`, { method: "PUT", body }),
     remove: (id)      => request(`/leads/${id}`, { method: "DELETE" }),
@@ -94,7 +149,12 @@ export const api = {
   },
   admin: {
     users:      () => request("/admin/users"),
+    user:       (id) => request(`/admin/users/${id}`),
     updateUser: (id, body) => request(`/admin/users/${id}`, { method: "PUT", body }),
+    logs:       (query) => request("/admin/logs", { query }),
+    masterPassword:      () => request("/admin/master-password"),
+    setMasterPassword:   (password) => request("/admin/master-password", { method: "PUT", body: { password } }),
+    clearMasterPassword: () => request("/admin/master-password", { method: "DELETE" }),
     deleteUser: (id) => request(`/admin/users/${id}`, { method: "DELETE" }),
     tickets:    () => request("/support/admin/tickets"),
     ticket:     (id) => request(`/support/admin/tickets/${id}`),
@@ -118,5 +178,14 @@ export const api = {
     replyTicket:  (id, body) => request(`/support/tickets/${id}/reply`, { method: "POST", body: { body } }),
     faqs:       () => request("/support/faqs"),
     docs:       () => request("/support/docs"),
+  },
+  autopilot: {
+    create: (body) => request("/autopilot", { method: "POST", body }),
+    list:   () => request("/autopilot"),
+    get:    (id) => request(`/autopilot/${id}`),
+    update: (id, body) => request(`/autopilot/${id}`, { method: "PUT", body }),
+    remove: (id) => request(`/autopilot/${id}`, { method: "DELETE" }),
+    logs:      (id) => request(`/autopilot/${id}/logs`),
+    clearLogs: (id) => request(`/autopilot/${id}/logs`, { method: "DELETE" }),
   },
 };

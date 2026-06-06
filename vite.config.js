@@ -112,9 +112,10 @@ export default defineConfig({
         navigateFallbackDenylist: [/^\/api\//, /^\/webhooks\//],
       },
 
-      // Keep dev preview honest: SW registers locally too so we can test
-      // manifest + install flow without a production build.
-      devOptions: { enabled: true, type: 'module' },
+      // Dev SW is off by default — it breaks easily when dev-dist hashes drift
+      // or a stale SW is cached (importScripts workbox-* 404). Test PWA with:
+      //   npm run build && npm run preview
+      devOptions: { enabled: false },
     }),
   ],
 })

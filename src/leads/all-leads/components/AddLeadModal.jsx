@@ -1,4 +1,7 @@
+import { usePipelineStages } from "../../usePipelineStages";
+
 export default function AddLeadModal({ onAdd, onClose, initialStatus = "new" }) {
+  const { stages } = usePipelineStages();
   function submit(e) {
     e.preventDefault();
     const fd = new FormData(e.target);
@@ -36,11 +39,9 @@ export default function AddLeadModal({ onAdd, onClose, initialStatus = "new" }) 
             <div className="form-group">
               <label>Stage</label>
               <select name="status" defaultValue={initialStatus}>
-                <option value="new">new</option>
-                <option value="contacted">contacted</option>
-                <option value="qualified">qualified</option>
-                <option value="hot">hot</option>
-                <option value="lost">lost</option>
+                {stages.map((s) => (
+                  <option key={s.key} value={s.key}>{s.label}</option>
+                ))}
               </select>
             </div>
           </div>

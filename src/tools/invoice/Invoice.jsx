@@ -37,7 +37,7 @@ function defaultState() {
     from: {
       name: "Leadnator Technologies Pvt Ltd",
       address: "5th Floor, Tower B, Sector 63\nNoida, Uttar Pradesh 201301, India",
-      email: "billing@leadnator.app",
+      email: "billing@leadnator.com",
       phone: "+91 98xxxxxxxx",
       gst: "09ABCDE1234F1Z5",
       logo: "",

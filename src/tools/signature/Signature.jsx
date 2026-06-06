@@ -5,7 +5,7 @@ import { copyText } from "../utils";
 export default function Signature() {
   const [f, setF] = useState({
     name: "Deepak Sharma", title: "Founder", company: "Leadnator",
-    email: "deepak@leadnator.app", phone: "+91 95196 90019", website: "leadnator.app",
+    email: "deepak@leadnator.com", phone: "+91 95196 90019", website: "leadnator.com",
   });
 
   const html = `

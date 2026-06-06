@@ -11,12 +11,20 @@ import Compare   from "./pages/Landing/Compare";
 import Faq       from "./pages/Landing/Faq";
 import Contact   from "./pages/Landing/Contact";
 import ApiDocs   from "./pages/Landing/ApiDocs";
+import Partners  from "./pages/Landing/Partners";
 import { buildRouter } from "./router";
-import { api, getToken, getStoredUser, setAuth, clearAuth } from "./api/client";
+import { api, getToken, getStoredUser, setAuth, clearAuth, hasOrgSelected, setStoredOrg } from "./api/client";
+import SelectOrganization from "./pages/SelectOrganization";
 import { invalidateLeads } from "./api/hooks";
 import { ToastHost } from "./globalComponents/Toast/Toast";
 import PwaPrompt from "./globalComponents/Pwa/PwaPrompt";
 import { getSocket, disconnectSocket } from "./api/socket";
+import {
+  captureInstagramOAuthCodeFromUrl,
+  exchangePendingInstagramCode,
+  hasPendingInstagramCode,
+} from "./instagram/oauthHandler";
+import { notify } from "./globalComponents/Toast/Toast";
 
 // Map every marketing URL to its page component so we can do simple
 // path-based routing for unauthenticated users without React Router.
@@ -24,6 +32,7 @@ const MARKETING_PAGES = {
   "/":         Home,
   "/features": Features,
   "/pricing":  Pricing,
+  "/partners": Partners,
   "/compare":  Compare,
   "/faq":      Faq,
   "/contact":  Contact,
@@ -32,6 +41,7 @@ const MARKETING_PAGES = {
 
 export default function App() {
   const [authed, setAuthed] = useState(!!getToken());
+  const [orgReady, setOrgReady] = useState(hasOrgSelected());
   const [role, setRole] = useState(getStoredUser()?.role || "user");
   const [booting, setBooting] = useState(!!getToken());
   const [path, setPath] = useState(typeof window !== "undefined" ? window.location.pathname : "/");
@@ -77,17 +87,37 @@ export default function App() {
     });
   }, [path]);
 
+  // Instagram redirect: ?code=… → stash code, strip from URL (codes are single-use)
   useEffect(() => {
-    if (!getToken()) return;
+    captureInstagramOAuthCodeFromUrl();
+  }, []);
+
+  useEffect(() => {
+    if (!getToken()) {
+      if (hasPendingInstagramCode()) {
+        notify.info("Log in to finish connecting your Instagram account.");
+      }
+      setBooting(false);
+      return;
+    }
     api.auth.me()
-      .then((res) => {
+      .then(async (res) => {
         setRole(res.user.role || "user");
         setAuthed(true);
+        if (res.organization?.id) setStoredOrg(res.organization);
+        else setStoredOrg(null);
+        setOrgReady(!!res.organization?.id || hasOrgSelected());
         getSocket();
+        if (hasPendingInstagramCode()) {
+          await exchangePendingInstagramCode();
+          window.history.replaceState(null, "", "/instagram/overview");
+          setPath("/instagram/overview");
+        }
       })
       .catch(() => {
         clearAuth();
         setAuthed(false);
+        setOrgReady(false);
       })
       .finally(() => setBooting(false));
   }, []);
@@ -97,6 +127,7 @@ export default function App() {
     clearAuth();
     invalidateLeads();
     setAuthed(false);
+    setOrgReady(false);
     setRole("user");
     window.history.replaceState(null, "", "/");
     setPath("/");
@@ -176,15 +207,47 @@ export default function App() {
         <>
           <Auth
             mode={isSignup ? "signup" : "login"}
-            onAuth={({ token, user }) => {
-              setAuth(token, user);
-              const nextRole = user.role || "user";
+            onAuth={async (res) => {
+              const { token, user, organization, organizations, needsOrgSelection } = res;
+              const nextRole = user?.role || "user";
               const target = nextRole === "admin" ? "/admin/overview" : "/dashboard/overview";
-              window.history.replaceState(null, "", target);
+              const mustPickOrg =
+                needsOrgSelection ||
+                (Array.isArray(organizations) && organizations.length > 1 && !organization?.id);
+
+              if (!mustPickOrg && organization?.id) {
+                setAuth(token, user, organization, res.loginAs || "user");
+                setRole(nextRole);
+                setAuthed(true);
+                setOrgReady(true);
+                window.history.replaceState(null, "", target);
+                setPath(target);
+                getSocket();
+                return;
+              }
+
+              if (!mustPickOrg && organizations?.length === 1) {
+                try {
+                  const switched = await api.orgs.switch(organizations[0].id);
+                  setAuth(switched.token, user, switched.organization, res.loginAs || "user");
+                  setRole(nextRole);
+                  setAuthed(true);
+                  setOrgReady(true);
+                  window.history.replaceState(null, "", target);
+                  setPath(target);
+                  getSocket();
+                  return;
+                } catch {
+                  /* fall through to org picker */
+                }
+              }
+
+              setAuth(token, user, null, res.loginAs || "user");
               setRole(nextRole);
               setAuthed(true);
-              setPath(target);
-              getSocket();
+              setOrgReady(false);
+              window.history.replaceState(null, "", "/select-org");
+              setPath("/select-org");
             }}
             onSwitch={(m) => goto(m === "signup" ? "/signup" : "/login")}
           />
@@ -199,6 +262,27 @@ export default function App() {
     return (
       <>
         <Home onGoto={goto} />
+        <ToastHost />
+        <PwaPrompt />
+      </>
+    );
+  }
+
+  const showOrgPicker = authed && (path === "/select-org" || path.startsWith("/select-org") || !orgReady);
+
+  if (showOrgPicker) {
+    return (
+      <>
+        <SelectOrganization
+          onSelected={({ organization }) => {
+            setStoredOrg(organization);
+            setOrgReady(true);
+            const target = role === "admin" ? "/admin/overview" : "/dashboard/overview";
+            window.history.replaceState(null, "", target);
+            setPath(target);
+            getSocket();
+          }}
+        />
         <ToastHost />
         <PwaPrompt />
       </>

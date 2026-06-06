@@ -26,7 +26,7 @@ export default function LaunchStep({ type }) {
             ? { instagram_actor_id: saved.creative.instagramAccountId }
             : {}),
           link_data: {
-            link: saved.creative.linkUrl || "https://leadnator.app",
+            link: saved.creative.linkUrl || "https://leadnator.com",
             message: saved.creative.primaryText,
             name: saved.creative.headline,
             description: saved.creative.description || undefined,

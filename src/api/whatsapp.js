@@ -34,6 +34,7 @@ export const waApi = {
   deleteMetaFlow:   (id)      => api.del(`/wa/meta-flows/${id}`),
   bulkMessages:  (body)    => api.post("/wa/bulk-messages", body),
 
+  repairInboxScope: ()     => api.post("/wa/inbox/repair-scope"),
   conversations: ()        => api.get("/wa/conversations"),
   conversation:  (phone)   => api.get(`/wa/conversations/${encodeURIComponent(phone)}`),
   reply:         (phone, body) => api.post(`/wa/conversations/${encodeURIComponent(phone)}/reply`, { body }),

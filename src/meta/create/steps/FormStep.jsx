@@ -17,7 +17,7 @@ export default function FormStep({ type }) {
       { key: "EMAIL",     label: "Email" },
       { key: "PHONE",     label: "Phone number" },
     ],
-    privacyPolicyUrl: "https://leadnator.app/privacy",
+    privacyPolicyUrl: "https://leadnator.com/privacy",
     thankYouMessage: "Thanks! We'll be in touch shortly.",
   });
 

@@ -34,4 +34,10 @@ export const emailApi = {
 
   // Stats
   stats:         ()        => api.get("/email/stats"),
+
+  // Amazon SES: domain attach + verify
+  sesAttachDomain: (domain) => api.post("/email/ses/domain/attach", { domain }),
+  sesDomainStatus: (domain) => api.get("/email/ses/domain/status", domain ? { domain } : undefined),
+  sesSaveFrom:     (body)    => api.put("/email/ses/from", body),
+  sesTestSend:     (body)    => api.post("/email/ses/test-send", body),
 };

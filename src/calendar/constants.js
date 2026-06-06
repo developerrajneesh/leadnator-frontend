@@ -22,7 +22,7 @@ export function buildDummyEvents() {
     { id: "e1",  type: "demo",     title: "Product demo — Acme Retail",  start: d(0, 11),   end: d(0, 12),    attendees: ["anita@acme.in"], location: "Google Meet", notes: "Walk through Pro plan." },
     { id: "e2",  type: "call",     title: "Discovery call — Zen Store",  start: d(0, 15),   end: d(0, 16),    attendees: ["rakesh@zenstore.com"], location: "Phone", notes: "" },
     { id: "e3",  type: "followup", title: "Follow-up: Aarav Sharma",     start: d(1, 10),   end: d(1, 10, 30),attendees: ["aarav@example.com"], location: "Email", notes: "Send pricing." },
-    { id: "e4",  type: "meeting",  title: "Weekly team sync",            start: d(2, 9, 30),end: d(2, 10, 30),attendees: ["team@leadnator.app"], location: "Conference room", notes: "" },
+    { id: "e4",  type: "meeting",  title: "Weekly team sync",            start: d(2, 9, 30),end: d(2, 10, 30),attendees: ["team@leadnator.com"], location: "Conference room", notes: "" },
     { id: "e5",  type: "task",     title: "Write April newsletter",      start: d(3, 14),   end: d(3, 16),    attendees: [], location: "", notes: "Theme: deliverability." },
     { id: "e6",  type: "demo",     title: "Demo — Lotus Co",             start: d(4, 11),   end: d(4, 12),    attendees: ["priya@lotusco.in"], location: "Zoom", notes: "" },
     { id: "e7",  type: "followup", title: "Re-engage cold leads",        start: d(5, 13),   end: d(5, 14),    attendees: [], location: "Email", notes: "" },

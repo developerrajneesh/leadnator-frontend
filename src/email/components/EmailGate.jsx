@@ -24,15 +24,22 @@ export default function EmailGate({ children }) {
       <div style={{
         padding: 14, marginBottom: 16, background: "#eff6ff", color: "#1e3a8a",
         border: "1px solid #bfdbfe", borderRadius: 10, fontSize: 13, lineHeight: 1.6,
-        display: "flex", gap: 10, alignItems: "flex-start",
+        display: "flex", gap: 14, alignItems: "center",
       }}>
-        <FiAlertCircle style={{ marginTop: 2, flexShrink: 0, fontSize: 16 }} />
-        <div>
-          <strong><FiMail style={{ verticalAlign: "middle", marginRight: 4 }} /> Connect your SMTP to unlock Email Marketing.</strong>
-          <div style={{ marginTop: 4, color: "#1e3a8a", opacity: 0.9 }}>
-            Campaigns, templates, automation, subscribers, signatures, and analytics unlock once we
-            can send mail on your behalf. Save your SMTP host / port / username / app password below,
-            then click <strong>Verify connection</strong>.
+        <img
+          src="/Emails-bro-flat.png"
+          alt=""
+          style={{ width: 110, height: "auto", flexShrink: 0 }}
+        />
+        <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+          <FiAlertCircle style={{ marginTop: 2, flexShrink: 0, fontSize: 16 }} />
+          <div>
+            <strong><FiMail style={{ verticalAlign: "middle", marginRight: 4 }} /> Connect your SMTP to unlock Email Marketing.</strong>
+            <div style={{ marginTop: 4, color: "#1e3a8a", opacity: 0.9 }}>
+              Campaigns, templates, automation, subscribers, signatures, and analytics unlock once we
+              can send mail on your behalf. Save your SMTP host / port / username / app password below,
+              then click <strong>Verify connection</strong>.
+            </div>
           </div>
         </div>
       </div>

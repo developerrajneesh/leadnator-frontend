@@ -26,7 +26,7 @@ export default function CreativeStep({ type }) {
     headline: "",
     primaryText: "",
     description: "",
-    linkUrl: type === "link" ? "" : "https://leadnator.app",
+    linkUrl: type === "link" ? "" : "https://leadnator.com",
     imageHash: "",
     imageUrl: "",
     imageFilename: "",

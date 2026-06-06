@@ -190,7 +190,7 @@ export function buildInvoiceHtml(inv, totals, currency) {
     ${inv.terms ? `<div class="section"><div class="label">Terms</div><div class="pre">${esc(inv.terms)}</div></div>` : ""}
   </div>` : ""}
 
-  <div class="foot-brand">Generated with Leadnator · leadnator.app</div>
+  <div class="foot-brand">Generated with Leadnator · leadnator.com</div>
 </div>
 </body>
 </html>`;

@@ -12,6 +12,7 @@ import MarketingArt from "./MarketingArt";
 import IntegrationsHub from "./IntegrationsHub";
 import AIShowcase from "./AIShowcase";
 import HierarchyFlow from "./HierarchyFlow";
+import { appPath } from "../../lib/app-url";
 import { useSeo } from "./seo";
 
 export default function Home({ onGoto }) {
@@ -59,12 +60,12 @@ function Hero({ onGoto }) {
           </p>
 
           <div className="ln-hero-cta">
-            <button className="ln-btn ln-btn-primary ln-btn-lg" onClick={() => onGoto("/signup")}>
+            <a href={appPath("/signup")} className="ln-btn ln-btn-primary ln-btn-lg">
               Start FREE Trial <FiArrowRight />
-            </button>
-            <button className="ln-btn ln-btn-outline ln-btn-lg" onClick={() => onGoto("/features")}>
+            </a>
+            <a href="/features" className="ln-btn ln-btn-outline ln-btn-lg" onClick={(e) => { e.preventDefault(); onGoto("/features"); }}>
               <FiPieChart /> See all features
-            </button>
+            </a>
           </div>
 
           <ul className="ln-hero-check">
@@ -514,11 +515,11 @@ function CtaBanner({ onGoto }) {
             <button className="ln-btn ln-btn-primary ln-btn-lg ln-btn-block" onClick={() => onGoto("/signup")}>
               Start FREE Trial <FiArrowRight />
             </button>
-            <a className="ln-btn ln-btn-outline-dark ln-btn-lg ln-btn-block" href="https://wa.me/919594686906">
+            <a className="ln-btn ln-btn-outline-dark ln-btn-lg ln-btn-block" href="https://wa.me/917888341096">
               <FaWhatsapp /> Chat on WhatsApp
             </a>
             <div className="ln-cta-call">
-              <FiPhone /> Sales: <a href="tel:+919594686906">+91 9594 686 906</a>
+              <FiPhone /> Sales: <a href="tel:+917888341096">+917888341096</a>
             </div>
           </div>
         </div>

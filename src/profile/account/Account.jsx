@@ -43,7 +43,7 @@ export default function Account() {
   }
 
   function deleteAccount() {
-    alert("Account deletion requires support assistance. Please contact support@leadnator.app.");
+    alert("Account deletion requires support assistance. Please contact support@leadnator.com.");
   }
 
   if (loading || !s) return <div className="card" style={{ textAlign: "center", padding: 40, color: "var(--text-muted)" }}>Loading…</div>;

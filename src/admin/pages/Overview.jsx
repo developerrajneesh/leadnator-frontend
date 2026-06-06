@@ -1,8 +1,25 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import {
   FiUsers, FiDollarSign, FiTrendingUp, FiActivity,
   FiArrowUp, FiArrowDown, FiUserPlus, FiLifeBuoy, FiRefreshCw,
+  FiMessageCircle, FiMail, FiCalendar, FiZap,
 } from "react-icons/fi";
+
+// Map an activity kind/module to an icon + color chip.
+const ACTIVITY_ICON = {
+  signup: [FiUserPlus, "purple"], auth: [FiUserPlus, "purple"],
+  ticket_resolved: [FiLifeBuoy, "green"], ticket_open: [FiLifeBuoy, "orange"], support: [FiLifeBuoy, "orange"],
+  wa: [FiMessageCircle, "green"], instagram: [FiMessageCircle, "pink"],
+  email: [FiMail, "orange"], calendar: [FiCalendar, "purple"],
+  autopilot: [FiZap, "pink"], leads: [FiUsers, "purple"],
+};
+const CHIP = {
+  purple: { bg: "#ede9fe", fg: "#6d28d9" },
+  green:  { bg: "#d1fae5", fg: "#047857" },
+  orange: { bg: "#fef3c7", fg: "#b45309" },
+  pink:   { bg: "#fce7f3", fg: "#be185d" },
+};
 import { api } from "../../api/client";
 import BarChart from "../../dashboard/overview/components/BarChart";
 import Donut from "../../dashboard/overview/components/Donut";
@@ -117,30 +134,27 @@ export default function AdminOverview() {
           </div>
           {planDistribution.length === 0
             ? <Empty label="No users yet." />
-            : <Donut data={planDistribution} />}
+            : <Donut data={planDistribution} centerLabel="Users" />}
         </div>
       </div>
 
       <div className="grid-2-equal" style={{ marginTop: 16 }}>
         <div className="card">
           <div className="card-header">
-            <div className="card-title">Recent admin activity</div>
+            <div className="card-title">Recent activity</div>
+            <Link to="/admin/logs" style={{ fontSize: 12, fontWeight: 600, color: "var(--adm-primary, #10b981)" }}>View all →</Link>
           </div>
           {activity.length === 0
             ? <Empty label="No activity yet." />
             : (
               <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                 {activity.map((a, i) => {
-                  const Icon = a.kind === "signup" ? FiUserPlus
-                             : a.kind === "ticket_resolved" ? FiLifeBuoy
-                             : FiLifeBuoy;
-                  const color = a.kind === "signup" ? "purple"
-                              : a.kind === "ticket_resolved" ? "green"
-                              : "orange";
+                  const [Icon, color] = ACTIVITY_ICON[a.kind] || [FiActivity, "orange"];
+                  const chip = CHIP[color] || CHIP.orange;
                   return (
-                    <div key={i} style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
-                      <div className={`stat-icon ${color}`} style={{ width: 34, height: 34, flexShrink: 0, margin: 0 }}>
-                        <Icon />
+                    <div key={i} style={{ display: "flex", gap: 12, alignItems: "center" }}>
+                      <div style={{ width: 36, height: 36, borderRadius: 10, flexShrink: 0, display: "grid", placeItems: "center", background: chip.bg, color: chip.fg }}>
+                        <Icon size={18} />
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontSize: 13 }}>{a.text}</div>
@@ -199,7 +213,7 @@ export default function AdminOverview() {
         </div>
         {sourceBreakdown.length === 0
           ? <Empty label="No leads yet — sources show up once users capture their first leads." />
-          : <Donut data={sourceBreakdown} />}
+          : <Donut data={sourceBreakdown} centerLabel="Leads" />}
       </div>
     </>
   );

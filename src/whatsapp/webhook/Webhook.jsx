@@ -6,6 +6,12 @@ import {
 import { waApi } from "../../api/whatsapp";
 import { notify } from "../../globalComponents/Toast/Toast";
 
+const DEFAULT_WEBHOOK_FIELDS = [
+  "messages",
+  "message_template_status_update",
+  "account_update",
+];
+
 export default function Webhook() {
   const [data, setData] = useState(null);       // { url, verifyToken, phoneNumberId, recommendedFields }
   const [loading, setLoading] = useState(true);
@@ -83,7 +89,8 @@ export default function Webhook() {
     );
   }
 
-  const maskedToken = data.verifyToken.replace(/.(?=.{4})/g, "•");
+  const fields = data.metaAppWebhookFields || data.recommendedFields || DEFAULT_WEBHOOK_FIELDS;
+  const maskedToken = String(data.verifyToken || "").replace(/.(?=.{4})/g, "•");
 
   return (
     <>
@@ -164,10 +171,13 @@ export default function Webhook() {
           After Meta verifies the callback, click <strong>Manage</strong> in the webhook config and enable these fields so messages and statuses reach your CRM:
         </div>
         <ul style={{ paddingLeft: 20, fontSize: 13, lineHeight: 1.8 }}>
-          {data.recommendedFields.map((f) => (
+          {fields.map((f) => (
             <li key={f}><code>{f}</code></li>
           ))}
         </ul>
+        {data.setupNote && (
+          <p style={{ marginTop: 10, fontSize: 12, color: "var(--text-muted)" }}>{data.setupNote}</p>
+        )}
         <a
           href="https://business.facebook.com/wa/manage/phone-numbers/"
           target="_blank" rel="noreferrer"

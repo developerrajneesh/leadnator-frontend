@@ -1,16 +1,19 @@
-import { PIPELINE_STAGES } from "../../constants";
+import { DEFAULT_PIPELINE_STAGES } from "../../constants";
 
-/* Matches the real Pipeline Kanban layout so the transition from loading
-   to loaded doesn't cause column-width flicker. Uses the global `.skel*`
-   shimmer toolkit from App.css. */
-
-// Pseudo-random card counts per stage so it looks believable.
 const CARDS_PER_STAGE = [4, 3, 2, 3, 2];
 
-export default function KanbanSkeleton() {
+export default function KanbanSkeleton({ count = 5 }) {
+  const cols = DEFAULT_PIPELINE_STAGES.slice(0, count);
+  const extra = count > cols.length
+    ? Array.from({ length: count - cols.length }, (_, i) => ({
+        key: `skel-${i}`, label: "", color: "#e5e7eb",
+      }))
+    : [];
+  const stages = [...cols, ...extra].slice(0, count);
+
   return (
     <div className="kanban">
-      {PIPELINE_STAGES.map((stage, i) => (
+      {stages.map((stage, i) => (
         <div key={stage.key} className="kanban-col">
           <div className="kanban-col-head" style={{ borderTopColor: stage.color }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>

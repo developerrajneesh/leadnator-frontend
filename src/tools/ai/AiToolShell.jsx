@@ -25,7 +25,15 @@ export default function AiToolShell({
     try {
       const prompt = buildPrompt(form);
       const res = await aiApi.text({ prompt, system: systemPrompt, temperature: 0.85 });
-      setOutput(res.content || "");
+      if (res.warning) throw new Error(res.warning);
+      if (res.provider === "template") {
+        throw new Error("AI is offline. Set OPENAI_API_KEY on the backend and restart the server.");
+      }
+      const text = (res.content || "").trim();
+      if (!text || text === prompt.trim()) {
+        throw new Error("AI returned an empty response. Restart the backend after updating .env.");
+      }
+      setOutput(text);
     } catch (err) {
       setError(err.message || "AI generation failed.");
     } finally { setBusy(false); }
@@ -115,7 +123,7 @@ export default function AiToolShell({
             <div style={{ padding: 40, textAlign: "center", color: "var(--text-muted)", fontSize: 13 }}>
               <FiZap style={{ fontSize: 32, marginBottom: 10, color: `${color}88` }} />
               <p>Fill the brief and click Generate.</p>
-              <p style={{ fontSize: 11, marginTop: 4 }}>Powered by Gemini.</p>
+              <p style={{ fontSize: 11, marginTop: 4 }}>Powered by AI (OpenAI / Gemini).</p>
             </div>
           )}
 
@@ -133,18 +141,21 @@ export default function AiToolShell({
                   key={i}
                   style={{
                     background: "white", padding: 14, borderRadius: 10,
-                    border: "1px solid var(--border)", fontSize: 13.5, lineHeight: 1.6,
-                    whiteSpace: "pre-wrap", position: "relative", color: "var(--text)",
+                    border: "1px solid var(--border)", fontSize: 13.5, color: "var(--text)",
                   }}
                 >
-                  {block}
-                  <button
-                    className="btn btn-ghost"
-                    onClick={() => copy(block, `r${i}`)}
-                    style={{ position: "absolute", top: 8, right: 8, padding: "4px 8px", fontSize: 11 }}
-                  >
-                    <FiCopy /> {copied === `r${i}` ? "Copied!" : "Copy"}
-                  </button>
+                  <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 8 }}>
+                    <button
+                      className="btn btn-ghost"
+                      onClick={() => copy(block, `r${i}`)}
+                      style={{ padding: "4px 10px", fontSize: 11, flexShrink: 0 }}
+                    >
+                      <FiCopy /> {copied === `r${i}` ? "Copied!" : "Copy"}
+                    </button>
+                  </div>
+                  <div style={{ lineHeight: 1.6, whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
+                    {block}
+                  </div>
                 </div>
               ))}
             </div>

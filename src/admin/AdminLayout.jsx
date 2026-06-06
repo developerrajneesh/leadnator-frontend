@@ -3,7 +3,7 @@ import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import {
   FiGrid, FiUsers, FiAward, FiDollarSign, FiTarget,
   FiLifeBuoy, FiSettings, FiLogOut, FiBell,
-  FiChevronDown, FiMenu,
+  FiChevronDown, FiMenu, FiActivity,
 } from "react-icons/fi";
 import { getStoredUser } from "../api/client";
 
@@ -13,8 +13,9 @@ const ADMIN_NAV = [
   { to: "/admin/plans",     Icon: FiAward,      label: "Plans",      section: "Manage" },
   { to: "/admin/revenue",   Icon: FiDollarSign, label: "Revenue",    section: "Manage" },
   { to: "/admin/campaigns", Icon: FiTarget,     label: "Campaigns",  section: "Manage" },
-  { to: "/admin/support",   Icon: FiLifeBuoy,   label: "Support",    section: "Operations" },
-  { to: "/admin/settings",  Icon: FiSettings,   label: "Settings",   section: "Operations" },
+  { to: "/admin/support",   Icon: FiLifeBuoy,   label: "Support",       section: "Operations" },
+  { to: "/admin/logs",      Icon: FiActivity,   label: "Activity logs", section: "Operations" },
+  { to: "/admin/settings",  Icon: FiSettings,   label: "Settings",      section: "Operations" },
 ];
 
 // Group nav items by section so the sidebar can show category headings
@@ -47,6 +48,7 @@ export default function AdminLayout({ onLogout }) {
           {Object.entries(NAV_BY_SECTION).map(([section, items]) => (
             <div key={section} className="adm-nav-group">
               <div className="adm-nav-heading">{section}</div>
+              {/* eslint-disable-next-line no-unused-vars -- Icon is used as a JSX component below */}
               {items.map(({ to, Icon, label }) => (
                 <NavLink
                   key={to}

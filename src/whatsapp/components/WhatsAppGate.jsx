@@ -23,12 +23,17 @@ export default function WhatsAppGate({ children }) {
   return (
     <div style={{ maxWidth: 520, margin: "40px auto", textAlign: "center" }}>
       <div className="card" style={{ padding: 40 }}>
+        <img
+          src="/Chatting-bro-flat.png"
+          alt=""
+          style={{ width: 180, height: "auto", marginBottom: 8, filter: "drop-shadow(0 8px 18px rgba(15, 23, 42, .08))" }}
+        />
         <div style={{
-          width: 76, height: 76, borderRadius: "50%",
+          width: 64, height: 64, borderRadius: "50%",
           background: "linear-gradient(135deg, #25d366 0%, #128c7e 100%)",
           display: "inline-flex", alignItems: "center", justifyContent: "center",
-          color: "white", fontSize: 36, marginBottom: 18,
-          boxShadow: "0 12px 30px rgba(37, 211, 102, 0.3)",
+          color: "white", fontSize: 30, marginBottom: 14,
+          boxShadow: "0 10px 26px rgba(37, 211, 102, 0.3)",
         }}>
           <FaWhatsapp />
         </div>

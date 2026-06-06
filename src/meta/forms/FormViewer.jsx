@@ -434,8 +434,8 @@ function TestFormModal({ form, questions, pageId, onClose }) {
 
 function sample(type) {
   return {
-    EMAIL: "test@leadnator.app",
-    WORK_EMAIL: "test@leadnator.app",
+    EMAIL: "test@leadnator.com",
+    WORK_EMAIL: "test@leadnator.com",
     FULL_NAME: "Test Lead",
     FIRST_NAME: "Test",
     LAST_NAME: "Lead",

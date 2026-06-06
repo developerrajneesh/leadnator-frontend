@@ -1,14 +1,18 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import Layout from "./globalComponents/Layout/Layout";
 import AdminLayout from "./admin/AdminLayout";
+import PermissionGate from "./globalComponents/PermissionGate/PermissionGate";
+import OrgLoginGuard from "./globalComponents/OrgLoginGuard";
 
 // Admin pages
 import AdminOverview from "./admin/pages/Overview";
 import AdminUsers from "./admin/pages/Users";
+import AdminUserDetail from "./admin/pages/UserDetail";
 import AdminPlans from "./admin/pages/Plans";
 import AdminRevenue from "./admin/pages/Revenue";
 import AdminCampaigns from "./admin/pages/Campaigns";
 import AdminSupport from "./admin/pages/Support";
+import AdminLogs from "./admin/pages/Logs";
 import AdminSettings from "./admin/pages/Settings";
 
 // Public pages
@@ -23,6 +27,7 @@ import Reports from "./dashboard/reports/Reports";
 import Exports from "./dashboard/exports/Exports";
 
 // Leads
+import LeadsOverview from "./leads/overview/Overview";
 import AllLeads from "./leads/all-leads/AllLeads";
 import LeadDetail from "./leads/all-leads/LeadDetail";
 import Pipeline from "./leads/pipeline/Pipeline";
@@ -53,6 +58,7 @@ import MetaAccounts from "./meta/accounts/Accounts";
 import MetaAudiences from "./meta/audiences/Audiences";
 
 // WhatsApp
+import WaOverview from "./whatsapp/overview/Overview";
 import WaBroadcasts from "./whatsapp/broadcasts/Broadcasts";
 import WaTemplates from "./whatsapp/templates/Templates";
 import WaInbox from "./whatsapp/inbox/Inbox";
@@ -66,18 +72,48 @@ import WaWebhook from "./whatsapp/webhook/Webhook";
 import WaAnalytics from "./whatsapp/analytics/Analytics";
 import WaReports   from "./whatsapp/reports/Reports";
 import WaForms from "./whatsapp/forms/Forms";
+
+// Autopilot
+import AutopilotOverview from "./autopilot/Overview";
+import AutopilotList from "./autopilot/AutopilotList";
+import AutopilotFlows from "./autopilot/Flows";
+import AutopilotWebhooks from "./autopilot/Webhooks";
+
+// Instagram
+import IgOverview from "./instagram/overview/Overview";
+import IgInbox from "./instagram/inbox/Inbox";
+import IgComments from "./instagram/comments/Comments";
+import IgAutomation from "./instagram/automation/Automation";
+import IgFlowBuilder from "./instagram/automation/FlowBuilder";
+import IgContent from "./instagram/content/Content";
+import IgContentDetail from "./instagram/content/ContentDetail";
+import IgAnalytics from "./instagram/analytics/Analytics";
+import IgWebhook from "./instagram/webhook/Webhook";
+import IgSettings from "./instagram/settings/Settings";
 import WaFormBuilder from "./whatsapp/forms/FormBuilder";
 import WhatsAppGate from "./whatsapp/components/WhatsAppGate";
+import InstagramGate from "./instagram/components/InstagramGate";
 import MetaGate     from "./meta/components/MetaGate";
 import EmailGate    from "./email/components/EmailGate";
 
 // Shorthand — wraps any WhatsApp feature page in the connection gate. When
 // not connected the gate shows only the "Login with Facebook" Embedded Signup.
 const gated      = (el) => <WhatsAppGate>{el}</WhatsAppGate>;
+const igGated    = (el) => <InstagramGate>{el}</InstagramGate>;
 const metaGated  = (el) => <MetaGate>{el}</MetaGate>;
 const emailGated = (el) => <EmailGate>{el}</EmailGate>;
 
+// Wrap a route element in the TeamMember permission gate. Owners pass
+// straight through; members get redirected/blocked per their permissions
+// map. `g(module, route, element)` keeps the route table readable.
+const g = (moduleKey, subRouteKey, element) => (
+  <PermissionGate moduleKey={moduleKey} subRouteKey={subRouteKey}>
+    {element}
+  </PermissionGate>
+);
+
 // Email
+import EmailOverview from "./email/overview/Overview";
 import EmailCampaigns from "./email/campaigns/Campaigns";
 import EmailCreate from "./email/create/Create";
 import EmailTemplates from "./email/templates/Templates";
@@ -88,6 +124,7 @@ import EmailConfig from "./email/config/Config";
 import EmailSignature from "./email/signature/Signature";
 
 // Integrations
+import IntOverview from "./integrations/overview/Overview";
 import IntBrowse from "./integrations/browse/Browse";
 import IntConnected from "./integrations/connected/Connected";
 import IntWebhooks from "./integrations/webhooks/Webhooks";
@@ -95,6 +132,7 @@ import IntZapier from "./integrations/zapier/Zapier";
 import IntCustom from "./integrations/custom/Custom";
 
 // File Storage
+import StorageOverview from "./storage/overview/Overview";
 import StorageBrowse from "./storage/browse/Browse";
 import StorageRecent from "./storage/recent/Recent";
 import StorageShared from "./storage/shared/Shared";
@@ -105,6 +143,7 @@ import StorageGate from "./storage/components/StorageGate";
 const storageGated = (el) => <StorageGate>{el}</StorageGate>;
 
 // Tools
+import ToolsOverview from "./tools/overview/Overview";
 import ToolForm from "./tools/form/Form";
 import ToolAiAdCopy     from "./tools/ai/AdCopy";
 import ToolAiEmail      from "./tools/ai/EmailWriter";
@@ -117,6 +156,8 @@ import ToolUtm from "./tools/utm/Utm";
 import ToolShortener from "./tools/shortener/Shortener";
 import ToolQr from "./tools/qr/Qr";
 import ToolSignature from "./tools/signature/Signature";
+import ToolSignatureCreator from "./tools/signature-creator/SignatureCreator";
+import ToolStampCreator from "./tools/stamp-creator/StampCreator";
 import ToolSubject from "./tools/subject/Subject";
 import ToolValidator from "./tools/validator/Validator";
 import ToolCounter from "./tools/counter/Counter";
@@ -127,6 +168,7 @@ import ToolSlug from "./tools/slug/Slug";
 import ToolOg from "./tools/og/Og";
 
 // Calendar
+import CalOverview from "./calendar/overview/Overview";
 import CalMonth from "./calendar/month/Month";
 import CalWeek from "./calendar/week/Week";
 import CalAgenda from "./calendar/agenda/Agenda";
@@ -136,6 +178,7 @@ import CalAvailability from "./calendar/availability/Availability";
 import CalBooking from "./calendar/booking/Booking";
 
 // Pricing
+import PricingOverview from "./pricing/overview/Overview";
 import Plans from "./pricing/plans/Plans";
 import Current from "./pricing/current/Current";
 import Invoices from "./pricing/invoices/Invoices";
@@ -143,6 +186,7 @@ import Payment from "./pricing/payment/Payment";
 import History from "./pricing/history/History";
 
 // Support
+import SupportOverview from "./support/overview/Overview";
 import Tickets from "./support/tickets/Tickets";
 import TicketDetail from "./support/tickets/TicketDetail";
 import NewTicket from "./support/new/New";
@@ -150,7 +194,8 @@ import Faq from "./support/faq/Faq";
 import Docs from "./support/docs/Docs";
 import Chat from "./support/chat/Chat";
 
-// Profile
+// Profile / Settings
+import SettingsOverview from "./profile/overview/Overview";
 import Info from "./profile/info/Info";
 import Account from "./profile/account/Account";
 import PasswordPage from "./profile/password/Password";
@@ -160,6 +205,7 @@ import Team from "./profile/team/Team";
 import TeamDetail from "./profile/team/TeamDetail";
 import AddMember from "./profile/team/AddMember";
 import Sms from "./profile/sms/Sms";
+import Partners from "./pages/Landing/Partners";
 
 export function buildRouter(onLogout, role = "user") {
   const homeRedirect = role === "admin" ? "/admin/overview" : "/dashboard/overview";
@@ -167,6 +213,7 @@ export function buildRouter(onLogout, role = "user") {
   return createBrowserRouter([
     { path: "/form/:formId",    element: <PublicForm /> },
     { path: "/book/:bookingId", element: <PublicBooking /> },
+    { path: "/partners",        element: <Partners onGoto={(to) => window.location.href = to} /> },
 
     {
       path: "/admin",
@@ -175,10 +222,12 @@ export function buildRouter(onLogout, role = "user") {
         { index: true,          element: <Navigate to="/admin/overview" replace /> },
         { path: "overview",     element: <AdminOverview /> },
         { path: "users",        element: <AdminUsers /> },
+        { path: "users/:id",    element: <AdminUserDetail /> },
         { path: "plans",        element: <AdminPlans /> },
         { path: "revenue",      element: <AdminRevenue /> },
         { path: "campaigns",    element: <AdminCampaigns /> },
         { path: "support",      element: <AdminSupport /> },
+        { path: "logs",         element: <AdminLogs /> },
         { path: "settings",     element: <AdminSettings /> },
       ],
     },
@@ -190,140 +239,170 @@ export function buildRouter(onLogout, role = "user") {
         { index: true, element: <Navigate to={homeRedirect} replace /> },
 
         { path: "dashboard",           element: <Navigate to="/dashboard/overview" replace /> },
-        { path: "dashboard/overview",  element: <Overview /> },
-        { path: "dashboard/activity",  element: <Activity /> },
-        { path: "dashboard/analytics", element: <Analytics /> },
-        { path: "dashboard/reports",   element: <Reports /> },
-        { path: "dashboard/exports",   element: <Exports /> },
+        { path: "dashboard/overview",  element: g("dashboard", "overview",  <Overview />) },
+        { path: "dashboard/activity",  element: g("dashboard", "activity",  <Activity />) },
+        { path: "dashboard/analytics", element: g("dashboard", "analytics", <Analytics />) },
+        { path: "dashboard/reports",   element: g("dashboard", "reports",   <Reports />) },
+        { path: "dashboard/exports",   element: g("dashboard", "exports",   <Exports />) },
 
-        { path: "leads",             element: <Navigate to="/leads/all" replace /> },
-        { path: "leads/all",         element: <AllLeads /> },
-        { path: "leads/all/:id",     element: <LeadDetail /> },
-        { path: "leads/pipeline",    element: <Pipeline /> },
-        { path: "leads/funnel",      element: <Funnel /> },
-        { path: "leads/hot",         element: <Hot /> },
-        { path: "leads/meta-forms",  element: <MetaForms /> },
-        { path: "leads/automation",       element: <LeadsAutomation /> },
-        { path: "leads/automation/:id",   element: <LeadsFlowBuilder /> },
-        { path: "leads/import",      element: <Import /> },
-        { path: "leads/sources",     element: <Sources /> },
-        { path: "leads/tags",        element: <Tags /> },
-        { path: "leads/settings",    element: <LeadSettings /> },
+        { path: "leads",                  element: <Navigate to="/leads/overview" replace /> },
+        { path: "leads/overview",         element: g("leads", "overview",   <LeadsOverview />) },
+        { path: "leads/all",              element: g("leads", "all",        <AllLeads />) },
+        { path: "leads/all/:id",          element: g("leads", "all",        <LeadDetail />) },
+        { path: "leads/pipeline",         element: g("leads", "pipeline",   <Pipeline />) },
+        { path: "leads/funnel",           element: g("leads", "funnel",     <Funnel />) },
+        { path: "leads/hot",              element: g("leads", "hot",        <Hot />) },
+        { path: "leads/meta-forms",       element: g("leads", "meta-forms", <MetaForms />) },
+        { path: "leads/automation",       element: g("leads", "automation", <LeadsAutomation />) },
+        { path: "leads/automation/:id",   element: g("leads", "automation", <LeadsFlowBuilder />) },
+        { path: "leads/import",           element: g("leads", "import",     <Import />) },
+        { path: "leads/sources",          element: g("leads", "sources",    <Sources />) },
+        { path: "leads/tags",             element: g("leads", "tags",       <Tags />) },
+        { path: "leads/settings",         element: g("leads", "settings",   <LeadSettings />) },
 
         { path: "meta",                    element: <Navigate to="/meta/overview" replace /> },
-        { path: "meta/overview",           element: metaGated(<MetaOverview />) },
-        { path: "meta/campaigns",          element: metaGated(<MetaCampaigns />) },
-        { path: "meta/campaigns/:id",      element: metaGated(<MetaCampaignDetail />) },
-        { path: "meta/adsets/:id",         element: metaGated(<MetaAdsetDetail />) },
-        { path: "meta/ads/:id",            element: metaGated(<MetaAdDetail />) },
-        { path: "meta/forms",              element: metaGated(<MetaLeadForms />) },
-        { path: "meta/forms/new",          element: metaGated(<MetaFormCreate />) },
-        { path: "meta/forms/:id",          element: metaGated(<MetaFormViewer />) },
-        { path: "meta/webhook",            element: metaGated(<MetaWebhook />) },
-        { path: "meta/analytics",          element: metaGated(<MetaAnalytics />) },
-        { path: "meta/create",             element: metaGated(<MetaCreate />) },
-        { path: "meta/create/:type",       element: metaGated(<MetaCreateWizard />) },
-        { path: "meta/create/:type/:step", element: metaGated(<MetaCreateWizard />) },
-        { path: "meta/accounts",   element: <MetaAccounts /> },
-        { path: "meta/audiences",  element: metaGated(<MetaAudiences />) },
+        { path: "meta/overview",           element: g("meta", "overview",  metaGated(<MetaOverview />)) },
+        { path: "meta/campaigns",          element: g("meta", "campaigns", metaGated(<MetaCampaigns />)) },
+        { path: "meta/campaigns/:id",      element: g("meta", "campaigns", metaGated(<MetaCampaignDetail />)) },
+        { path: "meta/adsets/:id",         element: g("meta", "campaigns", metaGated(<MetaAdsetDetail />)) },
+        { path: "meta/ads/:id",            element: g("meta", "campaigns", metaGated(<MetaAdDetail />)) },
+        { path: "meta/forms",              element: g("meta", "forms",     metaGated(<MetaLeadForms />)) },
+        { path: "meta/forms/new",          element: g("meta", "forms",     metaGated(<MetaFormCreate />)) },
+        { path: "meta/forms/:id",          element: g("meta", "forms",     metaGated(<MetaFormViewer />)) },
+        { path: "meta/webhook",            element: g("meta", "webhook",   metaGated(<MetaWebhook />)) },
+        { path: "meta/analytics",          element: g("meta", "analytics", metaGated(<MetaAnalytics />)) },
+        { path: "meta/create",             element: g("meta", "create",    metaGated(<MetaCreate />)) },
+        { path: "meta/create/:type",       element: g("meta", "create",    metaGated(<MetaCreateWizard />)) },
+        { path: "meta/create/:type/:step", element: g("meta", "create",    metaGated(<MetaCreateWizard />)) },
+        { path: "meta/accounts",           element: g("meta", "accounts",  <MetaAccounts />) },
+        { path: "meta/audiences",          element: g("meta", "audiences", metaGated(<MetaAudiences />)) },
 
-        { path: "whatsapp",             element: <Navigate to="/whatsapp/broadcasts" replace /> },
-        { path: "whatsapp/broadcasts",       element: gated(<WaBroadcasts />) },
-        { path: "whatsapp/templates",        element: gated(<WaTemplates />) },
-        { path: "whatsapp/inbox",            element: gated(<WaInbox />) },
-        { path: "whatsapp/automation",       element: gated(<WaAutomation />) },
-        { path: "whatsapp/automation/:id",   element: gated(<WaFlowBuilder />) },
-        { path: "whatsapp/contacts",         element: gated(<WaContacts />) },
-        { path: "whatsapp/chatbot",          element: gated(<WaChatbot />) },
-        { path: "whatsapp/chatbot/:id",      element: gated(<WaChatbotBuilder />) },
-        { path: "whatsapp/webhook",          element: gated(<WaWebhook />) },
-        { path: "whatsapp/analytics",        element: gated(<WaAnalytics />) },
-        { path: "whatsapp/reports",          element: gated(<WaReports />) },
-        { path: "whatsapp/forms",            element: gated(<WaForms />) },
-        { path: "whatsapp/forms/:id",        element: gated(<WaFormBuilder />) },
-        { path: "whatsapp/settings",    element: <WaSettings /> },
+        { path: "instagram",                  element: <Navigate to="/instagram/overview" replace /> },
+        { path: "instagram/overview",         element: g("instagram", "overview",   <IgOverview />) },
+        { path: "instagram/inbox",            element: g("instagram", "inbox",      igGated(<IgInbox />)) },
+        { path: "instagram/comments",         element: g("instagram", "comments",   igGated(<IgComments />)) },
+        { path: "instagram/automation",       element: g("instagram", "automation", igGated(<IgAutomation />)) },
+        { path: "instagram/automation/:id",   element: g("instagram", "automation", igGated(<IgFlowBuilder />)) },
+        { path: "instagram/content",          element: g("instagram", "content",    igGated(<IgContent />)) },
+        { path: "instagram/content/:mediaId", element: g("instagram", "content",    igGated(<IgContentDetail />)) },
+        { path: "instagram/analytics",        element: g("instagram", "analytics",  igGated(<IgAnalytics />)) },
+        { path: "instagram/webhook",          element: g("instagram", "webhook",    igGated(<IgWebhook />)) },
+        { path: "instagram/settings",         element: g("instagram", "settings",   <IgSettings />) },
 
-        { path: "email",              element: <Navigate to="/email/campaigns" replace /> },
-        { path: "email/campaigns",    element: emailGated(<EmailCampaigns />) },
-        { path: "email/create",       element: emailGated(<EmailCreate />) },
-        { path: "email/templates",    element: emailGated(<EmailTemplates />) },
-        { path: "email/automation",   element: emailGated(<EmailAutomation />) },
-        { path: "email/subscribers",  element: emailGated(<EmailSubscribers />) },
-        { path: "email/analytics",    element: emailGated(<EmailAnalytics />) },
-        { path: "email/config",       element: <EmailConfig /> },
-        { path: "email/signature",    element: emailGated(<EmailSignature />) },
+        { path: "whatsapp",                  element: <Navigate to="/whatsapp/overview" replace /> },
+        { path: "whatsapp/overview",         element: g("whatsapp", "overview",   <WaOverview />) },
+        { path: "whatsapp/broadcasts",       element: g("whatsapp", "broadcasts", gated(<WaBroadcasts />)) },
+        { path: "whatsapp/templates",        element: g("whatsapp", "templates",  gated(<WaTemplates />)) },
+        { path: "whatsapp/inbox",            element: g("whatsapp", "inbox",      gated(<WaInbox />)) },
+        { path: "whatsapp/automation",       element: g("whatsapp", "automation", gated(<WaAutomation />)) },
+        { path: "whatsapp/automation/:id",   element: g("whatsapp", "automation", gated(<WaFlowBuilder />)) },
+        { path: "whatsapp/contacts",         element: g("whatsapp", "contacts",   gated(<WaContacts />)) },
+        { path: "whatsapp/chatbot",          element: g("whatsapp", "chatbot",    gated(<WaChatbot />)) },
+        { path: "whatsapp/chatbot/:id",      element: g("whatsapp", "chatbot",    gated(<WaChatbotBuilder />)) },
+        { path: "whatsapp/webhook",          element: g("whatsapp", "webhook",    gated(<WaWebhook />)) },
+        { path: "whatsapp/analytics",        element: g("whatsapp", "analytics",  gated(<WaAnalytics />)) },
+        { path: "whatsapp/reports",          element: g("whatsapp", "analytics",  gated(<WaReports />)) },
+        { path: "whatsapp/forms",            element: g("whatsapp", "forms",      gated(<WaForms />)) },
+        { path: "whatsapp/forms/:id",        element: g("whatsapp", "forms",      gated(<WaFormBuilder />)) },
+        { path: "whatsapp/settings",         element: g("whatsapp", "settings",   <WaSettings />) },
 
-        { path: "integrations",            element: <Navigate to="/integrations/browse" replace /> },
-        { path: "integrations/browse",     element: <IntBrowse /> },
-        { path: "integrations/connected",  element: <IntConnected /> },
-        { path: "integrations/webhooks",   element: <IntWebhooks /> },
-        { path: "integrations/zapier",     element: <IntZapier /> },
-        { path: "integrations/custom",     element: <IntCustom /> },
+        { path: "email",              element: <Navigate to="/email/overview" replace /> },
+        { path: "email/overview",     element: g("email", "overview",    <EmailOverview />) },
+        { path: "email/campaigns",    element: g("email", "campaigns",   emailGated(<EmailCampaigns />)) },
+        { path: "email/create",       element: g("email", "create",      emailGated(<EmailCreate />)) },
+        { path: "email/templates",    element: g("email", "templates",   emailGated(<EmailTemplates />)) },
+        { path: "email/automation",   element: g("email", "automation",  emailGated(<EmailAutomation />)) },
+        { path: "email/subscribers",  element: g("email", "subscribers", emailGated(<EmailSubscribers />)) },
+        { path: "email/analytics",    element: g("email", "analytics",   emailGated(<EmailAnalytics />)) },
+        { path: "email/config",       element: g("email", "config",      <EmailConfig />) },
+        { path: "email/signature",    element: g("email", "signature",   emailGated(<EmailSignature />)) },
 
-        { path: "storage",                 element: <Navigate to="/storage/browse" replace /> },
-        { path: "storage/browse",          element: storageGated(<StorageBrowse />) },
-        { path: "storage/recent",          element: storageGated(<StorageRecent />) },
-        { path: "storage/shared",          element: storageGated(<StorageShared />) },
-        { path: "storage/trash",           element: storageGated(<StorageTrash />) },
-        { path: "storage/upload",          element: storageGated(<StorageUpload />) },
-        { path: "storage/settings",        element: <StorageSettings /> },
+        { path: "integrations",            element: <Navigate to="/integrations/overview" replace /> },
+        { path: "integrations/overview",   element: g("integrations", "overview",  <IntOverview />) },
+        { path: "integrations/browse",     element: g("integrations", "browse",    <IntBrowse />) },
+        { path: "integrations/connected",  element: g("integrations", "connected", <IntConnected />) },
+        { path: "integrations/webhooks",   element: g("integrations", "webhooks",  <IntWebhooks />) },
+        { path: "integrations/zapier",     element: g("integrations", "zapier",    <IntZapier />) },
+        { path: "integrations/custom",     element: g("integrations", "custom",    <IntCustom />) },
 
-        { path: "tools",            element: <Navigate to="/tools/ai-ad-copy" replace /> },
-        { path: "tools/ai-ad-copy",   element: <ToolAiAdCopy /> },
-        { path: "tools/ai-email",     element: <ToolAiEmail /> },
-        { path: "tools/ai-rewriter",  element: <ToolAiRewriter /> },
-        { path: "tools/ai-translator", element: <ToolAiTranslator /> },
-        { path: "tools/ai-hashtags",  element: <ToolAiHashtags /> },
-        { path: "tools/ai-lead-score", element: <ToolAiLeadScore /> },
-        { path: "tools/form",       element: <ToolForm /> },
-        { path: "tools/invoice",    element: <ToolInvoice /> },
-        { path: "tools/utm",        element: <ToolUtm /> },
-        { path: "tools/shortener",  element: <ToolShortener /> },
-        { path: "tools/qr",         element: <ToolQr /> },
-        { path: "tools/signature",  element: <ToolSignature /> },
-        { path: "tools/subject",    element: <ToolSubject /> },
-        { path: "tools/validator",  element: <ToolValidator /> },
-        { path: "tools/counter",    element: <ToolCounter /> },
-        { path: "tools/password",   element: <ToolPassword /> },
-        { path: "tools/abtest",     element: <ToolAbTest /> },
-        { path: "tools/roi",        element: <ToolRoi /> },
-        { path: "tools/slug",       element: <ToolSlug /> },
-        { path: "tools/og",         element: <ToolOg /> },
+        { path: "storage",                 element: <Navigate to="/storage/overview" replace /> },
+        { path: "storage/overview",        element: g("storage", "overview", <StorageOverview />) },
+        { path: "storage/browse",          element: g("storage", "browse",   storageGated(<StorageBrowse />)) },
+        { path: "storage/recent",          element: g("storage", "recent",   storageGated(<StorageRecent />)) },
+        { path: "storage/shared",          element: g("storage", "shared",   storageGated(<StorageShared />)) },
+        { path: "storage/trash",           element: g("storage", "trash",    storageGated(<StorageTrash />)) },
+        { path: "storage/upload",          element: g("storage", "upload",   storageGated(<StorageUpload />)) },
+        { path: "storage/settings",        element: g("storage", "settings", <StorageSettings />) },
 
-        { path: "calendar",               element: <Navigate to="/calendar/month" replace /> },
-        { path: "calendar/month",         element: <CalMonth /> },
-        { path: "calendar/week",          element: <CalWeek /> },
-        { path: "calendar/agenda",        element: <CalAgenda /> },
-        { path: "calendar/upcoming",      element: <CalUpcoming /> },
-        { path: "calendar/create",        element: <CalCreate /> },
-        { path: "calendar/availability",  element: <CalAvailability /> },
-        { path: "calendar/booking",       element: <CalBooking /> },
+        { path: "autopilot",            element: <Navigate to="/autopilot/overview" replace /> },
+        { path: "autopilot/overview",   element: g("autopilot", "overview", <AutopilotOverview />) },
+        { path: "autopilot/flows",      element: g("autopilot", "flows", <AutopilotList />) },
+        { path: "autopilot/flows/:id",  element: g("autopilot", "flows", <AutopilotFlows />) },
+        { path: "autopilot/webhooks",   element: g("autopilot", "webhooks", <AutopilotWebhooks />) },
 
-        { path: "pricing",           element: <Navigate to="/pricing/plans" replace /> },
-        { path: "pricing/plans",     element: <Plans /> },
-        { path: "pricing/current",   element: <Current /> },
-        { path: "pricing/invoices",  element: <Invoices /> },
-        { path: "pricing/payment",   element: <Payment /> },
-        { path: "pricing/history",   element: <History /> },
+        { path: "tools",               element: <Navigate to="/tools/overview" replace /> },
+        { path: "tools/overview",      element: g("tools", "overview",      <ToolsOverview />) },
+        { path: "tools/ai-ad-copy",    element: g("tools", "ai-ad-copy",    <ToolAiAdCopy />) },
+        { path: "tools/ai-email",      element: g("tools", "ai-email",      <ToolAiEmail />) },
+        { path: "tools/ai-rewriter",   element: g("tools", "ai-rewriter",   <ToolAiRewriter />) },
+        { path: "tools/ai-translator", element: g("tools", "ai-translator", <ToolAiTranslator />) },
+        { path: "tools/ai-hashtags",   element: g("tools", "ai-hashtags",   <ToolAiHashtags />) },
+        { path: "tools/ai-lead-score", element: g("tools", "ai-lead-score", <ToolAiLeadScore />) },
+        { path: "tools/form",          element: g("tools", "form",          <ToolForm />) },
+        { path: "tools/invoice",       element: g("tools", "invoice",       <ToolInvoice />) },
+        { path: "tools/utm",           element: g("tools", "utm",           <ToolUtm />) },
+        { path: "tools/shortener",     element: g("tools", "shortener",     <ToolShortener />) },
+        { path: "tools/qr",            element: g("tools", "qr",            <ToolQr />) },
+        { path: "tools/signature",     element: g("tools", "signature",     <ToolSignature />) },
+        { path: "tools/signature-creator", element: g("tools", "signature-creator", <ToolSignatureCreator />) },
+        { path: "tools/stamp-creator", element: g("tools", "stamp-creator", <ToolStampCreator />) },
+        { path: "tools/subject",       element: g("tools", "subject",       <ToolSubject />) },
+        { path: "tools/validator",     element: g("tools", "validator",     <ToolValidator />) },
+        { path: "tools/counter",       element: g("tools", "counter",       <ToolCounter />) },
+        { path: "tools/password",      element: g("tools", "password",      <ToolPassword />) },
+        { path: "tools/abtest",        element: g("tools", "abtest",        <ToolAbTest />) },
+        { path: "tools/roi",           element: g("tools", "roi",           <ToolRoi />) },
+        { path: "tools/slug",          element: g("tools", "slug",          <ToolSlug />) },
+        { path: "tools/og",            element: g("tools", "og",            <ToolOg />) },
 
-        { path: "support",            element: <Navigate to="/support/tickets" replace /> },
-        { path: "support/tickets",    element: <Tickets /> },
-        { path: "support/tickets/:id",element: <TicketDetail /> },
-        { path: "support/new",        element: <NewTicket /> },
-        { path: "support/faq",        element: <Faq /> },
-        { path: "support/docs",       element: <Docs /> },
-        { path: "support/chat",       element: <Chat /> },
+        { path: "calendar",               element: <Navigate to="/calendar/overview" replace /> },
+        { path: "calendar/overview",      element: g("calendar", "overview",     <CalOverview />) },
+        { path: "calendar/month",         element: g("calendar", "month",        <CalMonth />) },
+        { path: "calendar/week",          element: g("calendar", "week",         <CalWeek />) },
+        { path: "calendar/agenda",        element: g("calendar", "agenda",       <CalAgenda />) },
+        { path: "calendar/upcoming",      element: g("calendar", "upcoming",     <CalUpcoming />) },
+        { path: "calendar/create",        element: g("calendar", "create",       <CalCreate />) },
+        { path: "calendar/availability",  element: g("calendar", "availability", <CalAvailability />) },
+        { path: "calendar/booking",       element: g("calendar", "booking",      <CalBooking />) },
 
-        { path: "settings",                element: <Navigate to="/settings/info" replace /> },
-        { path: "settings/info",           element: <Info /> },
-        { path: "settings/account",        element: <Account /> },
-        { path: "settings/password",       element: <PasswordPage /> },
-        { path: "settings/notifications",  element: <Notifications /> },
-        { path: "settings/sms",            element: <Sms /> },
-        { path: "settings/api",            element: <Api /> },
-        { path: "settings/team",                 element: <Team /> },
-        { path: "settings/team/:teamId",         element: <TeamDetail /> },
-        { path: "settings/team/:teamId/add",     element: <AddMember /> },
+        { path: "pricing",           element: <OrgLoginGuard><Navigate to="/pricing/overview" replace /></OrgLoginGuard> },
+        { path: "pricing/overview",  element: <OrgLoginGuard>{g("pricing", "overview", <PricingOverview />)}</OrgLoginGuard> },
+        { path: "pricing/plans",     element: <OrgLoginGuard>{g("pricing", "plans",    <Plans />)}</OrgLoginGuard> },
+        { path: "pricing/current",   element: <OrgLoginGuard>{g("pricing", "current",  <Current />)}</OrgLoginGuard> },
+        { path: "pricing/invoices",  element: <OrgLoginGuard>{g("pricing", "invoices", <Invoices />)}</OrgLoginGuard> },
+        { path: "pricing/payment",   element: <OrgLoginGuard>{g("pricing", "payment",  <Payment />)}</OrgLoginGuard> },
+        { path: "pricing/history",   element: <OrgLoginGuard>{g("pricing", "history",  <History />)}</OrgLoginGuard> },
+
+        { path: "support",            element: <Navigate to="/support/overview" replace /> },
+        { path: "support/overview",   element: g("support", "overview", <SupportOverview />) },
+        { path: "support/tickets",    element: g("support", "tickets",  <Tickets />) },
+        { path: "support/tickets/:id",element: g("support", "tickets",  <TicketDetail />) },
+        { path: "support/new",        element: g("support", "new",      <NewTicket />) },
+        { path: "support/faq",        element: g("support", "faq",      <Faq />) },
+        { path: "support/docs",       element: g("support", "docs",     <Docs />) },
+        { path: "support/chat",       element: g("support", "chat",     <Chat />) },
+
+        { path: "settings",                element: <Navigate to="/settings/overview" replace /> },
+        { path: "settings/overview",       element: g("settings", "overview",      <SettingsOverview />) },
+        { path: "settings/info",           element: g("settings", "info",          <Info />) },
+        { path: "settings/account",        element: g("settings", "account",       <Account />) },
+        { path: "settings/password",       element: g("settings", "password",      <PasswordPage />) },
+        { path: "settings/notifications",  element: g("settings", "notifications", <Notifications />) },
+        { path: "settings/sms",            element: g("settings", "sms",           <Sms />) },
+        { path: "settings/api",            element: g("settings", "api",           <Api />) },
+        { path: "settings/team",                 element: g("settings", "team",    <Team />) },
+        { path: "settings/team/:teamId",         element: g("settings", "team",    <TeamDetail />) },
+        { path: "settings/team/:teamId/add",     element: g("settings", "team",    <AddMember />) },
 
         // Legacy /profile/* → /settings/* (kept so old bookmarks still work).
         { path: "profile",                element: <Navigate to="/settings/info" replace /> },

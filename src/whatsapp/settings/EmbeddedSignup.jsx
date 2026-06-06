@@ -1,21 +1,22 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { FaWhatsapp } from "react-icons/fa";
-import { loadFbSdk } from "../../api/meta";
+import { loadWaFbSdk } from "../../api/waFbSdk";
 import { waApi } from "../../api/whatsapp";
 import { notify } from "../../globalComponents/Toast/Toast";
 
-// Reusable WhatsApp Embedded Signup button.
-// Listens for `WA_EMBEDDED_SIGNUP` postMessage events from facebook.com
-// and FB.login auth code. Once both arrive, posts to /api/wa/embedded-connect
-// which exchanges the code → access_token, verifies the phone, and saves the
-// connection per user in MongoDB.
+/**
+ * Meta WhatsApp Embedded Signup (official flow):
+ * 1. User clicks → FB.login({ config_id, response_type: 'code', extras: { version: 'v4' } })
+ * 2. postMessage listener stores WABA / phone IDs from WA_EMBEDDED_SIGNUP
+ * 3. FB.login callback stores OAuth code → backend /api/wa/embedded-connect
+ *
+ * @see https://developers.facebook.com/docs/whatsapp/embedded-signup
+ */
 export default function EmbeddedSignup({ onConnected }) {
   const [config, setConfig] = useState(null);
   const [sdkReady, setSdkReady] = useState(false);
   const [busy, setBusy] = useState(false);
 
-  // We collect FB auth code and the WA session info in parallel from two
-  // different callbacks — refs let us coalesce them.
   const collected = useRef({ session: null, code: null });
   const submitting = useRef(false);
 
@@ -29,8 +30,11 @@ export default function EmbeddedSignup({ onConnected }) {
 
   useEffect(() => {
     if (!config?.fbAppId) return undefined;
-    loadFbSdk().then(() => setSdkReady(true)).catch((e) => notify.error(e.message));
-  }, [config?.fbAppId]);
+    const version = config.apiVersion || "v25.0";
+    loadWaFbSdk(config.fbAppId, version)
+      .then(() => setSdkReady(true))
+      .catch((e) => notify.error(e.message));
+  }, [config?.fbAppId, config?.apiVersion]);
 
   const submit = useCallback(async () => {
     if (submitting.current) return;
@@ -57,7 +61,12 @@ export default function EmbeddedSignup({ onConnected }) {
     }
   }, [onConnected]);
 
-  // Capture postMessage from facebook.com → WA_EMBEDDED_SIGNUP FINISH
+  const tryConnect = useCallback(() => {
+    const { session, code } = collected.current;
+    if (session?.phone_number_id && code) submit();
+  }, [submit]);
+
+  // MessageEvent — session info when user finishes embedded signup in the popup
   useEffect(() => {
     function isFbOrigin(origin) {
       try {
@@ -66,71 +75,64 @@ export default function EmbeddedSignup({ onConnected }) {
           || host === "fb.com" || host.endsWith(".fb.com");
       } catch { return false; }
     }
-    function onMessage(ev) {
-      if (!isFbOrigin(ev.origin)) return;
+
+    function onMessage(event) {
+      if (!isFbOrigin(event.origin)) return;
       try {
-        const data = typeof ev.data === "string" ? JSON.parse(ev.data) : ev.data;
+        const data = typeof event.data === "string" ? JSON.parse(event.data) : event.data;
         if (data?.type !== "WA_EMBEDDED_SIGNUP") return;
+
         if (typeof data.event === "string" && /^FINISH/.test(data.event)) {
           const d = data.data || {};
           collected.current.session = {
             phone_number_id: d.phone_number_id ?? d.phoneNumberId,
-            waba_id:         d.waba_id         ?? d.wabaId,
-            business_id:     d.business_id     ?? d.businessId,
+            waba_id: d.waba_id ?? d.wabaId,
+            business_id: d.business_id ?? d.businessId,
           };
-          submit();
+          tryConnect();
         } else if (data.event === "CANCEL") {
-          notify.warn("You cancelled the WhatsApp signup.");
+          notify.warn("WhatsApp signup cancelled.");
         } else if (data.event === "ERROR") {
           notify.error(data?.data?.error_message || "WhatsApp signup error.");
         }
-      } catch { /* non-JSON or unrelated */ }
+      } catch { /* unrelated postMessage */ }
     }
-    window.addEventListener("message", onMessage, true);
-    return () => window.removeEventListener("message", onMessage, true);
-  }, [submit]);
 
-  function launch() {
-    if (!window.FB) { notify.warn("Facebook SDK not loaded yet."); return; }
-    if (!config?.configId) {
-      notify.error("Server is missing WHATSAPP_FB_CONFIG_ID. Set it in backend .env then refresh.");
+    window.addEventListener("message", onMessage);
+    return () => window.removeEventListener("message", onMessage);
+  }, [tryConnect]);
+
+  const launchWhatsAppSignup = useCallback(() => {
+    if (!window.FB) {
+      notify.warn("Facebook SDK not loaded yet.");
       return;
     }
+    if (!config?.configId) {
+      notify.error("Missing WHATSAPP_FB_CONFIG_ID on server. Set 2793771500977058 in backend .env and restart.");
+      return;
+    }
+
+    collected.current = { session: null, code: null };
+
     window.FB.login(
       (response) => {
         if (response?.authResponse?.code) {
           collected.current.code = response.authResponse.code;
-          submit();
+          tryConnect();
         } else {
-          notify.warn("You did not authorize the WhatsApp signup.");
+          notify.warn("You did not complete Facebook authorization for WhatsApp.");
         }
       },
       {
         config_id: config.configId,
         response_type: "code",
         override_default_response_type: true,
-        extras: {
-          version: "3",
-          sessionInfoVersion: 3,
-          setup: {
-            business: {
-              id: null, name: null, email: null,
-              phone: { code: null, number: null },
-              website: null,
-              address: { streetAddress1: null, streetAddress2: null, city: null, state: null, zipPostal: null, country: null },
-              timezone: null,
-            },
-            phone: { displayName: null, category: null, description: null },
-            preVerifiedPhone: { ids: null },
-            solutionID: null,
-            whatsAppBusinessAccount: { ids: null },
-          },
-        },
-      }
+        extras: { version: "v4" },
+      },
     );
-  }
+  }, [config?.configId, tryConnect]);
 
-  const canRun = sdkReady && !!config?.fbAppId && !!config?.configId && !busy;
+  const canRun = sdkReady && !!config?.configId && !!config?.fbAppId && !busy;
 
   return (
     <div style={{ marginTop: 14, padding: 16, border: "1px dashed #d1fae5", background: "#f0fdf4", borderRadius: 10 }}>
@@ -139,35 +141,34 @@ export default function EmbeddedSignup({ onConnected }) {
         <strong style={{ fontSize: 14 }}>Embedded Signup (recommended)</strong>
       </div>
       <p style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 12, lineHeight: 1.5 }}>
-        Meta-managed flow: creates your WhatsApp Business Account, registers the phone number,
-        and issues a permanent access token in one popup. No manual credentials needed.
-        Use this on a desktop browser (Meta does not support phones).
+        WhatsApp-only flow via Meta Embedded Signup (<code>config_id</code>). Creates your WABA,
+        registers your number, and returns a token — separate from Instagram connection.
       </p>
 
       {!config?.configId && config && (
         <div style={{ padding: 10, background: "#fef3c7", color: "#92400e", borderRadius: 8, fontSize: 12, marginBottom: 10 }}>
-          ⚠ Backend missing <code>WHATSAPP_FB_CONFIG_ID</code> in <code>.env</code>.
-          Get the config ID from Meta → Business Settings → WhatsApp → Embedded Signup config, then restart the backend.
+          ⚠ Set <code>WHATSAPP_FB_CONFIG_ID=2793771500977058</code> in backend <code>.env</code> (WhatsApp Embedded Signup config, not Instagram).
         </div>
       )}
 
       <button
         type="button"
         disabled={!canRun}
-        onClick={launch}
+        onClick={launchWhatsAppSignup}
         style={{
           background: canRun ? "#1877f2" : "#9ca3af",
-          color: "white", border: "none", borderRadius: 8,
-          padding: "10px 18px", fontWeight: 600, fontSize: 14,
+          color: "#fff", border: 0, borderRadius: 4,
+          padding: "0 24px", height: 40, fontWeight: "bold", fontSize: 16,
           cursor: canRun ? "pointer" : "not-allowed",
           display: "inline-flex", alignItems: "center", gap: 8,
+          fontFamily: "Helvetica, Arial, sans-serif",
         }}
       >
         <FaWhatsapp /> {busy ? "Connecting…" : sdkReady ? "Login with Facebook" : "Loading SDK…"}
       </button>
       {config?.fbAppId && (
         <span style={{ marginLeft: 12, fontSize: 11, color: "var(--text-muted)" }}>
-          App {String(config.fbAppId).slice(0, 6)}… · SDK {config.apiVersion}
+          App {String(config.fbAppId).slice(0, 6)}… · WA config {String(config.configId || "").slice(0, 6)}… · SDK {config.apiVersion || "v25.0"}
         </span>
       )}
     </div>

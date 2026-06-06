@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   FiLifeBuoy, FiCheckCircle, FiClock, FiAlertCircle, FiMessageSquare,
   FiHelpCircle, FiBookOpen, FiPlus, FiTrash2, FiSend, FiX, FiEdit2, FiShield, FiUser,
@@ -9,6 +9,12 @@ import { notify } from "../../globalComponents/Toast/Toast";
 
 const STATUS = ["open", "in_progress", "resolved"];
 const PRIORITIES = ["low", "medium", "high"];
+
+// Shared styling so the Status / Priority selects match the Category input.
+const CTRL = {
+  padding: "7px 10px", fontSize: 13, border: "1px solid var(--border)",
+  borderRadius: 8, background: "#fff", color: "#0f172a", height: 34, textTransform: "capitalize",
+};
 
 export default function AdminSupport() {
   const [tab, setTab] = useState("tickets");
@@ -22,14 +28,15 @@ export default function AdminSupport() {
           { key: "tickets", label: "Tickets",   Icon: FiLifeBuoy },
           { key: "faqs",    label: "FAQs",      Icon: FiHelpCircle },
           { key: "docs",    label: "Docs",      Icon: FiBookOpen },
+        /* eslint-disable-next-line no-unused-vars -- Icon is used as a JSX component below */
         ].map(({ key, label, Icon }) => (
           <button
             key={key}
             onClick={() => setTab(key)}
             style={{
               background: "transparent", border: "none", padding: "10px 16px", cursor: "pointer",
-              fontSize: 13, fontWeight: 600, color: tab === key ? "var(--primary, #7c3aed)" : "var(--text-muted)",
-              borderBottom: tab === key ? "2px solid var(--primary, #7c3aed)" : "2px solid transparent",
+              fontSize: 13, fontWeight: 600, color: tab === key ? "var(--adm-primary, #10b981)" : "var(--text-muted)",
+              borderBottom: tab === key ? "2px solid var(--adm-primary, #10b981)" : "2px solid transparent",
               marginBottom: -1, display: "inline-flex", alignItems: "center", gap: 6,
             }}
           >
@@ -142,7 +149,7 @@ function Stat({ icon, color, value, label, hint }) {
       <div className={`stat-icon ${color}`}>{icon}</div>
       <div className="stat-value">{value}</div>
       <div className="stat-label">{label}</div>
-      {hint && <div className="stat-change up">{hint}</div>}
+      {hint && <div className="stat-change" style={{ color: "var(--text-muted)" }}>{hint}</div>}
     </div>
   );
 }
@@ -161,7 +168,8 @@ function AdminTicketDrawer({ ticketId, onClose }) {
     } finally { setLoading(false); }
   }
 
-  useEffect(() => { load(); /* eslint-disable-next-line */ }, [ticketId]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { load(); }, [ticketId]);
   useEffect(() => {
     const off = onSocket("support.ticket.replied", (p) => {
       if (p.ticketId === ticketId) load();
@@ -217,22 +225,22 @@ function AdminTicketDrawer({ ticketId, onClose }) {
                 <button className="btn btn-ghost" onClick={onClose}><FiX /></button>
               </div>
 
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 12, fontSize: 12 }}>
-                <label style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                  <span style={{ color: "var(--text-muted)" }}>Status:</span>
-                  <select value={ticket.status} onChange={(e) => setField("status", e.target.value)} style={{ padding: "4px 8px", fontSize: 12 }}>
+              <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginTop: 14, fontSize: 12 }}>
+                <label style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                  <span style={{ color: "var(--text-muted)", fontWeight: 600 }}>Status</span>
+                  <select value={ticket.status} onChange={(e) => setField("status", e.target.value)} style={CTRL}>
                     {STATUS.map((s) => <option key={s} value={s}>{s.replace("_", " ")}</option>)}
                   </select>
                 </label>
-                <label style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                  <span style={{ color: "var(--text-muted)" }}>Priority:</span>
-                  <select value={ticket.priority} onChange={(e) => setField("priority", e.target.value)} style={{ padding: "4px 8px", fontSize: 12 }}>
+                <label style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                  <span style={{ color: "var(--text-muted)", fontWeight: 600 }}>Priority</span>
+                  <select value={ticket.priority} onChange={(e) => setField("priority", e.target.value)} style={CTRL}>
                     {PRIORITIES.map((p) => <option key={p}>{p}</option>)}
                   </select>
                 </label>
-                <label style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                  <span style={{ color: "var(--text-muted)" }}>Category:</span>
-                  <input defaultValue={ticket.category} onBlur={(e) => e.target.value !== ticket.category && setField("category", e.target.value)} style={{ padding: "4px 8px", fontSize: 12, width: 120 }} />
+                <label style={{ display: "flex", flexDirection: "column", gap: 4, flex: 1, minWidth: 120 }}>
+                  <span style={{ color: "var(--text-muted)", fontWeight: 600 }}>Category</span>
+                  <input defaultValue={ticket.category} onBlur={(e) => e.target.value !== ticket.category && setField("category", e.target.value)} style={{ ...CTRL, width: "100%" }} />
                 </label>
               </div>
             </div>
@@ -277,15 +285,15 @@ function AdminBubble({ m }) {
     <div style={{ display: "flex", gap: 8, flexDirection: isAdmin ? "row-reverse" : "row" }}>
       <div style={{
         width: 28, height: 28, borderRadius: 14, flexShrink: 0,
-        background: isAdmin ? "#ede9fe" : "#dcfce7",
-        color: isAdmin ? "#6d28d9" : "#166534",
+        background: isAdmin ? "#d1fae5" : "#e0f2fe",
+        color: isAdmin ? "#047857" : "#0369a1",
         display: "flex", alignItems: "center", justifyContent: "center",
       }}>
         {isAdmin ? <FiShield /> : <FiUser />}
       </div>
       <div style={{
         maxWidth: "75%",
-        background: isAdmin ? "var(--primary, #7c3aed)" : "#fff",
+        background: isAdmin ? "var(--adm-primary, #10b981)" : "#fff",
         color: isAdmin ? "#fff" : "#1f2937",
         padding: "8px 12px",
         borderRadius: 12,
@@ -352,11 +360,15 @@ function FaqsTab() {
                   <tr key={f.id}>
                     <td style={{ fontWeight: 600 }}>{f.question}</td>
                     <td>{f.category}</td>
-                    <td>{f.published ? "✅" : "—"}</td>
+                    <td>{f.published
+                      ? <span className="badge" style={{ background: "#d1fae5", color: "#047857" }}>Published</span>
+                      : <span className="badge" style={{ background: "#f3f4f6", color: "#6b7280" }}>Draft</span>}</td>
                     <td>{f.order}</td>
                     <td>
-                      <button className="admin-action" onClick={() => setEditing(f)} title="Edit"><FiEdit2 /></button>
-                      <button className="admin-action danger" onClick={() => onDelete(f.id)} title="Delete"><FiTrash2 /></button>
+                      <div style={{ display: "flex", gap: 6 }}>
+                        <button className="admin-action" onClick={() => setEditing(f)} title="Edit"><FiEdit2 /></button>
+                        <button className="admin-action danger" onClick={() => onDelete(f.id)} title="Delete"><FiTrash2 /></button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -470,11 +482,15 @@ function DocsTab() {
                     <td style={{ fontWeight: 600 }}>{d.title}</td>
                     <td>{d.category}</td>
                     <td style={{ fontSize: 12, color: "var(--text-muted)" }}>{d.url ? <a href={d.url} target="_blank" rel="noopener noreferrer">{d.url.slice(0, 30)}…</a> : (d.body ? "inline" : "—")}</td>
-                    <td>{d.published ? "✅" : "—"}</td>
+                    <td>{d.published
+                      ? <span className="badge" style={{ background: "#d1fae5", color: "#047857" }}>Published</span>
+                      : <span className="badge" style={{ background: "#f3f4f6", color: "#6b7280" }}>Draft</span>}</td>
                     <td>{d.order}</td>
                     <td>
-                      <button className="admin-action" onClick={() => setEditing(d)} title="Edit"><FiEdit2 /></button>
-                      <button className="admin-action danger" onClick={() => onDelete(d.id)} title="Delete"><FiTrash2 /></button>
+                      <div style={{ display: "flex", gap: 6 }}>
+                        <button className="admin-action" onClick={() => setEditing(d)} title="Edit"><FiEdit2 /></button>
+                        <button className="admin-action danger" onClick={() => onDelete(d.id)} title="Delete"><FiTrash2 /></button>
+                      </div>
                     </td>
                   </tr>
                 ))}

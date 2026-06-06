@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   FiSearch, FiPause, FiPlay, FiTrash2, FiMail, FiEdit2, FiX, FiRefreshCw,
 } from "react-icons/fi";
@@ -10,6 +11,7 @@ const STATUSES = ["active", "paused"];
 const ROLES = ["user", "admin"];
 
 export default function AdminUsers() {
+  const navigate = useNavigate();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -152,7 +154,11 @@ export default function AdminUsers() {
               </thead>
               <tbody>
                 {filtered.map((u) => (
-                  <tr key={u.id} style={{ opacity: busyId === u.id ? 0.55 : 1 }}>
+                  <tr
+                    key={u.id}
+                    onClick={() => navigate(`/admin/users/${u.id}`)}
+                    style={{ opacity: busyId === u.id ? 0.55 : 1, cursor: "pointer" }}
+                  >
                     <td>
                       <span className="avatar-sm">{(u.name || u.email || "?").split(" ").map((p) => p[0]).join("").slice(0, 2).toUpperCase()}</span>
                       <span style={{ fontWeight: 600 }}>{u.name || "—"}</span>
@@ -168,7 +174,7 @@ export default function AdminUsers() {
                     <td style={{ color: "var(--text-muted)" }}>
                       {u.createdAt ? new Date(u.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) : "—"}
                     </td>
-                    <td>
+                    <td onClick={(e) => e.stopPropagation()}>
                       <div style={{ display: "flex", gap: 6 }}>
                         <button className="admin-action" title="Email user" onClick={() => emailUser(u)} disabled={busyId === u.id}>
                           <FiMail />

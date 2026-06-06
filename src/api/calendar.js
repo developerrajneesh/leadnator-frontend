@@ -14,6 +14,11 @@ export const calApi = {
   createBookingType:   (b)       => api.post("/calendar/booking-types", b),
   updateBookingType:   (id, b)   => api.put(`/calendar/booking-types/${id}`, b),
   deleteBookingType:   (id)      => api.del(`/calendar/booking-types/${id}`),
+
+  // Google Calendar / Meet
+  googleStatus:        ()        => api.get("/calendar/google/status"),
+  googleConnect:       ()        => api.get("/calendar/google/connect"),
+  googleDisconnect:    ()        => api.post("/calendar/google/disconnect"),
 };
 
 // ---- shared in-memory events cache so multiple pages don't refetch ----

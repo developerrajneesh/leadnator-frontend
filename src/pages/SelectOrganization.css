@@ -1,0 +1,255 @@
+.org-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(160deg, #f5f3ff 0%, #faf5ff 35%, #fff 70%);
+  padding: 0 24px 48px;
+}
+
+.org-page-header {
+  max-width: 1100px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 48px 0 32px;
+}
+
+.org-page-header h1 {
+  font-size: clamp(28px, 4vw, 36px);
+  font-weight: 800;
+  color: #111827;
+  margin: 0 0 10px;
+  letter-spacing: -0.02em;
+}
+
+.org-page-header p {
+  margin: 0;
+  font-size: 15px;
+  color: #6b7280;
+  max-width: 520px;
+  line-height: 1.55;
+}
+
+.org-page-body {
+  flex: 1;
+  max-width: 1100px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.org-error {
+  margin-bottom: 20px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  background: #fef2f2;
+  color: #b91c1c;
+  font-size: 14px;
+  border: 1px solid #fecaca;
+}
+
+.org-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 20px;
+}
+
+.org-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  padding: 24px;
+  min-height: 160px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.org-card:hover:not(:disabled) {
+  border-color: #c4b5fd;
+  box-shadow: 0 8px 24px rgba(124, 58, 237, 0.12);
+  transform: translateY(-2px);
+}
+
+.org-card:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+
+.org-card--current {
+  border-color: #7c3aed;
+  background: linear-gradient(180deg, #faf5ff 0%, #fff 100%);
+  box-shadow: 0 4px 16px rgba(124, 58, 237, 0.15);
+}
+
+.org-card-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #7c3aed, #a78bfa);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  margin-bottom: 16px;
+}
+
+.org-card-name {
+  font-size: 17px;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 6px;
+  line-height: 1.3;
+}
+
+.org-card-meta {
+  font-size: 13px;
+  color: #6b7280;
+  margin-top: auto;
+  padding-top: 12px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.org-badge {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: #ede9fe;
+  color: #6d28d9;
+}
+
+.org-badge--current {
+  background: #7c3aed;
+  color: #fff;
+}
+
+.org-card--create {
+  border: 2px dashed #d1d5db;
+  background: rgba(255, 255, 255, 0.6);
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-height: 160px;
+}
+
+.org-card--create:hover:not(:disabled) {
+  border-color: #7c3aed;
+  background: #faf5ff;
+}
+
+.org-card--create .org-card-icon {
+  background: #f3f4f6;
+  color: #7c3aed;
+}
+
+.org-card--create .org-card-name {
+  color: #7c3aed;
+}
+
+.org-actions {
+  margin-top: 32px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.org-card-logo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 12px;
+}
+
+.org-create-panel {
+  max-width: 640px;
+  width: 100%;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
+}
+
+.org-create-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.org-create-span2 {
+  grid-column: 1 / -1;
+}
+
+.org-field-hint {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.org-logo-upload label {
+  display: block;
+  margin-bottom: 8px;
+}
+
+.org-logo-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.org-logo-preview {
+  width: 72px;
+  height: 72px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #7c3aed, #a78bfa);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.org-logo-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+@media (max-width: 560px) {
+  .org-create-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.org-create-panel h2 {
+  margin: 0 0 8px;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.org-create-panel .sub {
+  margin: 0 0 24px;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.org-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40vh;
+  color: #6b7280;
+  font-size: 15px;
+}
