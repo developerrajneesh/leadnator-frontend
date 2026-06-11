@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import {
-  FiSettings, FiCheckCircle, FiSend, FiAlertCircle, FiGlobe, FiCopy, FiRefreshCw,
-  FiChevronDown, FiChevronUp, FiMail, FiServer, FiHash, FiUser, FiLock, FiAtSign,
+  FiCheckCircle, FiSend, FiAlertCircle, FiGlobe, FiCopy, FiRefreshCw,
+  FiChevronDown, FiChevronUp, FiMail, FiUser, FiTrash2, FiPlus,
 } from "react-icons/fi";
 import { emailApi } from "../../api/email";
 import "./Config.css";
@@ -24,31 +24,19 @@ function EcField({ label, required, hint, icon: Icon, children, className = "" }
   );
 }
 
-const PRESETS = {
-  gmail:    { host: "smtp.gmail.com",      port: 587, secure: false, hint: "Use a Google App Password (not your account password)." },
-  outlook:  { host: "smtp.office365.com",  port: 587, secure: false, hint: "Use an app password if 2FA is on." },
-  sendgrid: { host: "smtp.sendgrid.net",   port: 587, secure: false, hint: "Username is literally 'apikey', password is your API key." },
-  ses:      { host: "email-smtp.us-east-1.amazonaws.com", port: 587, secure: false, hint: "Use SMTP credentials from the SES console." },
-  zoho:     { host: "smtp.zoho.in",        port: 587, secure: false, hint: "Use an app-specific password." },
-  custom:   { host: "", port: 587, secure: false, hint: "Enter your provider's SMTP host & port." },
-};
-
 export default function Config() {
   const [cfg, setCfg] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [testing, setTesting] = useState(false);
-  const [smtpTestTo, setSmtpTestTo] = useState("");
-  const [testingSend, setTestingSend] = useState(false);
   const [sesTestTo, setSesTestTo] = useState("");
   const [sesTestingSend, setSesTestingSend] = useState(false);
-  const [savingSesFrom, setSavingSesFrom] = useState(false);
+  const [newSenderName, setNewSenderName] = useState("");
+  const [newSenderEmail, setNewSenderEmail] = useState("");
+  const [senderBusy, setSenderBusy] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [sesDomain, setSesDomain] = useState("");
   const [sesBusy, setSesBusy] = useState(false);
-  const [sesStatus, setSesStatus] = useState(null); // { verified, verificationStatus, dkimStatus, records }
-  const [presetKey, setPresetKey] = useState("");
+  const [sesStatus, setSesStatus] = useState(null); // { verified, statusText, records }
   const [dnsOpen, setDnsOpen] = useState(true);
   const [openDnsIdx, setOpenDnsIdx] = useState(() => new Set([0]));
 
@@ -56,7 +44,7 @@ export default function Config() {
     setLoading(true); setError("");
     try {
       const res = await emailApi.config();
-      setCfg({ ...res.config, password: "" });   // password never returned, blank field for "no change"
+      setCfg({ ...res.config });
       setSesDomain(res.config?.sesDomain || "");
       setSesStatus(
         res.config?.sesDomain
@@ -74,63 +62,35 @@ export default function Config() {
   }
   useEffect(() => { load(); }, []);
 
-  function applyPreset(key) {
-    const p = PRESETS[key];
-    if (!p) return;
-    setPresetKey(key);
-    setCfg((c) => ({ ...c, host: p.host, port: p.port, secure: p.secure }));
-  }
-
-  async function save(e) {
-    e?.preventDefault();
-    setSaving(true); setError(""); setSuccess("");
+  async function addSender() {
+    const email = newSenderEmail.trim();
+    if (!email) return;
+    setSenderBusy(true); setError(""); setSuccess("");
     try {
-      const res = await emailApi.saveConfig(cfg);
-      setCfg({ ...res.config, password: "" });
-      setSuccess("Saved.");
+      const res = await emailApi.addSender({ name: newSenderName.trim(), email });
+      setCfg((c) => ({ ...c, ...res.config }));
+      setNewSenderName(""); setNewSenderEmail("");
+      setSuccess("Sender added.");
       setTimeout(() => setSuccess(""), 2000);
     } catch (err) { setError(err.message); }
-    finally { setSaving(false); }
+    finally { setSenderBusy(false); }
   }
 
-  async function verify() {
-    setTesting(true); setError(""); setSuccess("");
+  async function makeDefaultSender(sid) {
+    setError(""); setSuccess("");
     try {
-      const res = await emailApi.testConfig();
-      if (res.ok) {
-        setSuccess(res.message || "Connection verified ✅");
-        await load();
-        // Let the sidebar + email-gate know the user is configured now,
-        // without forcing a page reload.
-        import("../useEmailStatus").then((m) => m.refreshEmailStatus()).catch(() => {});
-      }
+      const res = await emailApi.setDefaultSender(sid);
+      setCfg((c) => ({ ...c, ...res.config }));
     } catch (err) { setError(err.message); }
-    finally { setTesting(false); }
   }
 
-  async function sendSmtpTest() {
-    if (!smtpTestTo) return;
-    setTestingSend(true); setError(""); setSuccess("");
+  async function removeSender(sid) {
+    if (!confirm("Remove this sender profile?")) return;
+    setError(""); setSuccess("");
     try {
-      await emailApi.testSend(smtpTestTo);
-      setSuccess(`SMTP test email sent to ${smtpTestTo} ✅`);
-      setTimeout(() => setSuccess(""), 3500);
+      const res = await emailApi.deleteSender(sid);
+      setCfg((c) => ({ ...c, ...res.config }));
     } catch (err) { setError(err.message); }
-    finally { setTestingSend(false); }
-  }
-
-  async function saveSesFrom() {
-    setSavingSesFrom(true); setError(""); setSuccess("");
-    try {
-      const res = await emailApi.sesSaveFrom({
-        fromEmail: cfg.sesFromEmail,
-        fromName: cfg.sesFromName,
-      });
-      setCfg((c) => ({ ...c, ...res.config, password: "" }));
-      setSuccess("SES sender saved.");
-      setTimeout(() => setSuccess(""), 2000);
-    } catch (err) { setError(err.message); }
-    finally { setSavingSesFrom(false); }
   }
 
   async function sendSesTest() {
@@ -142,7 +102,7 @@ export default function Config() {
         fromEmail: cfg.sesFromEmail,
         fromName: cfg.sesFromName,
       });
-      setSuccess(`SES test email sent to ${sesTestTo} from ${res.from} ✅`);
+      setSuccess(`Test email sent to ${sesTestTo} from ${res.from} ✅`);
       setTimeout(() => setSuccess(""), 3500);
       await load();
     } catch (err) { setError(err.message); }
@@ -185,6 +145,10 @@ export default function Config() {
       setSuccess(r.verified ? "Domain verified ✅" : "Not verified yet. DNS propagation can take time.");
       setTimeout(() => setSuccess(""), 3500);
       await load();
+      // Let the sidebar + email-gate know the user is configured now.
+      if (r.verified) {
+        import("../useEmailStatus").then((m) => m.refreshEmailStatus()).catch(() => {});
+      }
     } catch (err) {
       setError(err.message);
     } finally {
@@ -224,17 +188,9 @@ export default function Config() {
     return (
       <div className="email-config">
         <h1 className="page-title">Email configuration</h1>
-        <p className="page-subtitle">Set up SMTP and/or Amazon SES for reliable sending.</p>
-        <div className="card" style={{ maxWidth: 860 }}>
-          <div className="grid-2-equal" style={{ gap: 16 }}>
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i}>
-                <span className="skel skel-line skel-line-sm" style={{ width: 100, display: "block", marginBottom: 6 }} />
-                <span className="skel" style={{ width: "100%", height: 38, borderRadius: 8, display: "block" }} />
-              </div>
-            ))}
-          </div>
-          <div style={{ marginTop: 18 }}>
+        <p className="page-subtitle">Attach your sending domain to send via Amazon SES.</p>
+        <div className="card" style={{ maxWidth: 720 }}>
+          <div style={{ marginTop: 4 }}>
             <span className="skel skel-line skel-line-sm" style={{ width: 140, display: "block", marginBottom: 6 }} />
             <span className="skel" style={{ width: "100%", height: 38, borderRadius: 8, display: "block" }} />
           </div>
@@ -253,156 +209,56 @@ export default function Config() {
         <div>
           <h1 className="page-title" style={{ marginBottom: 2 }}>Email configuration</h1>
           <p className="page-subtitle" style={{ marginBottom: 0 }}>
-            Use SMTP for campaigns or attach a domain to send via Amazon SES API.
+            Attach your own domain to send your marketing emails via Amazon SES.
           </p>
         </div>
 
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          <div
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 8,
-              padding: "8px 10px",
-              borderRadius: 999,
-              border: "1px solid var(--border)",
-              background: "#fff",
-              fontSize: 12,
-            }}
-            title="SMTP connection status"
-          >
-            {cfg.verified
-              ? <span style={{ color: "var(--accent)" }}><FiCheckCircle style={{ verticalAlign: "middle" }} /> SMTP verified</span>
-              : <span style={{ color: "#b45309" }}><FiAlertCircle style={{ verticalAlign: "middle" }} /> SMTP not verified</span>}
-          </div>
-
-          <div
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 8,
-              padding: "8px 10px",
-              borderRadius: 999,
-              border: "1px solid var(--border)",
-              background: "#fff",
-              fontSize: 12,
-            }}
-            title="Amazon SES domain status"
-          >
-            {!sesStatus?.domain ? (
-              <span style={{ color: "var(--text-muted)" }}><FiGlobe style={{ verticalAlign: "middle" }} /> SES domain not attached</span>
-            ) : sesStatus?.verified ? (
-              <span style={{ color: "var(--accent)" }}><FiCheckCircle style={{ verticalAlign: "middle" }} /> SES verified</span>
-            ) : (
-              <span style={{ color: "#b45309" }}><FiAlertCircle style={{ verticalAlign: "middle" }} /> SES pending</span>
-            )}
-          </div>
+        <div
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 8,
+            padding: "8px 10px",
+            borderRadius: 999,
+            border: "1px solid var(--border)",
+            background: "#fff",
+            fontSize: 12,
+          }}
+          title="Amazon SES domain status"
+        >
+          {!sesStatus?.domain ? (
+            <span style={{ color: "var(--text-muted)" }}><FiGlobe style={{ verticalAlign: "middle" }} /> Domain not attached</span>
+          ) : sesStatus?.verified ? (
+            <span style={{ color: "var(--accent)" }}><FiCheckCircle style={{ verticalAlign: "middle" }} /> Domain verified</span>
+          ) : (
+            <span style={{ color: "#b45309" }}><FiAlertCircle style={{ verticalAlign: "middle" }} /> Verification pending</span>
+          )}
         </div>
       </div>
 
       {error && <div style={{ padding: 12, background: "#fee2e2", color: "#b91c1c", borderRadius: 12, marginTop: 14, fontSize: 13 }}>{error}</div>}
       {success && <div style={{ padding: 12, background: "#d1fae5", color: "#065f46", borderRadius: 12, marginTop: 14, fontSize: 13 }}><FiCheckCircle style={{ verticalAlign: "middle", marginRight: 6 }} />{success}</div>}
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(360px, 1fr))", gap: 16, marginTop: 16, alignItems: "start" }}>
-        <form onSubmit={save} className="card" style={{ maxWidth: "unset" }}>
-          <div className="card-header">
-            <div className="card-title"><FiSettings /> SMTP</div>
-          </div>
-          <div style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 12 }}>
-            Used for campaign sending and features that rely on your SMTP provider.
-          </div>
-
-          <EcField label="Quick preset" icon={FiSettings}>
-            <select className="ec-input" value={presetKey} onChange={(e) => applyPreset(e.target.value)}>
-              <option value="">— Pick a preset —</option>
-              <option value="gmail">Gmail</option>
-              <option value="outlook">Outlook / Office365</option>
-              <option value="sendgrid">SendGrid</option>
-              <option value="ses">Amazon SES (us-east-1)</option>
-              <option value="zoho">Zoho Mail</option>
-              <option value="custom">Custom</option>
-            </select>
-          </EcField>
-          {!!presetKey && PRESETS[presetKey]?.hint && (
-            <p className="ec-hint" style={{ marginTop: -8, marginBottom: 14 }}>Tip: {PRESETS[presetKey].hint}</p>
-          )}
-
-          <div className="grid-2-equal">
-            <EcField label="SMTP host" required icon={FiServer}>
-              <input className="ec-input" required value={cfg.host || ""} onChange={(e) => setCfg({ ...cfg, host: e.target.value })} placeholder="smtp.gmail.com" />
-            </EcField>
-            <EcField label="Port" required icon={FiHash}>
-              <input className="ec-input" required type="number" value={cfg.port || 587} onChange={(e) => setCfg({ ...cfg, port: +e.target.value })} />
-            </EcField>
-          </div>
-
-          <div className="grid-2-equal">
-            <EcField label="Username" required icon={FiUser}>
-              <input className="ec-input" required value={cfg.username || ""} onChange={(e) => setCfg({ ...cfg, username: e.target.value })} placeholder="you@example.com" />
-            </EcField>
-            <EcField label="Password / App password" icon={FiLock} hint="Stored server-side; never returned to the browser.">
-              <input className="ec-input" type="password" value={cfg.password || ""} onChange={(e) => setCfg({ ...cfg, password: e.target.value })} placeholder={cfg.username ? "Leave blank to keep existing" : "App password"} />
-            </EcField>
-          </div>
-
-          <label className="ec-check">
-            <input type="checkbox" checked={!!cfg.secure} onChange={(e) => setCfg({ ...cfg, secure: e.target.checked })} />
-            Use SSL/TLS (port 465)
-          </label>
-
-          <div style={{ borderTop: "1px solid var(--border)", paddingTop: 14, marginTop: 6 }} />
-
-          <div className="grid-2-equal">
-            <EcField label="From name" icon={FiUser}>
-              <input className="ec-input" value={cfg.fromName || ""} onChange={(e) => setCfg({ ...cfg, fromName: e.target.value })} placeholder="Leadnator" />
-            </EcField>
-            <EcField label="From email" required icon={FiMail}>
-              <input className="ec-input" required type="email" value={cfg.fromEmail || ""} onChange={(e) => setCfg({ ...cfg, fromEmail: e.target.value })} placeholder="hello@example.com" />
-            </EcField>
-          </div>
-          <EcField label="Reply-to email (optional)" icon={FiAtSign}>
-            <input className="ec-input" type="email" value={cfg.replyTo || ""} onChange={(e) => setCfg({ ...cfg, replyTo: e.target.value })} placeholder="replies@example.com" />
-          </EcField>
-
-          <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", flexWrap: "wrap" }}>
-            <button type="button" className="btn btn-outline" onClick={verify} disabled={testing}>
-              {testing ? "Verifying…" : "Verify connection"}
-            </button>
-            <button type="submit" className="btn btn-primary" disabled={saving}>
-              {saving ? "Saving…" : "Save config"}
-            </button>
-          </div>
-
-          <div className="ec-test-block">
-            <div className="ec-test-block__title"><FiSend /> SMTP test email</div>
-            <div className="ec-test-block__box">
-              <div className="ec-inline-row">
-                <EcField icon={FiMail}>
-                  <input
-                    className="ec-input"
-                    type="email"
-                    value={smtpTestTo}
-                    onChange={(e) => setSmtpTestTo(e.target.value)}
-                    placeholder="recipient@example.com"
-                  />
-                </EcField>
-                <button type="button" className="btn btn-primary" onClick={sendSmtpTest} disabled={!smtpTestTo || testingSend}>
-                  <FiSend /> {testingSend ? "Sending…" : "Send SMTP test"}
-                </button>
-              </div>
-              <p className="ec-hint">Sends via the SMTP settings above.</p>
-            </div>
-          </div>
-        </form>
-
-        <div className="card" style={{ maxWidth: "unset" }}>
+      <div style={{ marginTop: 16 }}>
+        <div className="card" style={{ maxWidth: "unset", width: "100%" }}>
           <div className="card-header">
             <div className="card-title"><FiGlobe /> Amazon SES</div>
           </div>
-          <div style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 10 }}>
-            Attach your domain to generate DNS records for verification + DKIM, then send via the SES API.
+          <div style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 16 }}>
+            Enter your domain, add the generated DNS records (verification + DKIM) at your DNS provider,
+            then click <strong>Verify</strong>. Once verified, all your campaigns, lead emails and automations
+            send from your own domain.
           </div>
 
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 340px), 1fr))",
+              gap: 24,
+              alignItems: "start",
+            }}
+          >
+          <div style={{ minWidth: 0 }}>
           <div className="ec-domain-row">
             <EcField label="Sending domain" icon={FiGlobe}>
               <input
@@ -543,29 +399,75 @@ export default function Config() {
               )}
             </div>
           )}
+          </div>{/* /left column */}
 
-          <div style={{ borderTop: "1px solid var(--border)", paddingTop: 14, marginTop: 16 }}>
-            <div style={{ fontSize: 13, fontWeight: 800, marginBottom: 10 }}>SES sender</div>
-            <div style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 10 }}>
-              Set a From address (must be on your verified domain). Then you can send test emails using the SES API.
+          <div style={{ minWidth: 0 }}>{/* right column */}
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 800, marginBottom: 4 }}>Sender profiles</div>
+            <div style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 12 }}>
+              Add multiple From addresses on your verified domain (e.g. support@, sales@). Pick one as
+              default; you can choose which profile a campaign or automation sends from.
             </div>
+
+            {/* Existing profiles */}
+            <div style={{ display: "grid", gap: 8, marginBottom: 14 }}>
+              {(cfg.senders || []).length === 0 && (
+                <div style={{ fontSize: 12, color: "var(--text-muted)", padding: "8px 0" }}>
+                  No sender profiles yet — add one below.
+                </div>
+              )}
+              {(cfg.senders || []).map((s) => (
+                <div
+                  key={s._id}
+                  style={{
+                    display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10,
+                    border: "1px solid var(--border)", borderRadius: 10, padding: "10px 12px",
+                    background: s.isDefault ? "#f5f3ff" : "#fff",
+                  }}
+                >
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontWeight: 600, fontSize: 13, display: "flex", alignItems: "center", gap: 8 }}>
+                      {s.name || s.email.split("@")[0]}
+                      {s.isDefault && <span className="badge qualified" style={{ fontSize: 10 }}>Default</span>}
+                    </div>
+                    <div style={{ fontSize: 12, color: "var(--text-muted)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {s.email}
+                    </div>
+                  </div>
+                  <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+                    {!s.isDefault && (
+                      <button type="button" className="btn btn-ghost" style={{ fontSize: 12, padding: "4px 8px" }} onClick={() => makeDefaultSender(s._id)}>
+                        Set default
+                      </button>
+                    )}
+                    {(cfg.senders || []).length > 1 && (
+                      <button type="button" className="btn btn-ghost" style={{ fontSize: 12, padding: "4px 8px", color: "#b91c1c" }} onClick={() => removeSender(s._id)}>
+                        <FiTrash2 />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Add a profile */}
             <div className="grid-2-equal">
               <EcField label="From name" icon={FiUser}>
                 <input
                   className="ec-input"
-                  value={cfg.sesFromName || ""}
-                  onChange={(e) => setCfg({ ...cfg, sesFromName: e.target.value })}
-                  placeholder="Support"
+                  value={newSenderName}
+                  onChange={(e) => setNewSenderName(e.target.value)}
+                  placeholder="Sales"
                   disabled={!sesStatus?.domain}
                 />
               </EcField>
-              <EcField label="From email" required icon={FiMail}>
+              <EcField label="From email" icon={FiMail}>
                 <input
                   className="ec-input"
                   type="email"
-                  value={cfg.sesFromEmail || ""}
-                  onChange={(e) => setCfg({ ...cfg, sesFromEmail: e.target.value })}
-                  placeholder={sesStatus?.domain ? `support@${sesStatus.domain}` : "support@yourdomain.com"}
+                  value={newSenderEmail}
+                  onChange={(e) => setNewSenderEmail(e.target.value)}
+                  placeholder={sesStatus?.domain ? `sales@${sesStatus.domain}` : "sales@yourdomain.com"}
                   disabled={!sesStatus?.domain}
                 />
               </EcField>
@@ -574,15 +476,15 @@ export default function Config() {
               <button
                 type="button"
                 className="btn btn-outline"
-                onClick={saveSesFrom}
-                disabled={savingSesFrom || !sesStatus?.domain || !cfg.sesFromEmail?.trim()}
+                onClick={addSender}
+                disabled={senderBusy || !sesStatus?.domain || !newSenderEmail.trim()}
               >
-                {savingSesFrom ? "Saving…" : "Save sender"}
+                <FiPlus /> {senderBusy ? "Adding…" : "Add sender"}
               </button>
             </div>
 
             <div className="ec-test-block" style={{ marginTop: 0, paddingTop: 0, borderTop: "none" }}>
-              <div className="ec-test-block__title"><FiSend /> SES test email</div>
+              <div className="ec-test-block__title"><FiSend /> Send a test email</div>
               <div className="ec-test-block__box">
                 <div className="ec-inline-row">
                   <EcField icon={FiMail}>
@@ -601,19 +503,21 @@ export default function Config() {
                     onClick={sendSesTest}
                     disabled={!sesTestTo || sesTestingSend || !sesStatus?.verified || !cfg.sesFromEmail?.trim()}
                   >
-                    <FiSend /> {sesTestingSend ? "Sending…" : "Send SES test"}
+                    <FiSend /> {sesTestingSend ? "Sending…" : "Send test"}
                   </button>
                 </div>
                 <p className="ec-hint">
                   {!sesStatus?.domain
                     ? "Attach a domain first."
                     : !sesStatus?.verified
-                      ? "Verify your domain before sending via SES API."
-                      : `Sends via Amazon SES API from ${cfg.sesFromEmail || `support@${sesStatus.domain}`}.`}
+                      ? "Verify your domain before sending."
+                      : `Sends via Amazon SES from ${cfg.sesFromEmail || `support@${sesStatus.domain}`}.`}
                 </p>
               </div>
             </div>
           </div>
+          </div>{/* /right column */}
+          </div>{/* /grid */}
         </div>
       </div>
     </div>

@@ -3,7 +3,8 @@ import { emailApi } from "../api/email";
 
 // Shared email-config status — same cache + subscriber pattern as the
 // WhatsApp and Meta hooks so sidebar + gate stay in sync without hammering
-// the API. "configured" means the user has saved AND verified SMTP creds.
+// the API. "configured" means the user has attached AND verified their
+// sending domain (Amazon SES) with a sender address.
 let _cache = null;
 const _subs = new Set();
 let _inflight = null;

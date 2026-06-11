@@ -11,9 +11,9 @@ export default function EmailOverview() {
       subtitle="Newsletters, drips and transactional mail in one place"
       illustration="/Email campaign-amico-flat.png"
       accent="orange"
-      intro="Design email campaigns with a drag-and-drop builder, send to segments of your CRM contacts, automate drip sequences, and track opens and clicks — all from your own SMTP so deliverability stays in your control."
+      intro="Design email campaigns with a drag-and-drop builder, send to segments of your CRM contacts, automate drip sequences, and track opens and clicks — all from your own domain so deliverability stays in your control."
       primary={{ label: "Create a campaign", to: "/email/create" }}
-      secondary={{ label: "Configure SMTP", to: "/email/config" }}
+      secondary={{ label: "Configure domain", to: "/email/config" }}
       features={[
         { icon: <FiMail />,      color: "orange", title: "Campaigns",         desc: "All your one-off blasts in one list — drafts, scheduled, sent — with delivery stats.",       to: "/email/campaigns" },
         { icon: <FiEdit />,      color: "purple", title: "Create campaign",   desc: "Drag-and-drop email builder with image library, merge tags and instant test send.",         to: "/email/create" },
@@ -22,7 +22,7 @@ export default function EmailOverview() {
         { icon: <FiUserCheck />, color: "purple", title: "Subscribers",       desc: "Manage your mailing lists, opt-ins, suppression list and bounce handling.",                to: "/email/subscribers" },
         { icon: <FiPieChart />,  color: "orange", title: "Analytics",         desc: "Open, click, bounce, unsubscribe — drill down per-campaign or aggregated.",                to: "/email/analytics" },
         { icon: <FiEdit />,      color: "pink",   title: "Signature",         desc: "Branded signature you can append to every outgoing campaign and reply.",                   to: "/email/signature" },
-        { icon: <FiSettings />,  color: "green",  title: "SMTP config",       desc: "Plug in your SMTP / SES / SendGrid creds — your domain, your reputation.",                 to: "/email/config" },
+        { icon: <FiSettings />,  color: "green",  title: "Domain config",     desc: "Attach & verify your sending domain (Amazon SES) — your domain, your reputation.",          to: "/email/config" },
       ]}
     />
   );

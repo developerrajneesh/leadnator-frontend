@@ -19,8 +19,6 @@ export default function SelectOrganization({ onSelected }) {
     confirmPassword: "",
     phone: "",
   });
-  const [logoFile, setLogoFile] = useState(null);
-  const [logoPreview, setLogoPreview] = useState("");
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -64,22 +62,6 @@ export default function SelectOrganization({ onSelected }) {
     }
   }
 
-  function onLogoPick(e) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (!file.type.startsWith("image/")) {
-      setError("Logo must be an image file");
-      return;
-    }
-    if (file.size > 2 * 1024 * 1024) {
-      setError("Logo must be under 2 MB");
-      return;
-    }
-    setLogoFile(file);
-    setLogoPreview(URL.createObjectURL(file));
-    setError("");
-  }
-
   async function createOrg(e) {
     e.preventDefault();
     const name = form.name.trim();
@@ -93,14 +75,12 @@ export default function SelectOrganization({ onSelected }) {
     setBusy(true);
     setError("");
     try {
-      const fd = new FormData();
-      fd.append("name", name);
-      fd.append("loginEmail", loginEmail);
-      fd.append("password", password);
-      fd.append("phone", form.phone.trim());
-      if (logoFile) fd.append("logo", logoFile);
-
-      const res = await api.orgs.create(fd);
+      const res = await api.orgs.create({
+        name,
+        loginEmail,
+        password,
+        phone: form.phone.trim(),
+      });
       await selectOrg(res.organization.id);
     } catch (err) {
       setError(err.message || "Could not create organization");
@@ -153,11 +133,7 @@ export default function SelectOrganization({ onSelected }) {
                     onClick={() => selectOrg(o.id)}
                   >
                     <div className="org-card-icon">
-                      {o.logoUrl ? (
-                        <img src={o.logoUrl} alt="" className="org-card-logo" />
-                      ) : (
-                        <FiBriefcase />
-                      )}
+                      <FiBriefcase />
                     </div>
                     <div className="org-card-name">{o.name}</div>
                     {o.loginEmail && (
@@ -222,20 +198,6 @@ export default function SelectOrganization({ onSelected }) {
                   />
                 </div>
 
-                <div className="form-group org-logo-upload">
-                  <label>Logo (optional)</label>
-                  <div className="org-logo-row">
-                    <div className="org-logo-preview">
-                      {logoPreview ? (
-                        <img src={logoPreview} alt="Logo preview" />
-                      ) : (
-                        <FiBriefcase />
-                      )}
-                    </div>
-                    <input type="file" accept="image/*" onChange={onLogoPick} />
-                  </div>
-                </div>
-
                 <div className="form-group org-create-span2">
                   <label>Workspace login email</label>
                   <input
@@ -291,8 +253,6 @@ export default function SelectOrganization({ onSelected }) {
                 onClick={() => {
                   setMode("pick");
                   setError("");
-                  setLogoFile(null);
-                  setLogoPreview("");
                 }}
               >
                 <FiArrowLeft /> Back to workspaces

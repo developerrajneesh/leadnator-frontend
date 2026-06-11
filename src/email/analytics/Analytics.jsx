@@ -95,7 +95,7 @@ export default function Analytics() {
         <div className="stat-card">
           <div className="stat-icon pink"><FiCheckCircle /></div>
           <div className="stat-value">{stats?.configured ? "✅" : "—"}</div>
-          <div className="stat-label">SMTP {stats?.configured ? "verified" : "not verified"}</div>
+          <div className="stat-label">Domain {stats?.configured ? "verified" : "not verified"}</div>
         </div>
       </div>
 

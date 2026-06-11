@@ -1,0 +1,21 @@
+/* Keep email HTML contained inside chat bubbles */
+.mail-body { word-break: break-word; overflow-wrap: anywhere; }
+.mail-body img { max-width: 100%; height: auto; }
+.mail-body p { margin: 0 0 6px; }
+.mail-body a { color: #2563eb; }
+.mail-body blockquote { margin: 6px 0; padding-left: 10px; border-left: 2px solid #d1d5db; color: #6b7280; }
+.mail-body * { max-width: 100%; }
+
+/* Mini rich-text editor for the reply / compose box */
+.mini-editor { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; background: #fff; }
+.mini-editor__toolbar { display: flex; gap: 2px; padding: 4px 6px; border-bottom: 1px solid var(--border); background: #f9fafb; }
+.mini-editor__toolbar button {
+  width: 28px; height: 28px; border: none; background: none; border-radius: 6px;
+  cursor: pointer; font-size: 14px; color: #374151; display: inline-flex; align-items: center; justify-content: center;
+}
+.mini-editor__toolbar button:hover { background: #ede9fe; color: #7c3aed; }
+.mini-editor__area { min-height: 56px; max-height: 200px; overflow-y: auto; padding: 8px 12px; font-size: 14px; line-height: 1.5; outline: none; }
+.mini-editor__area:empty:before { content: attr(data-ph); color: #9ca3af; pointer-events: none; }
+.mini-editor__area a { color: #2563eb; }
+.mini-editor__area p { margin: 0 0 6px; }
+.mini-editor__area ul, .mini-editor__area ol { margin: 4px 0; padding-left: 22px; }

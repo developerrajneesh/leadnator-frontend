@@ -5,6 +5,7 @@ import {
   FiMail, FiMessageSquare,
 } from "react-icons/fi";
 import { leadFlowApi } from "../../api/leadFlows";
+import { emailApi } from "../../api/email";
 import { CATEGORIES, NODE_TYPES, nodeMeta, isCondition } from "./nodeTypes";
 
 const NODE_W = 220;
@@ -590,6 +591,18 @@ function PortDot({ color, style, onMouseDown, label }) {
 
 function ConfigPanel({ node, onTitleChange, onConfigChange, onClose, onDelete }) {
   const meta = nodeMeta(node.type);
+  const [emailTemplates, setEmailTemplates] = useState([]);
+  const [senders, setSenders] = useState([]);
+  const needsTemplates = meta.fields.some((f) => f.type === "emailTemplate");
+  const needsSenders = meta.fields.some((f) => f.type === "emailSender");
+  useEffect(() => {
+    if (!needsTemplates) return;
+    emailApi.templates().then((r) => setEmailTemplates(r.templates || [])).catch(() => {});
+  }, [needsTemplates]);
+  useEffect(() => {
+    if (!needsSenders) return;
+    emailApi.config().then((r) => setSenders(r.config?.senders || [])).catch(() => {});
+  }, [needsSenders]);
   return (
     <>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
@@ -606,7 +619,9 @@ function ConfigPanel({ node, onTitleChange, onConfigChange, onClose, onDelete })
         <input value={node.title} onChange={(e) => onTitleChange(e.target.value)} />
       </div>
 
-      {meta.fields.map((f) => (
+      {meta.fields
+        .filter((f) => !f.channel || (node.config?.channels || ["email"]).includes(f.channel))
+        .map((f) => (
         <div className="form-group" key={f.key}>
           <label>{f.label}</label>
           {f.type === "textarea" ? (
@@ -626,6 +641,30 @@ function ConfigPanel({ node, onTitleChange, onConfigChange, onClose, onDelete })
               value={node.config?.[f.key] || f.default || ["email"]}
               onChange={(v) => onConfigChange({ [f.key]: v })}
             />
+          ) : f.type === "emailTemplate" ? (
+            <select
+              value=""
+              onChange={(e) => {
+                const t = emailTemplates.find((x) => x.id === e.target.value);
+                if (t) onConfigChange({ subject: t.subject, body: t.body, templateId: "" });
+              }}
+            >
+              <option value="">— Pick a template to fill the body —</option>
+              {emailTemplates.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
+            </select>
+          ) : f.type === "emailSender" ? (
+            senders.length === 0 ? (
+              <div style={{ fontSize: 12, color: "var(--text-muted)" }}>
+                No sender profiles — add one under <a href="/email/config" style={{ color: "var(--primary)" }}>Email → Config</a>. Your default domain sender will be used.
+              </div>
+            ) : (
+              <select value={node.config?.[f.key] ?? ""} onChange={(e) => onConfigChange({ [f.key]: e.target.value })}>
+                <option value="">Default sender</option>
+                {senders.map((s) => (
+                  <option key={s._id} value={s._id}>{s.name ? `${s.name} <${s.email}>` : s.email}{s.isDefault ? " — default" : ""}</option>
+                ))}
+              </select>
+            )
           ) : (
             <input
               type={f.type === "number" ? "number" : "text"}

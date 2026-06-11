@@ -41,6 +41,7 @@ import {
 } from "react-icons/fi";
 import { notify } from "../globalComponents/Toast/Toast";
 import { api } from "../api/client";
+import { emailApi } from "../api/email";
 
 /* --------------------------------------------------------------------------
  * GHL-style workflow builder, rendered with React Flow (@xyflow/react).
@@ -78,7 +79,12 @@ const CATALOG = [
 
   // ---- Communication ----
   { type: "action.send_email",     group: "Communication", kind: "comms", icon: FiMail,          title: "Send email",     desc: "Send a templated email",
-    fields: [{ key: "subject", label: "Subject", type: "text", placeholder: "Hello {{firstName}}" }, { key: "body", label: "Body", type: "textarea", placeholder: "Write your email…" }] },
+    fields: [
+      { key: "senderId", label: "Send from", type: "emailSender" },
+      { key: "to", label: "Recipient email field", type: "text", placeholder: "email", hint: "The key in your webhook payload that holds the recipient's email (e.g. email, contact_email). You can also use {{email}}." },
+      { key: "subject", label: "Subject", type: "text", placeholder: "Hello {{firstName}}" },
+      { key: "body", label: "Body", type: "textarea", placeholder: "Write your email…" },
+    ] },
   { type: "action.send_whatsapp",  group: "Communication", kind: "comms", icon: FiMessageCircle, title: "Send WhatsApp",  desc: "Send a WhatsApp template / text",
     fields: [{ key: "template", label: "Template name", type: "text", placeholder: "hello_world" }, { key: "body", label: "Fallback text", type: "textarea", placeholder: "Hi {{firstName}} 👋" }] },
 
@@ -774,6 +780,12 @@ function ConfigDrawer({ node, onClose, onTitle, onField, onDelete }) {
   const meta = metaFor(node.type);
   const k = KIND[meta.kind] || KIND.developer;
   const Icon = meta.icon;
+  const [senders, setSenders] = useState([]);
+  const needsSenders = meta.fields.some((f) => f.type === "emailSender");
+  useEffect(() => {
+    if (!needsSenders) return;
+    emailApi.config().then((r) => setSenders(r.config?.senders || [])).catch(() => {});
+  }, [needsSenders]);
   return (
     <>
       <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.28)", zIndex: 60 }} />
@@ -818,10 +830,24 @@ function ConfigDrawer({ node, onClose, onTitle, onField, onDelete }) {
                   <select value={node.config[field.key] || ""} onChange={(e) => onField(field.key, e.target.value)}>
                     {field.options.map((opt) => <option key={opt} value={opt}>{opt}</option>)}
                   </select>
+                ) : field.type === "emailSender" ? (
+                  senders.length === 0 ? (
+                    <div style={{ fontSize: 12, color: "var(--text-muted)" }}>
+                      No sender profiles — add one under <Link to="/email/config" style={{ color: "var(--primary)" }}>Email → Config</Link>. Your default domain sender will be used.
+                    </div>
+                  ) : (
+                    <select value={node.config[field.key] || ""} onChange={(e) => onField(field.key, e.target.value)}>
+                      <option value="">Default sender</option>
+                      {senders.map((s) => (
+                        <option key={s._id} value={s._id}>{s.name ? `${s.name} <${s.email}>` : s.email}{s.isDefault ? " — default" : ""}</option>
+                      ))}
+                    </select>
+                  )
                 ) : (
                   <input type={field.type === "number" ? "number" : "text"} value={node.config[field.key] || ""} placeholder={field.placeholder}
                     onChange={(e) => onField(field.key, e.target.value)} />
                 )}
+                {field.hint && <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 5, lineHeight: 1.4 }}>{field.hint}</div>}
               </div>
             ))
           )}

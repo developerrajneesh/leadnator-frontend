@@ -1,11 +1,9 @@
 import { api } from "./client";
 
 export const emailApi = {
-  // SMTP config
+  // Config (sending domain lives here too)
   config:        ()        => api.get("/email/config"),
   saveConfig:    (body)    => api.put("/email/config", body),
-  testConfig:    ()        => api.post("/email/config/test"),
-  testSend:      (to)      => api.post("/email/config/test-send", { to }),
   quickSend:     (body)    => api.post("/email/quick-send", body),
   quickSendHistory: (to, limit = 20) => api.get("/email/quick-send/history", { to, limit }),
 
@@ -27,6 +25,7 @@ export const emailApi = {
 
   // Campaigns
   campaigns:        ()        => api.get("/email/campaigns"),
+  campaign:         (id)      => api.get(`/email/campaigns/${id}`),
   createCampaign:   (body)    => api.post("/email/campaigns", body),
   deleteCampaign:   (id)      => api.del(`/email/campaigns/${id}`),
   // sendCampaign(id, { useSignature: false }) to disable signature for this send
@@ -40,4 +39,15 @@ export const emailApi = {
   sesDomainStatus: (domain) => api.get("/email/ses/domain/status", domain ? { domain } : undefined),
   sesSaveFrom:     (body)    => api.put("/email/ses/from", body),
   sesTestSend:     (body)    => api.post("/email/ses/test-send", body),
+
+  // SES sender profiles (support@, sales@, …)
+  addSender:       (body)    => api.post("/email/ses/senders", body),
+  setDefaultSender:(sid)     => api.put(`/email/ses/senders/${sid}/default`),
+  deleteSender:    (sid)     => api.del(`/email/ses/senders/${sid}`),
+
+  // Mailbox / inbox
+  inbox:        (mailbox)   => api.get("/email/inbox", mailbox ? { mailbox } : undefined),
+  thread:       (cp, mailbox) => api.get(`/email/inbox/${encodeURIComponent(cp)}`, mailbox ? { mailbox } : undefined),
+  sendMail:     (body)      => api.post("/email/inbox/send", body),
+  inboxUnread:  ()          => api.get("/email/inbox-unread"),
 };

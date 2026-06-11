@@ -8,7 +8,8 @@ export default function Create() {
   const navigate = useNavigate();
   const [templates, setTemplates] = useState([]);
   const [subs, setSubs] = useState([]);
-  const [form, setForm] = useState({ name: "", subject: "", body: "", templateId: "", recipientIds: [] });
+  const [senders, setSenders] = useState([]);
+  const [form, setForm] = useState({ name: "", subject: "", body: "", templateId: "", recipientIds: [], senderId: "" });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [aiBusy, setAiBusy] = useState(false);
@@ -27,6 +28,11 @@ export default function Create() {
       ]);
       setTemplates(t.templates || []);
       setSubs(s.subscribers || []);
+      const senderList = c.config?.senders || [];
+      setSenders(senderList);
+      // Default the campaign sender to the user's default profile.
+      const def = senderList.find((x) => x.isDefault) || senderList[0];
+      if (def) setForm((f) => ({ ...f, senderId: f.senderId || def._id }));
       const sig = c.config?.signature || {};
       const saved = !!sig.html?.trim();
       setSigSaved(saved);
@@ -95,7 +101,7 @@ export default function Create() {
     return (
       <>
         <h1 className="page-title">Create campaign</h1>
-        <p className="page-subtitle">Compose, pick recipients, and send via your SMTP config.</p>
+        <p className="page-subtitle">Compose, pick recipients, and send from your verified domain.</p>
         <div className="card" style={{ padding: 24 }}>
           {Array.from({ length: 4 }).map((_, i) => (
             <div key={i} style={{ marginBottom: 16 }}>
@@ -119,7 +125,7 @@ export default function Create() {
   return (
     <>
       <h1 className="page-title">Create campaign</h1>
-      <p className="page-subtitle">Compose, pick recipients, and send via your SMTP config.</p>
+      <p className="page-subtitle">Compose, pick recipients, and send from your verified domain.</p>
 
       {error && <div style={{ padding: 12, background: "#fee2e2", color: "#b91c1c", borderRadius: 8, marginBottom: 12, fontSize: 13 }}>{error}</div>}
 
@@ -131,6 +137,21 @@ export default function Create() {
           </div>
           <div className="form-group"><label>Campaign name *</label>
             <input required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="April newsletter" />
+          </div>
+          <div className="form-group"><label>Send from</label>
+            {senders.length === 0 ? (
+              <div style={{ fontSize: 12, color: "var(--text-muted)" }}>
+                No sender profiles yet — add one under <a href="/email/config" style={{ color: "var(--primary)" }}>Email → Config</a>.
+              </div>
+            ) : (
+              <select value={form.senderId} onChange={(e) => setForm({ ...form, senderId: e.target.value })}>
+                {senders.map((s) => (
+                  <option key={s._id} value={s._id}>
+                    {(s.name ? `${s.name} ` : "")}&lt;{s.email}&gt;{s.isDefault ? " — default" : ""}
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
           {templates.length > 0 && (
             <div className="form-group"><label>Pre-fill from template</label>
@@ -212,7 +233,7 @@ export default function Create() {
             </button>
           </div>
           <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 8 }}>
-            Sending uses your SMTP config under <a href="/email/config" style={{ color: "var(--primary)" }}>Email → SMTP config</a>.
+            Sending uses your verified domain under <a href="/email/config" style={{ color: "var(--primary)" }}>Email → Config</a>.
           </div>
         </div>
       </div>

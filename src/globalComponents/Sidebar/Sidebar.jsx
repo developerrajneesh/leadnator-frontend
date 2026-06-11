@@ -105,6 +105,7 @@ export const SECTIONS = {
     title: "Email Marketing",
     items: [
       { to: "overview",    Icon: FiHome,       label: "Overview" },
+      { to: "inbox",       Icon: FiInbox,      label: "Inbox" },
       { to: "campaigns",   Icon: FiMail,       label: "Campaigns" },
       { to: "create",      Icon: FiEdit,       label: "Create campaign" },
       { to: "templates",   Icon: FiLayers,     label: "Templates" },
@@ -112,7 +113,7 @@ export const SECTIONS = {
       { to: "subscribers", Icon: FiUserCheck,  label: "Subscribers" },
       { to: "analytics",   Icon: FiPieChart,   label: "Analytics" },
       { to: "signature",   Icon: FiEdit,       label: "Signature" },
-      { to: "config",      Icon: FiSettings,   label: "SMTP config" },
+      { to: "config",      Icon: FiSettings,   label: "Domain config" },
     ],
   },
   integrations: {

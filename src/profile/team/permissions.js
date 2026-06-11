@@ -82,6 +82,7 @@ export const MODULE_PERMISSIONS = [
   {
     key: "email", label: "Email Marketing", color: "#ea4335", Icon: FiMail,
     routes: [
+      { key: "inbox",       label: "Inbox" },
       { key: "campaigns",   label: "Campaigns" },
       { key: "create",      label: "Create campaign" },
       { key: "templates",   label: "Templates" },

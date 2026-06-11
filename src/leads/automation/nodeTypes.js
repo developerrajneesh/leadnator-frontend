@@ -22,13 +22,16 @@ export const NODE_TYPES = [
   // ---- Actions ----
   {
     type: "action.send_message", cat: "action", title: "Send message",  Icon: FiSend,
+    // `channel` marks a field as email-only or whatsapp-only — the inspector
+    // hides fields whose channel isn't selected. Unmarked fields always show.
     fields: [
       { key: "channels",    label: "Channels", type: "channels", default: ["email"] },
-      { key: "subject",     label: "Email subject (supports {{firstName}})", type: "text", placeholder: "Hi {{firstName}}, welcome to Leadnator" },
-      { key: "body",        label: "Message body (HTML for email, plain for WA)", type: "textarea", placeholder: "<p>Hi {{firstName}},</p><p>Thanks!</p>" },
-      { key: "templateName",label: "WhatsApp template name (optional)", type: "text", placeholder: "welcome_offer" },
-      { key: "language",    label: "WhatsApp template language", type: "text", default: "en_US" },
-      { key: "templateId",  label: "Email template ID (optional — overrides subject/body)", type: "text", placeholder: "" },
+      { key: "senderId",    label: "Send from", type: "emailSender", channel: "email" },
+      { key: "subject",     label: "Email subject (supports {{firstName}})", type: "text", channel: "email", placeholder: "Hi {{firstName}}, welcome to Leadnator" },
+      { key: "templateId",  label: "Email template (optional — fills the body below)", type: "emailTemplate", channel: "email" },
+      { key: "body",        label: "Message body (HTML for email, plain for WhatsApp)", type: "textarea", placeholder: "<p>Hi {{firstName}},</p><p>Thanks!</p>" },
+      { key: "templateName",label: "WhatsApp template name (optional)", type: "text", channel: "whatsapp", placeholder: "welcome_offer" },
+      { key: "language",    label: "WhatsApp template language", type: "text", channel: "whatsapp", default: "en_US" },
     ],
   },
   { type: "action.add_tag",       cat: "action", title: "Add tag to lead",       Icon: FiTag,

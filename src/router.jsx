@@ -114,10 +114,13 @@ const g = (moduleKey, subRouteKey, element) => (
 
 // Email
 import EmailOverview from "./email/overview/Overview";
+import EmailInbox from "./email/inbox/Inbox";
 import EmailCampaigns from "./email/campaigns/Campaigns";
+import EmailCampaignDetail from "./email/campaigns/CampaignDetail";
 import EmailCreate from "./email/create/Create";
 import EmailTemplates from "./email/templates/Templates";
 import EmailAutomation from "./email/automation/Automation";
+import EmailFlowEditor from "./email/automation/EmailFlowEditor";
 import EmailSubscribers from "./email/subscribers/Subscribers";
 import EmailAnalytics from "./email/analytics/Analytics";
 import EmailConfig from "./email/config/Config";
@@ -308,10 +311,13 @@ export function buildRouter(onLogout, role = "user") {
 
         { path: "email",              element: <Navigate to="/email/overview" replace /> },
         { path: "email/overview",     element: g("email", "overview",    <EmailOverview />) },
+        { path: "email/inbox",        element: g("email", "inbox",       emailGated(<EmailInbox />)) },
         { path: "email/campaigns",    element: g("email", "campaigns",   emailGated(<EmailCampaigns />)) },
+        { path: "email/campaigns/:id", element: g("email", "campaigns",  emailGated(<EmailCampaignDetail />)) },
         { path: "email/create",       element: g("email", "create",      emailGated(<EmailCreate />)) },
         { path: "email/templates",    element: g("email", "templates",   emailGated(<EmailTemplates />)) },
         { path: "email/automation",   element: g("email", "automation",  emailGated(<EmailAutomation />)) },
+        { path: "email/automation/:id", element: g("email", "automation", emailGated(<EmailFlowEditor />)) },
         { path: "email/subscribers",  element: g("email", "subscribers", emailGated(<EmailSubscribers />)) },
         { path: "email/analytics",    element: g("email", "analytics",   emailGated(<EmailAnalytics />)) },
         { path: "email/config",       element: g("email", "config",      <EmailConfig />) },

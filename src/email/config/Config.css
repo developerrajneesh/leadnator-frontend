@@ -192,7 +192,7 @@
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
-  align-items: stretch;
+  align-items: flex-end;
   padding: 12px;
   background: var(--ec-bg-muted);
   border: 1px solid var(--ec-border);
@@ -202,6 +202,14 @@
 .email-config .ec-domain-row .ec-input-wrap {
   flex: 1;
   min-width: 200px;
+}
+
+/* Keep the Attach / Verify buttons the same height as the input,
+   bottom-aligned with it (not stretched to the full row height). */
+.email-config .ec-domain-row .btn {
+  height: var(--ec-height);
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 /* Checkbox */

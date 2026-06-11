@@ -74,14 +74,14 @@ export default function Campaigns() {
               ) : list.length === 0 ? (
                 <tr><td colSpan="7" style={{ textAlign: "center", padding: 30, color: "var(--text-muted)" }}>No campaigns yet.</td></tr>
               ) : list.map((c) => (
-                <tr key={c.id}>
+                <tr key={c.id} onClick={() => navigate(`/email/campaigns/${c.id}`)} style={{ cursor: "pointer" }}>
                   <td><strong>{c.name}</strong></td>
                   <td style={{ fontSize: 12, color: "var(--text-muted)", maxWidth: 280, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.subject}</td>
                   <td><span className={`badge ${c.status === "completed" ? "qualified" : c.status === "failed" ? "lost" : "contacted"}`}>{c.status}</span></td>
                   <td>{c.sent || 0}</td>
                   <td>{c.failed || 0}</td>
                   <td style={{ color: "var(--text-muted)", fontSize: 12 }}>{new Date(c.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}</td>
-                  <td>
+                  <td onClick={(e) => e.stopPropagation()}>
                     <div style={{ display: "flex", gap: 6 }}>
                       <button className="admin-action" disabled={sending === c.id || c.status === "sending"} onClick={() => send(c.id)}>
                         <FiSend /> {sending === c.id ? "Sending…" : "Send"}
