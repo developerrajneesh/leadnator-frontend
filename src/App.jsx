@@ -18,6 +18,7 @@ import SelectOrganization from "./pages/SelectOrganization";
 import { invalidateLeads } from "./api/hooks";
 import { ToastHost } from "./globalComponents/Toast/Toast";
 import PwaPrompt from "./globalComponents/Pwa/PwaPrompt";
+import Loader from "./globalComponents/Loader/Loader";
 import { getSocket, disconnectSocket } from "./api/socket";
 import {
   captureInstagramOAuthCodeFromUrl,
@@ -162,9 +163,7 @@ export default function App() {
   if (booting) {
     return (
       <>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh", color: "#6b7280" }}>
-          Loading…
-        </div>
+        <Loader label="Loading your workspace…" />
         <ToastHost />
         <PwaPrompt />
       </>

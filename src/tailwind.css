@@ -1,0 +1,44 @@
+/* Tailwind v4 — theme + utilities (no full preflight, so the rest of
+   Leadnator's existing styles stay intact). Powers the ported Meta Ads create
+   wizard, which is built with Tailwind classes. */
+@layer theme, base;
+
+@import "tailwindcss/theme.css" layer(theme);
+/* Utilities are imported UNLAYERED on purpose. Leadnator's index.css has an
+   unlayered universal reset (margin/padding 0); unlayered rules always beat
+   @layer rules in the cascade. If utilities lived in a layer, that reset would
+   wipe out spacing utilities. Unlayered, class specificity wins over the star. */
+@import "tailwindcss/utilities.css";
+
+/* Map Tailwind's `purple` palette to Leadnator's brand violet so the ported
+   Meta Ads wizard's buttons / accents / icons match the rest of the app. The
+   gray scale already matches Leadnator (#e5e7eb / #6b7280 / #111827). */
+@theme {
+  --color-purple-50:  #f5f3ff;
+  --color-purple-100: #ede9fe;
+  --color-purple-200: #ddd6fe;
+  --color-purple-300: #c4b5fd;
+  --color-purple-400: #a78bfa;
+  --color-purple-500: #8b5cf6;
+  --color-purple-600: #7c3aed;
+  --color-purple-700: #6d28d9;
+  --color-purple-800: #5b21b6;
+  --color-purple-900: #4c1d95;
+}
+
+/* Minimal border reset (the one bit of preflight Tailwind's `border` utilities
+   depend on: a default border-style of solid). Lives in @layer base — the
+   lowest priority — so Leadnator's own explicit borders always win, and
+   elements without a border utility stay border-width:0 (unchanged). Without
+   this, `border` classes set width but no style → invisible borders. */
+@layer base {
+  .metaads-tw *,
+  .metaads-tw ::before,
+  .metaads-tw ::after,
+  .metaads-tw ::backdrop {
+    box-sizing: border-box;
+    border-width: 0;
+    border-style: solid;
+    border-color: #e5e7eb;
+  }
+}

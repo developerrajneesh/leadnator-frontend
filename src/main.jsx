@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import './App.css'
+import './tailwind.css'
 import App from './App.jsx'
 
 // Drop any cached dev/prod service workers so stale workbox-* imports don't

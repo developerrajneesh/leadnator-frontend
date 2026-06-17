@@ -1,0 +1,79 @@
+.ldn-loader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  background: var(--bg, #f7f6fb);
+}
+
+.ldn-loader--full {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+}
+
+.ldn-loader__ring {
+  position: relative;
+  width: 86px;
+  height: 86px;
+  display: grid;
+  place-items: center;
+}
+
+/* Spinning gradient ring */
+.ldn-loader__spin {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 3px solid #ede9fe;
+  border-top-color: #7c3aed;
+  border-right-color: #a78bfa;
+  animation: ldn-spin 0.85s cubic-bezier(0.5, 0.1, 0.5, 0.9) infinite;
+}
+
+/* Soft glow behind the logo */
+.ldn-loader__ring::after {
+  content: "";
+  position: absolute;
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(124, 58, 237, 0.16), transparent 70%);
+  animation: ldn-glow 1.6s ease-in-out infinite;
+}
+
+.ldn-loader__logo {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+  animation: ldn-pulse 1.5s ease-in-out infinite;
+}
+
+.ldn-loader__text {
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  color: var(--text-muted, #6b7280);
+}
+
+@keyframes ldn-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes ldn-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(0.86); opacity: 0.65; }
+}
+
+@keyframes ldn-glow {
+  0%, 100% { transform: scale(0.9); opacity: 0.7; }
+  50% { transform: scale(1.15); opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ldn-loader__spin,
+  .ldn-loader__logo,
+  .ldn-loader__ring::after { animation-duration: 2.4s; }
+}

@@ -14,8 +14,16 @@ export default function Header({ onLogout }) {
   const CURRENT_USER = useCurrentUser();
   const [menuOpen, setMenuOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
+  const [logoBroken, setLogoBroken] = useState(false);
   const menuRef = useRef(null);
   const notifRef = useRef(null);
+
+  // Dynamic branding — show the current workspace's logo/name (white-label)
+  // when set, otherwise fall back to the default Leadnator branding.
+  const org = getStoredOrg();
+  const orgLogo = org?.logoUrl || "";
+  const orgName = org?.name || "";
+  const useOrgBrand = !!orgLogo && !logoBroken;
 
   useEffect(() => {
     function onDocClick(e) {
@@ -31,9 +39,10 @@ export default function Header({ onLogout }) {
       <div className="header-left">
         <div className="brand-well">
           <img
-            src="/leadnator_logo.png"
-            alt="Leadnator"
+            src={useOrgBrand ? orgLogo : "/leadnator_logo.png"}
+            alt={useOrgBrand ? orgName : "Leadnator"}
             onClick={() => navigate("/dashboard")}
+            onError={() => setLogoBroken(true)}
             style={{
               width: 52, height: 52,
               objectFit: "contain",
@@ -42,14 +51,22 @@ export default function Header({ onLogout }) {
             }}
           />
         </div>
-        <div className="brand-name">
-          <div className="brand-name-row">
-            <span className="brand-name-lead">Lead</span><span className="brand-name-nator">nator</span>
+        {useOrgBrand ? (
+          <div className="brand-name">
+            <div className="brand-name-row">
+              <span className="brand-name-lead" style={{ color: "var(--text)" }}>{orgName}</span>
+            </div>
           </div>
-          <div className="brand-name-tag">
-            <span className="brand-name-tag-line" /> AI-POWERED GROWTH PLATFORM <span className="brand-name-tag-line" />
+        ) : (
+          <div className="brand-name">
+            <div className="brand-name-row">
+              <span className="brand-name-lead">Lead</span><span className="brand-name-nator">nator</span>
+            </div>
+            <div className="brand-name-tag">
+              <span className="brand-name-tag-line" /> AI-POWERED GROWTH PLATFORM <span className="brand-name-tag-line" />
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       <GlobalSearch />

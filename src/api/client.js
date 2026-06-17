@@ -114,6 +114,7 @@ export const api = {
     list:   () => request("/orgs"),
     create: (body) => request("/orgs", { method: "POST", body }),
     switch: (organizationId) => request("/orgs/switch", { method: "POST", body: { organizationId } }),
+    update: (id, body) => request(`/orgs/${id}`, { method: "PUT", body }),
     remove: (id) => request(`/orgs/${id}`, { method: "DELETE" }),
   },
   auth: {

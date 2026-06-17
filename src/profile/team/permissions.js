@@ -27,6 +27,7 @@ export const MODULE_PERMISSIONS = [
     key: "leads", label: "Leads CRM", color: "#6366f1", Icon: FiUsers,
     routes: [
       { key: "all",        label: "All leads" },
+      { key: "conversations", label: "Conversations" },
       { key: "pipeline",   label: "Pipeline (Kanban)" },
       { key: "funnel",     label: "Funnel" },
       { key: "hot",        label: "Hot leads" },

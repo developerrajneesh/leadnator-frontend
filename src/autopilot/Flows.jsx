@@ -90,7 +90,12 @@ const CATALOG = [
 
   // ---- CRM ----
   { type: "action.create_contact", group: "CRM", kind: "crm", icon: FiUserPlus, title: "Create / update contact", desc: "Upsert the contact into a list",
-    fields: [{ key: "list", label: "Contact list", type: "text", placeholder: "CRM leads" }] },
+    fields: [
+      { key: "emailField", label: "Email field", type: "text", placeholder: "email", hint: "Payload key that holds the email (e.g. email, contact_email) or {{email}}. Leave blank to auto-detect." },
+      { key: "nameField", label: "Name field (optional)", type: "text", placeholder: "name", hint: "Auto-detected if left blank." },
+      { key: "phoneField", label: "Phone field (optional)", type: "text", placeholder: "phone", hint: "Auto-detected if left blank." },
+      { key: "list", label: "Source / list", type: "text", placeholder: "Autopilot" },
+    ] },
   { type: "action.add_tag",        group: "CRM", kind: "crm", icon: FiTag,      title: "Add tag",                 desc: "Tag the contact",
     fields: [{ key: "tag", label: "Tag", type: "text", placeholder: "nurtured" }] },
   { type: "action.update_status",  group: "CRM", kind: "crm", icon: FiZap,      title: "Change lead status",      desc: "Move the lead to a stage",

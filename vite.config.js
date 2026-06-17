@@ -1,11 +1,16 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
+import tailwindcss from '@tailwindcss/vite'
 
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
     react(),
+    // Tailwind utilities for the ported Meta Ads create wizard. src/tailwind.css
+    // imports only theme + utilities (NO preflight), so the rest of the app's
+    // existing CSS is untouched.
+    tailwindcss(),
     VitePWA({
       // autoUpdate = refresh the SW in the background whenever a new build
       // is deployed. Users pick up changes on their next reload.

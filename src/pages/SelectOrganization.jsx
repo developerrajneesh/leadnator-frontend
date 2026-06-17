@@ -62,6 +62,22 @@ export default function SelectOrganization({ onSelected }) {
     }
   }
 
+  // Set / change the workspace logo (shown dynamically in the header).
+  async function setLogo(o, e) {
+    e?.stopPropagation();
+    const url = window.prompt("Workspace logo URL (hosted PNG/SVG). Leave blank to remove:", o.logoUrl || "");
+    if (url === null) return;
+    try {
+      const res = await api.orgs.update(o.id, { logoUrl: url.trim() });
+      const logoUrl = res.organization?.logoUrl || "";
+      setOrgs((list) => list.map((x) => (x.id === o.id ? { ...x, logoUrl } : x)));
+      if (currentOrg?.id === o.id) setStoredOrg({ ...currentOrg, logoUrl });
+      notify.success("Workspace logo updated");
+    } catch (err) {
+      notify.error(err.message || "Couldn't update logo");
+    }
+  }
+
   async function createOrg(e) {
     e.preventDefault();
     const name = form.name.trim();
@@ -133,7 +149,9 @@ export default function SelectOrganization({ onSelected }) {
                     onClick={() => selectOrg(o.id)}
                   >
                     <div className="org-card-icon">
-                      <FiBriefcase />
+                      {o.logoUrl
+                        ? <img src={o.logoUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "contain", borderRadius: 8 }} />
+                        : <FiBriefcase />}
                     </div>
                     <div className="org-card-name">{o.name}</div>
                     {o.loginEmail && (
@@ -150,6 +168,16 @@ export default function SelectOrganization({ onSelected }) {
                         <span className="org-badge">Open</span>
                       )}
                     </div>
+                    {manageMode && (
+                      <span
+                        role="button"
+                        tabIndex={0}
+                        onClick={(e) => setLogo(o, e)}
+                        style={{ marginTop: 8, fontSize: 12, color: "var(--primary, #7c3aed)", cursor: "pointer", fontWeight: 600 }}
+                      >
+                        🖼 {o.logoUrl ? "Change logo" : "Set logo"}
+                      </span>
+                    )}
                   </button>
                 );
               })}

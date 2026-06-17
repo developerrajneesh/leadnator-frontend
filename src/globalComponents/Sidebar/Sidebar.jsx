@@ -43,6 +43,7 @@ export const SECTIONS = {
     items: [
       { to: "overview",    Icon: FiHome,      label: "Overview" },
       { to: "all",         Icon: FiUsers,     label: "All leads" },
+      { to: "conversations", Icon: FiMessageCircle, label: "Conversations" },
       { to: "pipeline",    Icon: FiLayers,    label: "Pipeline (Kanban)" },
       { to: "funnel",      Icon: FiPieChart,  label: "Funnel" },
       { to: "hot",         Icon: FiStar,      label: "Hot leads" },

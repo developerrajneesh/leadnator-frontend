@@ -30,6 +30,7 @@ import Exports from "./dashboard/exports/Exports";
 import LeadsOverview from "./leads/overview/Overview";
 import AllLeads from "./leads/all-leads/AllLeads";
 import LeadDetail from "./leads/all-leads/LeadDetail";
+import LeadsConversations from "./leads/conversations/Conversations";
 import Pipeline from "./leads/pipeline/Pipeline";
 import Funnel from "./leads/funnel/Funnel";
 import Hot from "./leads/hot/Hot";
@@ -52,7 +53,26 @@ import MetaFormViewer from "./meta/forms/FormViewer";
 import MetaWebhook from "./meta/webhook/Webhook";
 import MetaAnalytics from "./meta/analytics/Analytics";
 import MetaCreate from "./meta/create/Create";
-import MetaCreateWizard from "./meta/create/Wizard";
+import MetaAdsScope from "./meta/create/MetaAdsScope";
+// Meta Ads goal-flow wizards (ported LCM: Click to WhatsApp/Call/Website/Lead Form)
+import CallCampaign from "./meta/create/metaManagement/CallCampaign";
+import CallAdSet from "./meta/create/metaManagement/CallAdSet";
+import CallAdCreative from "./meta/create/metaManagement/CallAdCreative";
+import CallLaunch from "./meta/create/metaManagement/CallLaunch";
+import WhatsAppCampaign from "./meta/create/metaManagement/WhatsAppCampaign";
+import WhatsAppAdSet from "./meta/create/metaManagement/WhatsAppAdSet";
+import WhatsAppAdCreative from "./meta/create/metaManagement/WhatsAppAdCreative";
+import WhatsAppLaunch from "./meta/create/metaManagement/WhatsAppLaunch";
+import LinkCampaign from "./meta/create/metaManagement/LinkCampaign";
+import LinkAdSet from "./meta/create/metaManagement/LinkAdSet";
+import LinkAdCreative from "./meta/create/metaManagement/LinkAdCreative";
+import LinkLaunch from "./meta/create/metaManagement/LinkLaunch";
+import LeadFormCampaign from "./meta/create/metaManagement/LeadFormCampaign";
+import LeadFormForm from "./meta/create/metaManagement/LeadFormForm";
+import LeadFormAdSet from "./meta/create/metaManagement/LeadFormAdSet";
+import LeadFormAdCreative from "./meta/create/metaManagement/LeadFormAdCreative";
+import LeadFormLaunch from "./meta/create/metaManagement/LeadFormLaunch";
+import LeadFormSubscribeWebhooks from "./meta/create/metaManagement/SubscribePageWebhooks";
 import MetaOverview from "./meta/overview/Overview";
 import MetaAccounts from "./meta/accounts/Accounts";
 import MetaAudiences from "./meta/audiences/Audiences";
@@ -252,6 +272,7 @@ export function buildRouter(onLogout, role = "user") {
         { path: "leads/overview",         element: g("leads", "overview",   <LeadsOverview />) },
         { path: "leads/all",              element: g("leads", "all",        <AllLeads />) },
         { path: "leads/all/:id",          element: g("leads", "all",        <LeadDetail />) },
+        { path: "leads/conversations",    element: g("leads", "conversations", <LeadsConversations />) },
         { path: "leads/pipeline",         element: g("leads", "pipeline",   <Pipeline />) },
         { path: "leads/funnel",           element: g("leads", "funnel",     <Funnel />) },
         { path: "leads/hot",              element: g("leads", "hot",        <Hot />) },
@@ -274,9 +295,27 @@ export function buildRouter(onLogout, role = "user") {
         { path: "meta/forms/:id",          element: g("meta", "forms",     metaGated(<MetaFormViewer />)) },
         { path: "meta/webhook",            element: g("meta", "webhook",   metaGated(<MetaWebhook />)) },
         { path: "meta/analytics",          element: g("meta", "analytics", metaGated(<MetaAnalytics />)) },
-        { path: "meta/create",             element: g("meta", "create",    metaGated(<MetaCreate />)) },
-        { path: "meta/create/:type",       element: g("meta", "create",    metaGated(<MetaCreateWizard />)) },
-        { path: "meta/create/:type/:step", element: g("meta", "create",    metaGated(<MetaCreateWizard />)) },
+        { path: "meta/create", element: g("meta", "create", metaGated(<MetaAdsScope />)), children: [
+          { index: true,                      element: <MetaCreate /> },
+          { path: "call/campaign",            element: <CallCampaign /> },
+          { path: "call/adset",               element: <CallAdSet /> },
+          { path: "call/creative",            element: <CallAdCreative /> },
+          { path: "call/launch",              element: <CallLaunch /> },
+          { path: "whatsapp/campaign",        element: <WhatsAppCampaign /> },
+          { path: "whatsapp/adset",           element: <WhatsAppAdSet /> },
+          { path: "whatsapp/creative",        element: <WhatsAppAdCreative /> },
+          { path: "whatsapp/launch",          element: <WhatsAppLaunch /> },
+          { path: "link/campaign",            element: <LinkCampaign /> },
+          { path: "link/adset",               element: <LinkAdSet /> },
+          { path: "link/creative",            element: <LinkAdCreative /> },
+          { path: "link/launch",              element: <LinkLaunch /> },
+          { path: "lead-form/campaign",       element: <LeadFormCampaign /> },
+          { path: "lead-form/form",           element: <LeadFormForm /> },
+          { path: "lead-form/adset",          element: <LeadFormAdSet /> },
+          { path: "lead-form/creative",       element: <LeadFormAdCreative /> },
+          { path: "lead-form/launch",         element: <LeadFormLaunch /> },
+          { path: "lead-form/subscribe-webhooks", element: <LeadFormSubscribeWebhooks /> },
+        ] },
         { path: "meta/accounts",           element: g("meta", "accounts",  <MetaAccounts />) },
         { path: "meta/audiences",          element: g("meta", "audiences", metaGated(<MetaAudiences />)) },
 
