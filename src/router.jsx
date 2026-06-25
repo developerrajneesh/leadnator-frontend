@@ -10,7 +10,6 @@ import AdminUsers from "./admin/pages/Users";
 import AdminUserDetail from "./admin/pages/UserDetail";
 import AdminPlans from "./admin/pages/Plans";
 import AdminRevenue from "./admin/pages/Revenue";
-import AdminCampaigns from "./admin/pages/Campaigns";
 import AdminSupport from "./admin/pages/Support";
 import AdminLogs from "./admin/pages/Logs";
 import AdminSettings from "./admin/pages/Settings";
@@ -74,6 +73,8 @@ import LeadFormAdCreative from "./meta/create/metaManagement/LeadFormAdCreative"
 import LeadFormLaunch from "./meta/create/metaManagement/LeadFormLaunch";
 import LeadFormSubscribeWebhooks from "./meta/create/metaManagement/SubscribePageWebhooks";
 import MetaOverview from "./meta/overview/Overview";
+import MetaAccountInfo from "./meta/overview/AccountInfo";
+import AllNotifications from "./notifications/AllNotifications";
 import MetaAccounts from "./meta/accounts/Accounts";
 import MetaAudiences from "./meta/audiences/Audiences";
 
@@ -228,15 +229,12 @@ import Team from "./profile/team/Team";
 import TeamDetail from "./profile/team/TeamDetail";
 import AddMember from "./profile/team/AddMember";
 import Sms from "./profile/sms/Sms";
-import Partners from "./pages/Landing/Partners";
-
 export function buildRouter(onLogout, role = "user") {
   const homeRedirect = role === "admin" ? "/admin/overview" : "/dashboard/overview";
 
   return createBrowserRouter([
     { path: "/form/:formId",    element: <PublicForm /> },
     { path: "/book/:bookingId", element: <PublicBooking /> },
-    { path: "/partners",        element: <Partners onGoto={(to) => window.location.href = to} /> },
 
     {
       path: "/admin",
@@ -248,7 +246,6 @@ export function buildRouter(onLogout, role = "user") {
         { path: "users/:id",    element: <AdminUserDetail /> },
         { path: "plans",        element: <AdminPlans /> },
         { path: "revenue",      element: <AdminRevenue /> },
-        { path: "campaigns",    element: <AdminCampaigns /> },
         { path: "support",      element: <AdminSupport /> },
         { path: "logs",         element: <AdminLogs /> },
         { path: "settings",     element: <AdminSettings /> },
@@ -260,6 +257,8 @@ export function buildRouter(onLogout, role = "user") {
       element: <Layout onLogout={onLogout} />,
       children: [
         { index: true, element: <Navigate to={homeRedirect} replace /> },
+
+        { path: "notifications",       element: <AllNotifications /> },
 
         { path: "dashboard",           element: <Navigate to="/dashboard/overview" replace /> },
         { path: "dashboard/overview",  element: g("dashboard", "overview",  <Overview />) },
@@ -285,7 +284,8 @@ export function buildRouter(onLogout, role = "user") {
         { path: "leads/settings",         element: g("leads", "settings",   <LeadSettings />) },
 
         { path: "meta",                    element: <Navigate to="/meta/overview" replace /> },
-        { path: "meta/overview",           element: g("meta", "overview",  metaGated(<MetaOverview />)) },
+        { path: "meta/overview",           element: g("meta", "overview",     <MetaOverview />) },
+        { path: "meta/account-info",       element: g("meta", "account-info", metaGated(<MetaAccountInfo />)) },
         { path: "meta/campaigns",          element: g("meta", "campaigns", metaGated(<MetaCampaigns />)) },
         { path: "meta/campaigns/:id",      element: g("meta", "campaigns", metaGated(<MetaCampaignDetail />)) },
         { path: "meta/adsets/:id",         element: g("meta", "campaigns", metaGated(<MetaAdsetDetail />)) },

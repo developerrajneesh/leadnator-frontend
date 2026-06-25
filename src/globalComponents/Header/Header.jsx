@@ -1,22 +1,54 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  FiBell, FiHelpCircle, FiChevronDown,
+  FiBell, FiChevronDown, FiMenu,
   FiUser, FiSettings, FiCreditCard, FiLogOut,
 } from "react-icons/fi";
 import { useCurrentUser } from "../../api/hooks";
-import { getStoredOrg, isOrganizationLogin } from "../../api/client";
+import { api, getStoredOrg, isOrganizationLogin } from "../../api/client";
+import { onSocket } from "../../api/socket";
 import GlobalSearch from "./GlobalSearch";
 import OrgSwitcher from "../OrgSwitcher/OrgSwitcher";
 
-export default function Header({ onLogout }) {
+export default function Header({ onLogout, onMenuClick }) {
   const navigate = useNavigate();
   const CURRENT_USER = useCurrentUser();
   const [menuOpen, setMenuOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
+  const [notifs, setNotifs] = useState([]);
   const [logoBroken, setLogoBroken] = useState(false);
   const menuRef = useRef(null);
   const notifRef = useRef(null);
+
+  // Pull a live feed (recent leads, finished campaigns, renewal) for the bell.
+  useEffect(() => {
+    let alive = true;
+    api.notifications.list()
+      .then((res) => alive && setNotifs(res.notifications || []))
+      .catch(() => alive && setNotifs([]));
+    return () => { alive = false; };
+  }, []);
+
+  // Real-time: prepend any notification the server pushes over the socket.
+  useEffect(() => onSocket("notification:new", (n) => {
+    if (!n) return;
+    setNotifs((list) => [{ ...n, read: false }, ...list].slice(0, 8));
+  }), []);
+
+  const hasUnread = notifs.some((n) => !n.read);
+
+  function markAllRead() {
+    setNotifs((list) => list.map((n) => ({ ...n, read: true })));
+    api.notifications.markAllRead().catch(() => {});
+  }
+
+  function openNotif(n) {
+    if (!n.read && n.key) {
+      setNotifs((list) => list.map((x) => (x.key === n.key ? { ...x, read: true } : x)));
+      api.notifications.markRead(n.key).catch(() => {});
+    }
+    if (n.link) { navigate(n.link); setNotifOpen(false); }
+  }
 
   // Dynamic branding — show the current workspace's logo/name (white-label)
   // when set, otherwise fall back to the default Leadnator branding.
@@ -37,6 +69,9 @@ export default function Header({ onLogout }) {
   return (
     <div className="header">
       <div className="header-left">
+        <button type="button" className="mobile-menu-btn" onClick={onMenuClick} title="Menu" aria-label="Menu">
+          <FiMenu />
+        </button>
         <div className="brand-well">
           <img
             src={useOrgBrand ? orgLogo : "/leadnator_logo.png"}
@@ -95,32 +130,43 @@ export default function Header({ onLogout }) {
         ) : (
           <OrgSwitcher />
         )}
-        <button className="icon-btn" title="Help & docs"><FiHelpCircle /></button>
-
         <div className="header-popover-wrap" ref={notifRef}>
           <button className="icon-btn" title="Notifications" onClick={() => setNotifOpen((o) => !o)}>
             <FiBell />
-            <span className="notif-dot" />
+            {hasUnread && <span className="notif-dot" />}
           </button>
           {notifOpen && (
             <div className="popover">
               <div className="popover-head">
-                <span>Notifications</span><a>Mark all read</a>
+                <span>Notifications</span>
+                {hasUnread && (
+                  <a onClick={markAllRead} style={{ cursor: "pointer" }}>Mark all read</a>
+                )}
               </div>
-              {[
-                { t: "New lead from Meta Ads", d: "Aarav Sharma · 2m ago" },
-                { t: "Campaign 'Spring Sale' finished", d: "2,480 sent · 1h ago" },
-                { t: "Your Growth plan renews in 5 days", d: "Manage subscription" },
-              ].map((n, i) => (
-                <div className="popover-item" key={i}>
-                  <span className="popover-dot" />
-                  <div>
-                    <div className="popover-title">{n.t}</div>
-                    <div className="popover-sub">{n.d}</div>
-                  </div>
+              {notifs.length === 0 ? (
+                <div className="popover-item" style={{ color: "var(--text-muted)", fontSize: 13, cursor: "default" }}>
+                  You're all caught up — no new notifications.
                 </div>
-              ))}
-              <div className="popover-foot" onClick={() => setNotifOpen(false)}>View all notifications</div>
+              ) : (
+                notifs.map((n, i) => {
+                  const unread = !n.read;
+                  return (
+                    <div
+                      className="popover-item"
+                      key={i}
+                      style={{ cursor: "pointer", background: unread ? "#faf9ff" : "transparent" }}
+                      onClick={() => openNotif(n)}
+                    >
+                      <span className="popover-dot" style={{ background: unread ? "var(--primary)" : "#cbd5e1" }} />
+                      <div>
+                        <div className="popover-title">{n.title}</div>
+                        <div className="popover-sub">{n.sub}</div>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+              <div className="popover-foot" onClick={() => { navigate("/notifications"); setNotifOpen(false); }}>View all notifications</div>
             </div>
           )}
         </div>

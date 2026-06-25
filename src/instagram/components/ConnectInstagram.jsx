@@ -1,6 +1,6 @@
 import { FaInstagram } from "react-icons/fa";
 import { FiCheckCircle, FiExternalLink } from "react-icons/fi";
-import { INSTAGRAM_OAUTH_URL } from "../constants";
+import { getInstagramOAuthUrl } from "../constants";
 
 /**
  * Shared connect card — Instagram OAuth button + feature list.
@@ -8,7 +8,8 @@ import { INSTAGRAM_OAUTH_URL } from "../constants";
  */
 export default function ConnectInstagram({ compact = false }) {
   function connect() {
-    window.location.href = INSTAGRAM_OAUTH_URL;
+    // Built at click time so the redirect_uri matches the current origin.
+    window.location.href = getInstagramOAuthUrl();
   }
 
   return (

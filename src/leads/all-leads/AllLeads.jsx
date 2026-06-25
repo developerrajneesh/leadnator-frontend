@@ -118,10 +118,14 @@ export default function AllLeads() {
 
   return (
     <>
-      <h1 className="page-title">All leads</h1>
-      <p className="page-subtitle">Manage, search and convert your full lead database.</p>
+      {/* Title + actions on a single row */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, flexWrap: "wrap", marginBottom: 14 }}>
+        <div>
+          <h1 className="page-title" style={{ marginBottom: 2 }}>All leads</h1>
+          <p className="page-subtitle" style={{ marginBottom: 0 }}>Manage, search and convert your full lead database.</p>
+        </div>
 
-      <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginBottom: 14 }}>
+        <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, flexWrap: "wrap" }}>
         {/* Manage columns */}
         <div style={{ position: "relative" }}>
           <button className="btn btn-outline" onClick={() => setShowCols((v) => !v)}>
@@ -168,6 +172,7 @@ export default function AllLeads() {
         </button>
         <button className="btn btn-outline"><FiUpload /> Import CSV</button>
         <button className="btn btn-primary" onClick={() => setShowAdd(true)}><FiPlus /> Add lead</button>
+        </div>
       </div>
 
       {error && (

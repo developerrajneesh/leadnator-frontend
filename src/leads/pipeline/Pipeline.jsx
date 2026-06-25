@@ -129,14 +129,14 @@ export default function Pipeline() {
 
   return (
     <>
-      <h1 className="page-title">Pipeline</h1>
-      <p className="page-subtitle">Drag leads between stages. Customize columns to match your sales process.</p>
-
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14, flexWrap: "wrap", gap: 10 }}>
-        <div style={{ fontSize: 13, color: "#6b7280" }}>
-          Drag leads between stages · <strong>₹{totalValue.toLocaleString()}</strong> pipeline value
+        <div>
+          <h1 className="page-title" style={{ marginBottom: 2 }}>Pipeline</h1>
+          <div style={{ fontSize: 13, color: "#6b7280" }}>
+            Drag leads between stages · <strong>₹{totalValue.toLocaleString()}</strong> pipeline value
+          </div>
         </div>
-        <div style={{ display: "flex", gap: 8 }}>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           <div style={{ position: "relative" }}>
             <button type="button" className="btn btn-outline" onClick={() => setShowFields((v) => !v)}>
               <FiColumns /> Card fields ({cardFields.length})

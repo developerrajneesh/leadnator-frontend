@@ -4,14 +4,6 @@ import "./App.css";
 
 import Auth from "./pages/Auth/Auth";
 import ResetPassword from "./pages/Auth/ResetPassword";
-import Home      from "./pages/Landing/Home";
-import Features  from "./pages/Landing/Features";
-import Pricing   from "./pages/Landing/Pricing";
-import Compare   from "./pages/Landing/Compare";
-import Faq       from "./pages/Landing/Faq";
-import Contact   from "./pages/Landing/Contact";
-import ApiDocs   from "./pages/Landing/ApiDocs";
-import Partners  from "./pages/Landing/Partners";
 import { buildRouter } from "./router";
 import { api, getToken, getStoredUser, setAuth, clearAuth, hasOrgSelected, setStoredOrg } from "./api/client";
 import SelectOrganization from "./pages/SelectOrganization";
@@ -26,19 +18,6 @@ import {
   hasPendingInstagramCode,
 } from "./instagram/oauthHandler";
 import { notify } from "./globalComponents/Toast/Toast";
-
-// Map every marketing URL to its page component so we can do simple
-// path-based routing for unauthenticated users without React Router.
-const MARKETING_PAGES = {
-  "/":         Home,
-  "/features": Features,
-  "/pricing":  Pricing,
-  "/partners": Partners,
-  "/compare":  Compare,
-  "/faq":      Faq,
-  "/contact":  Contact,
-  "/api-docs": ApiDocs,
-};
 
 export default function App() {
   const [authed, setAuthed] = useState(!!getToken());
@@ -172,9 +151,7 @@ export default function App() {
 
   const isPublicRoute   = /^\/(book|form)\//.test(path);
   const isResetPassword = /^\/reset-password\//.test(path);
-  const isLogin         = path === "/login";
   const isSignup        = path === "/signup";
-  const MarketingPage   = MARKETING_PAGES[path];
 
   if (isResetPassword) {
     return (
@@ -186,27 +163,14 @@ export default function App() {
     );
   }
 
-  // Unauthenticated flows:
-  //   /, /features, /pricing, /compare, /faq, /contact  → marketing pages
-  //   /login, /signup                                    → auth forms
-  //   anything else                                      → default to Home
+  // Unauthenticated → only the login / signup forms. The marketing site lives
+  // on a separate website now; every other path falls back to the login form.
   if (!authed && !isPublicRoute) {
-    if (MarketingPage) {
-      return (
-        <>
-          <MarketingPage onGoto={goto} />
-          <ToastHost />
-          <PwaPrompt />
-        </>
-      );
-    }
-
-    if (isLogin || isSignup) {
-      return (
-        <>
-          <Auth
-            mode={isSignup ? "signup" : "login"}
-            onAuth={async (res) => {
+    return (
+      <>
+        <Auth
+          mode={isSignup ? "signup" : "login"}
+          onAuth={async (res) => {
               const { token, user, organization, organizations, needsOrgSelection } = res;
               const nextRole = user?.role || "user";
               const target = nextRole === "admin" ? "/admin/overview" : "/dashboard/overview";
@@ -250,17 +214,6 @@ export default function App() {
             }}
             onSwitch={(m) => goto(m === "signup" ? "/signup" : "/login")}
           />
-          <ToastHost />
-          <PwaPrompt />
-        </>
-      );
-    }
-
-    // Deep-linked into the app without a token — show the marketing home
-    // instead of bouncing straight into a login form.
-    return (
-      <>
-        <Home onGoto={goto} />
         <ToastHost />
         <PwaPrompt />
       </>

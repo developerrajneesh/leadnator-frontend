@@ -20,6 +20,13 @@ export default function AutopilotList() {
   const [hooks, setHooks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
+  const [showCreate, setShowCreate] = useState(false);
+  const [name, setName] = useState("");
+
+  function openCreate() {
+    setName("");
+    setShowCreate(true);
+  }
 
   useEffect(() => {
     let alive = true;
@@ -30,14 +37,19 @@ export default function AutopilotList() {
     return () => { alive = false; };
   }, []);
 
-  async function createAutopilot() {
+  async function submitCreate(e) {
+    e?.preventDefault();
+    const n = name.trim();
+    if (!n) return;
     setCreating(true);
     try {
-      const res = await api.autopilot.create({ name: "Untitled workflow" });
+      const res = await api.autopilot.create({ name: n });
+      setShowCreate(false);
       navigate(`/autopilot/flows/${res.id}`);
     } catch (err) {
       notify.error(err.message || "Failed to create autopilot");
-    } finally { setCreating(false); }
+      setCreating(false);
+    }
   }
 
   async function removeAutopilot(id, name) {
@@ -63,8 +75,8 @@ export default function AutopilotList() {
         </div>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           <Link to="/autopilot/webhooks" className="btn btn-outline">All webhooks</Link>
-          <button className="btn btn-primary" type="button" onClick={createAutopilot} disabled={creating}>
-            <FiPlus style={{ marginRight: 6 }} /> {creating ? "Creating…" : "New autopilot"}
+          <button className="btn btn-primary" type="button" onClick={openCreate}>
+            <FiPlus style={{ marginRight: 6 }} /> New autopilot
           </button>
         </div>
       </div>
@@ -80,7 +92,7 @@ export default function AutopilotList() {
           <div style={{ color: "var(--text-muted)", maxWidth: 420, margin: "0 auto 18px" }}>
             Create your first workflow — pick a trigger, add actions, and get a webhook URL to call from anywhere.
           </div>
-          <button className="btn btn-primary" type="button" onClick={createAutopilot} disabled={creating}>
+          <button className="btn btn-primary" type="button" onClick={openCreate}>
             <FiPlus style={{ marginRight: 6 }} /> New autopilot
           </button>
         </div>
@@ -130,6 +142,36 @@ export default function AutopilotList() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Create autopilot — name step (not one-click) */}
+      {showCreate && (
+        <div
+          onClick={() => !creating && setShowCreate(false)}
+          style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.4)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 60, padding: 16 }}
+        >
+          <form onClick={(e) => e.stopPropagation()} onSubmit={submitCreate} className="card" style={{ width: 440, maxWidth: "100%" }}>
+            <h3 style={{ marginTop: 0, marginBottom: 4 }}>Create a new autopilot</h3>
+            <p style={{ fontSize: 13, color: "var(--text-muted)", marginBottom: 14 }}>
+              Give it a name so you can find it later. You'll get a webhook URL and can build the flow next.
+            </p>
+            <div className="form-group">
+              <label>Autopilot name</label>
+              <input
+                autoFocus
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="e.g. New lead → welcome email"
+              />
+            </div>
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 6 }}>
+              <button type="button" className="btn btn-outline" onClick={() => setShowCreate(false)} disabled={creating}>Cancel</button>
+              <button type="submit" className="btn btn-primary" disabled={creating || !name.trim()}>
+                {creating ? "Creating…" : "Create autopilot"}
+              </button>
+            </div>
+          </form>
         </div>
       )}
     </div>

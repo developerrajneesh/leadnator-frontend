@@ -10,6 +10,7 @@ export default function Plans() {
   const [plans, setPlans] = useState([]);
   const [durations, setDurations] = useState([]);
   const [durId, setDurId] = useState("monthly");
+  const [currentSub, setCurrentSub] = useState(null); // live active subscription from DB
   const [loading, setLoading] = useState(true);
   const [paying, setPaying] = useState("");
   const [error, setError] = useState("");
@@ -17,13 +18,31 @@ export default function Plans() {
   async function load() {
     setLoading(true); setError("");
     try {
-      const res = await pricingApi.plans();
+      // Fetch plans + the user's actual active subscription from the DB so the
+      // "Current plan" badge reflects live data (not the stale cached user.plan).
+      const [res, cur] = await Promise.all([
+        pricingApi.plans(),
+        pricingApi.current().catch(() => ({ subscription: null })),
+      ]);
       setPlans(res.plans || []);
       setDurations(res.durations || []);
+      setCurrentSub(cur?.subscription || null);
     } catch (err) { setError(err.message || "Failed to load plans."); }
     finally { setLoading(false); }
   }
   useEffect(() => { load(); loadRazorpay().catch(() => {}); }, []);
+
+  // True when this plan is the user's live current plan: prefer the active
+  // subscription from the DB; fall back to user.plan (free/default Starter).
+  function isCurrentPlan(p) {
+    if (currentSub) {
+      return (
+        (p.key && currentSub.planKey && currentSub.planKey.toLowerCase() === String(p.key).toLowerCase()) ||
+        (currentSub.planName && currentSub.planName === p.name)
+      );
+    }
+    return user?.plan === p.name;
+  }
 
   const duration = durations.find((d) => d.id === durId);
 
@@ -47,6 +66,7 @@ export default function Plans() {
         amount: orderRes.order.amount,
         currency: orderRes.order.currency,
         name: "Leadnator",
+        image: "https://app.leadnator.com/leadnator_logo.png",
         description: `${plan.name} · ${duration.label}`,
         order_id: orderRes.order.id,
         prefill: { name: user.name, email: user.email },
@@ -103,7 +123,7 @@ export default function Plans() {
         {plans.map((p) => {
           const { base, after } = priceFor(p);
           const perMonth = duration ? Math.round(after / duration.multiplier) : p.price;
-          const isCurrent = user.plan === p.name;
+          const isCurrent = isCurrentPlan(p);
           return (
             <div key={p.id || p.key} className={`price-card ${p.popular ? "popular" : ""}`}>
               {p.popular && <div className="popular-badge"><FiStar style={{ verticalAlign: "middle" }} /> MOST POPULAR</div>}

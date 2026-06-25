@@ -138,6 +138,11 @@ export const api = {
   campaigns: {
     list: () => request("/campaigns"),
   },
+  notifications: {
+    list:    (query) => request("/notifications", { query }),
+    markRead: (key)  => request("/notifications/read", { method: "POST", body: { key } }),
+    markAllRead:  () => request("/notifications/read-all", { method: "POST" }),
+  },
   dashboard: {
     stats:    () => request("/dashboard/stats"),
     overview: () => request("/dashboard/overview"),
@@ -150,6 +155,12 @@ export const api = {
   },
   admin: {
     users:      () => request("/admin/users"),
+    revenue:    () => request("/admin/revenue"),
+    notifications: (query) => request("/admin/notifications", { query }),
+    plans:       () => request("/admin/plans"),
+    createPlan:  (body) => request("/admin/plans", { method: "POST", body }),
+    updatePlan:  (id, body) => request(`/admin/plans/${id}`, { method: "PUT", body }),
+    deletePlan:  (id) => request(`/admin/plans/${id}`, { method: "DELETE" }),
     user:       (id) => request(`/admin/users/${id}`),
     updateUser: (id, body) => request(`/admin/users/${id}`, { method: "PUT", body }),
     logs:       (query) => request("/admin/logs", { query }),
@@ -179,6 +190,16 @@ export const api = {
     replyTicket:  (id, body) => request(`/support/tickets/${id}/reply`, { method: "POST", body: { body } }),
     faqs:       () => request("/support/faqs"),
     docs:       () => request("/support/docs"),
+  },
+  forms: {
+    publish:     (body) => request("/forms", { method: "POST", body }),
+    list:        () => request("/forms"),
+    get:         (formId) => request(`/forms/${formId}`),
+    submissions: (formId) => request(`/forms/${formId}/submissions`),
+    remove:      (formId) => request(`/forms/${formId}`, { method: "DELETE" }),
+    // Public (no auth) — used by the shared /form/:id page and iframe embeds.
+    getPublic:   (formId) => request(`/public/form/${formId}`),
+    submit:      (formId, values) => request(`/public/form/${formId}/submit`, { method: "POST", body: { values } }),
   },
   autopilot: {
     create: (body) => request("/autopilot", { method: "POST", body }),

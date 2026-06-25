@@ -73,7 +73,7 @@ const CATALOG = [
   { type: "trigger.new_lead",      group: "Triggers", kind: "trigger", icon: FiZap,         title: "Lead created",        desc: "Start when a new lead is added",
     fields: [{ key: "source", label: "Limit to source (optional)", type: "text", placeholder: "Any source" }] },
   { type: "trigger.form_submitted",group: "Triggers", kind: "trigger", icon: FiCheckCircle, title: "Form submitted",      desc: "Start when a public form is submitted",
-    fields: [{ key: "formId", label: "Form ID (optional)", type: "text", placeholder: "Any form" }] },
+    fields: [{ key: "formId", label: "Which form?", type: "formPicker", hint: "Choose a form you published in Tools → Form generator. Leave on “Any form” to trigger on every form." }] },
   { type: "trigger.tag_added",     group: "Triggers", kind: "trigger", icon: FiTag,         title: "Tag added",           desc: "Start when a contact gets a tag",
     fields: [{ key: "tag", label: "Tag", type: "text", placeholder: "hot-lead" }] },
 
@@ -449,9 +449,12 @@ export default function AutopilotFlows() {
   }
 
   return (
-    <div className="content-pad" style={{ display: "flex", flexDirection: "column", minHeight: 0 }}>
+    // No `content-pad` here — the global Layout already wraps every page in one.
+    // A second one wasted ~48px and overflowed the viewport (scrollbar). This
+    // page fills the available height and the canvas flexes into it.
+    <div style={{ display: "flex", flexDirection: "column", minHeight: 0 }}>
       {/* ---------------- Toolbar ---------------- */}
-      <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap", marginBottom: 12 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap", marginBottom: 10 }}>
         <Link to="/autopilot/flows" className="icon-btn" title="Back to all workflows" style={{ color: "#475569" }}>
           <FiArrowLeft />
         </Link>
@@ -497,7 +500,7 @@ export default function AutopilotFlows() {
 
       {/* ---------------- Webhook URL bar ---------------- */}
       {webhookUrl && (
-        <div style={{ display: "flex", alignItems: "center", gap: 8, background: "#f8fafc", border: "1px solid var(--border)", borderRadius: 10, padding: "8px 12px", marginBottom: 16 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, background: "#f8fafc", border: "1px solid var(--border)", borderRadius: 10, padding: "8px 12px", marginBottom: 10 }}>
           <span style={{ fontSize: 12, fontWeight: 700, color: "#7c3aed", textTransform: "uppercase", letterSpacing: 0.4, flexShrink: 0 }}>Webhook URL</span>
           <span style={{ flex: 1, minWidth: 0, fontSize: 12.5, fontFamily: "monospace", color: "#475569", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{webhookUrl}</span>
           <span style={{ fontSize: 11.5, color: "#94a3b8", flexShrink: 0 }}>{published ? "live" : "draft — publish to activate"}</span>
@@ -525,7 +528,7 @@ export default function AutopilotFlows() {
           NOTE: a real height is required — React Flow has no intrinsic size.
           Don't use flex:1 here; in a flex-column with no definite height it
           collapses to 0 (flex-basis 0%) and the canvas renders blank. */}
-      <div ref={flowWrapRef} className="card" style={{ height: "calc(100vh - 240px)", minHeight: 520, padding: 0, overflow: "hidden" }}>
+      <div ref={flowWrapRef} className="card" style={{ height: "calc(100vh - 224px)", minHeight: 520, padding: 0, overflow: "hidden" }}>
         <ReactFlow
           nodes={rfNodes}
           edges={rfEdges}
@@ -791,6 +794,15 @@ function ConfigDrawer({ node, onClose, onTitle, onField, onDelete }) {
     if (!needsSenders) return;
     emailApi.config().then((r) => setSenders(r.config?.senders || [])).catch(() => {});
   }, [needsSenders]);
+
+  const [forms, setForms] = useState([]);
+  const [formsLoading, setFormsLoading] = useState(false);
+  const needsForms = meta.fields.some((f) => f.type === "formPicker");
+  useEffect(() => {
+    if (!needsForms) return;
+    setFormsLoading(true);
+    api.forms.list().then((r) => setForms(r.forms || [])).catch(() => {}).finally(() => setFormsLoading(false));
+  }, [needsForms]);
   return (
     <>
       <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.28)", zIndex: 60 }} />
@@ -835,6 +847,23 @@ function ConfigDrawer({ node, onClose, onTitle, onField, onDelete }) {
                   <select value={node.config[field.key] || ""} onChange={(e) => onField(field.key, e.target.value)}>
                     {field.options.map((opt) => <option key={opt} value={opt}>{opt}</option>)}
                   </select>
+                ) : field.type === "formPicker" ? (
+                  formsLoading ? (
+                    <div style={{ fontSize: 12, color: "var(--text-muted)" }}>Loading your forms…</div>
+                  ) : forms.length === 0 ? (
+                    <div style={{ fontSize: 12, color: "var(--text-muted)" }}>
+                      No published forms yet — create one under <Link to="/tools/form" style={{ color: "var(--primary)" }}>Tools → Form generator</Link>, then click Publish.
+                    </div>
+                  ) : (
+                    <select value={node.config[field.key] || ""} onChange={(e) => onField(field.key, e.target.value)}>
+                      <option value="">Any form</option>
+                      {forms.map((f) => (
+                        <option key={f.formId} value={f.formId}>
+                          {f.title || "Untitled form"} ({f.submissions} submission{f.submissions === 1 ? "" : "s"})
+                        </option>
+                      ))}
+                    </select>
+                  )
                 ) : field.type === "emailSender" ? (
                   senders.length === 0 ? (
                     <div style={{ fontSize: 12, color: "var(--text-muted)" }}>
@@ -947,7 +976,7 @@ function MappingEditor({ rows, onChange }) {
       </div>
       {list.map((row, i) => (
         <div key={i} style={{ display: "grid", gridTemplateColumns: "1fr 18px 1fr 28px", gap: 6, alignItems: "center" }}>
-          <input value={row.from || ""} placeholder="email_address" onChange={(e) => update(i, "from", e.target.value)} />
+          <input value={row.from || ""} placeholder="data.email or data.source[0]" onChange={(e) => update(i, "from", e.target.value)} />
           <FiArrowRight style={{ color: "#94a3b8" }} />
           <input value={row.to || ""} placeholder="email" onChange={(e) => update(i, "to", e.target.value)} />
           <button className="icon-btn" type="button" title="Remove mapping" onClick={() => remove(i)} style={{ color: "#ef4444" }}>

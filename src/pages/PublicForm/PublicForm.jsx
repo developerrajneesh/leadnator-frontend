@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { FiCheck, FiAlertCircle } from "react-icons/fi";
+import { api } from "../../api/client";
+import { buildFormCss, normalizeStyle } from "../../tools/form/formStyle";
 
 function FieldPreview({ f, value, onChange }) {
   const common = {
@@ -37,22 +39,28 @@ export default function PublicForm() {
   const [form, setForm] = useState(null);
   const [values, setValues] = useState({});
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(`leadnator_form_${formId}`);
-      if (!raw) { setNotFound(true); return; }
-      setForm(JSON.parse(raw));
-    } catch { setNotFound(true); }
+    let alive = true;
+    api.forms.getPublic(formId)
+      .then((r) => { if (alive) setForm(r.form); })
+      .catch(() => { if (alive) setNotFound(true); });
+    return () => { alive = false; };
   }, [formId]);
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
-    const subs = JSON.parse(localStorage.getItem(`leadnator_subs_${formId}`) || "[]");
-    subs.push({ values, at: new Date().toISOString() });
-    localStorage.setItem(`leadnator_subs_${formId}`, JSON.stringify(subs));
-    setSubmitted(true);
+    setSubmitting(true);
+    try {
+      await api.forms.submit(formId, values);
+      setSubmitted(true);
+    } catch (err) {
+      alert(err.message || "Could not submit. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   if (notFound) return (
@@ -78,24 +86,27 @@ export default function PublicForm() {
     </div>
   );
 
+  const st = normalizeStyle(form.style);
+
   return (
     <div className="public-form-wrap">
-      <div className="public-form-card">
+      <style>{buildFormCss("lnf-public", form.style)}</style>
+      <div className="public-form-card lnf-public" style={{ background: st.background }}>
         <h2 style={{ fontSize: 24 }}>{form.title}</h2>
-        {form.description && <p style={{ color: "#6b7280", fontSize: 14, marginTop: 6, marginBottom: 22 }}>{form.description}</p>}
+        {form.description && <p style={{ fontSize: 14, marginTop: 6, marginBottom: 22, opacity: 0.7 }}>{form.description}</p>}
         <form onSubmit={handleSubmit}>
           {(form.fields || []).map((f) => (
             <div className="form-group" key={f.id}>
-              {f.type !== "checkbox" && <label>{f.label}{f.required && <span style={{ color: "var(--danger)" }}> *</span>}</label>}
+              {f.type !== "checkbox" && <label>{f.label}{f.required && <span style={{ color: st.accent }}> *</span>}</label>}
               <FieldPreview f={f} value={values[f.id]} onChange={(v) => setValues({ ...values, [f.id]: v })} />
             </div>
           ))}
-          <button type="submit" className="btn btn-primary" style={{ width: "100%", marginTop: 8, padding: 12 }}>
-            {form.submitLabel || "Submit"}
+          <button type="submit" disabled={submitting}>
+            {submitting ? "Submitting…" : (form.submitLabel || "Submit")}
           </button>
         </form>
-        <div style={{ marginTop: 24, textAlign: "center", fontSize: 12, color: "#9ca3af" }}>
-          Powered by <strong style={{ color: "var(--primary)" }}>Leadnator</strong>
+        <div style={{ marginTop: 24, textAlign: "center", fontSize: 12, opacity: 0.5 }}>
+          Powered by <strong>Leadnator</strong>
         </div>
       </div>
     </div>

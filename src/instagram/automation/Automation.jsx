@@ -10,6 +10,13 @@ const TRIGGERS = {
   "keyword.dm": "DM contains keyword",
 };
 
+const TRIGGER_HINTS = {
+  "dm.received": "Runs on every new DM. Next: set the auto-reply message.",
+  "comment.new": "Next: pick which posts, filter by keyword, and set comment/DM replies.",
+  "story.mention": "Runs when someone mentions you in their story. Next: set the DM reply.",
+  "keyword.dm": "Next: choose keywords to watch for and the DM reply to send.",
+};
+
 export default function Automation() {
   const navigate = useNavigate();
   const [flows, setFlows] = useState([]);
@@ -82,10 +89,11 @@ export default function Automation() {
                   <option key={k} value={k}>{v}</option>
                 ))}
               </select>
+              <small style={{ color: "var(--text-muted)", display: "block", marginTop: 6 }}>{TRIGGER_HINTS[trigger]}</small>
             </div>
             <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
               <button type="button" className="btn btn-outline" onClick={() => setShowNew(false)}>Cancel</button>
-              <button type="submit" className="btn btn-primary">Create</button>
+              <button type="submit" className="btn btn-primary">Create &amp; configure</button>
             </div>
           </form>
         </div>

@@ -1,11 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   FiPlus, FiTrash2, FiArrowUp, FiArrowDown, FiEye, FiCode,
-  FiCopy, FiShare2, FiSend,
+  FiCopy, FiShare2, FiSend, FiArrowLeft, FiEdit2, FiExternalLink, FiFileText, FiInbox,
 } from "react-icons/fi";
 import { copyText } from "../utils";
+import { api } from "../../api/client";
 import FieldPreview from "./components/FieldPreview";
 import ShareModal from "./components/ShareModal";
+import { DEFAULT_STYLE, FONTS, buildFormCss } from "./formStyle";
 
 const FIELD_TYPES = [
   { type: "text",     label: "Short text", icon: "Aa" },
@@ -18,6 +20,28 @@ const FIELD_TYPES = [
   { type: "checkbox", label: "Checkbox",   icon: "☑" },
   { type: "date",     label: "Date",       icon: "📅" },
 ];
+
+const STYLE_PRESETS = [
+  { name: "Purple",  style: { accent: "#7c3aed", buttonText: "#ffffff", background: "#ffffff", text: "#111827" } },
+  { name: "Ocean",   style: { accent: "#0ea5e9", buttonText: "#ffffff", background: "#f0f9ff", text: "#0f172a" } },
+  { name: "Emerald", style: { accent: "#059669", buttonText: "#ffffff", background: "#ffffff", text: "#111827" } },
+  { name: "Sunset",  style: { accent: "#f97316", buttonText: "#ffffff", background: "#fff7ed", text: "#1f2937" } },
+  { name: "Dark",    style: { accent: "#a78bfa", buttonText: "#0f172a", background: "#1e293b", text: "#e2e8f0" } },
+];
+
+function ColorRow({ label, value, onChange }) {
+  return (
+    <div className="form-group" style={{ margin: 0 }}>
+      <label>{label}</label>
+      <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+        <input type="color" value={value} onChange={(e) => onChange(e.target.value)}
+          style={{ width: 40, height: 34, padding: 2, border: "1px solid var(--border)", borderRadius: 6, cursor: "pointer" }} />
+        <input value={value} onChange={(e) => onChange(e.target.value)}
+          style={{ flex: 1, fontFamily: "monospace", fontSize: 12 }} />
+      </div>
+    </div>
+  );
+}
 
 function defaultField(type) {
   const base = {
@@ -34,8 +58,9 @@ function defaultField(type) {
   return base;
 }
 
-function buildHtml(title, description, fields, submitLabel) {
+function buildHtml(title, description, fields, submitLabel, style) {
   const parts = [];
+  parts.push(`<style>\n${buildFormCss("leadnator-form", style)}\n</style>`);
   parts.push(`<form class="leadnator-form">`);
   parts.push(`  <h2>${title}</h2>`);
   if (description) parts.push(`  <p>${description}</p>`);
@@ -62,18 +87,24 @@ function buildHtml(title, description, fields, submitLabel) {
   return parts.join("\n");
 }
 
-export default function Form() {
-  const [formId] = useState(() => `f${Math.random().toString(36).slice(2, 10)}`);
-  const [title, setTitle] = useState("Get in touch");
-  const [description, setDescription] = useState("Fill in the form below and we'll reply within 24 hours.");
-  const [submitLabel, setSubmitLabel] = useState("Submit");
-  const [fields, setFields] = useState([defaultField("text"), defaultField("email"), defaultField("textarea")]);
+function FormBuilder({ initialForm, onBack }) {
+  const editing = !!initialForm;
+  const [formId] = useState(() => initialForm?.formId || `f${Math.random().toString(36).slice(2, 10)}`);
+  const [title, setTitle] = useState(initialForm?.title ?? "Get in touch");
+  const [description, setDescription] = useState(initialForm?.description ?? "Fill in the form below and we'll reply within 24 hours.");
+  const [submitLabel, setSubmitLabel] = useState(initialForm?.submitLabel ?? "Submit");
+  const [fields, setFields] = useState(() =>
+    initialForm?.fields?.length ? initialForm.fields : [defaultField("text"), defaultField("email"), defaultField("textarea")]
+  );
+  const [style, setStyle] = useState(() => ({ ...DEFAULT_STYLE, ...(initialForm?.style || {}) }));
   const [selectedId, setSelectedId] = useState(null);
   const [viewMode, setViewMode] = useState("preview");
   const [sharing, setSharing] = useState(false);
-  const [published, setPublished] = useState(false);
+  const [published, setPublished] = useState(editing);
+  const [publishing, setPublishing] = useState(false);
 
   const selected = fields.find((f) => f.id === selectedId);
+  const setStyleField = (patch) => setStyle((s) => ({ ...s, ...patch }));
 
   function addField(type) {
     const f = defaultField(type);
@@ -90,27 +121,38 @@ export default function Form() {
     [copy[idx], copy[next]] = [copy[next], copy[idx]];
     setFields(copy);
   }
-  function publish() {
-    localStorage.setItem(`leadnator_form_${formId}`, JSON.stringify({ id: formId, title, description, submitLabel, fields }));
-    setPublished(true); setSharing(true);
+  async function publish() {
+    setPublishing(true);
+    try {
+      await api.forms.publish({ formId, title, description, submitLabel, fields, style });
+      setPublished(true);
+      setSharing(true);
+    } catch (err) {
+      alert(err.message || "Failed to publish form");
+    } finally {
+      setPublishing(false);
+    }
   }
 
-  const html = buildHtml(title, description, fields, submitLabel);
+  const html = buildHtml(title, description, fields, submitLabel, style);
 
   return (
     <>
-      <h1 className="page-title">Form generator</h1>
-      <p className="page-subtitle">Build a custom form with drag-and-drop-style fields. Copy ready-to-paste HTML.</p>
+      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 4 }}>
+        <button className="btn btn-ghost" onClick={onBack}><FiArrowLeft /> Back</button>
+        <h1 className="page-title" style={{ margin: 0 }}>{editing ? "Edit form" : "Create form"}</h1>
+      </div>
+      <p className="page-subtitle">Build a custom form, style it, then publish to get a shareable link & embed.</p>
 
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14, flexWrap: "wrap", gap: 10 }}>
         <div style={{ fontSize: 13, color: "#6b7280" }}>
-          {published ? <>Form ID: <code style={{ background: "#eef2ff", color: "#4338ca", padding: "2px 6px", borderRadius: 4 }}>{formId}</code> · already published</>
+          {published ? <>Form ID: <code style={{ background: "#eef2ff", color: "#4338ca", padding: "2px 6px", borderRadius: 4 }}>{formId}</code> · published</>
             : <>Design your form, then click <strong>Publish & share</strong> to get a link.</>}
         </div>
         <div style={{ display: "flex", gap: 8 }}>
           {published && <button className="btn btn-outline" onClick={() => setSharing(true)}><FiShare2 /> Share link</button>}
-          <button className="btn btn-primary" onClick={publish} disabled={fields.length === 0}>
-            <FiSend /> {published ? "Re-publish" : "Publish & share"}
+          <button className="btn btn-primary" onClick={publish} disabled={fields.length === 0 || publishing}>
+            <FiSend /> {publishing ? "Publishing…" : published ? "Re-publish" : "Publish & share"}
           </button>
         </div>
       </div>
@@ -190,6 +232,68 @@ export default function Form() {
             </div>
           </div>
 
+          <div className="card" style={{ marginBottom: 14 }}>
+            <div className="card-header"><div className="card-title">🎨 Design & style</div></div>
+
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 14 }}>
+              {STYLE_PRESETS.map((p) => (
+                <button key={p.name} type="button" className="btn btn-outline" style={{ fontSize: 12, padding: "6px 10px" }}
+                  onClick={() => setStyle((s) => ({ ...s, ...p.style }))}>
+                  <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: "50%", background: p.style.accent, marginRight: 6 }} />
+                  {p.name}
+                </button>
+              ))}
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+              <ColorRow label="Accent / button" value={style.accent} onChange={(v) => setStyleField({ accent: v })} />
+              <ColorRow label="Button text" value={style.buttonText} onChange={(v) => setStyleField({ buttonText: v })} />
+              <ColorRow label="Background" value={style.background} onChange={(v) => setStyleField({ background: v })} />
+              <ColorRow label="Text" value={style.text} onChange={(v) => setStyleField({ text: v })} />
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginTop: 12 }}>
+              <div className="form-group" style={{ margin: 0 }}>
+                <label>Font</label>
+                <select value={style.font} onChange={(e) => setStyleField({ font: e.target.value })}>
+                  {Object.entries(FONTS).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
+                </select>
+              </div>
+              <div className="form-group" style={{ margin: 0 }}>
+                <label>Corner radius — {style.radius}px</label>
+                <input type="range" min={0} max={24} value={style.radius}
+                  onChange={(e) => setStyleField({ radius: Number(e.target.value) })} style={{ width: "100%" }} />
+              </div>
+              <div className="form-group" style={{ margin: 0 }}>
+                <label>Field style</label>
+                <select value={style.fieldStyle} onChange={(e) => setStyleField({ fieldStyle: e.target.value })}>
+                  <option value="outline">Outlined</option>
+                  <option value="filled">Filled</option>
+                  <option value="underline">Underline</option>
+                </select>
+              </div>
+              <div className="form-group" style={{ margin: 0 }}>
+                <label>Button style</label>
+                <select value={style.buttonStyle} onChange={(e) => setStyleField({ buttonStyle: e.target.value })}>
+                  <option value="solid">Solid</option>
+                  <option value="outline">Outline</option>
+                </select>
+              </div>
+              <div className="form-group" style={{ margin: 0 }}>
+                <label>Alignment</label>
+                <select value={style.align} onChange={(e) => setStyleField({ align: e.target.value })}>
+                  <option value="left">Left</option>
+                  <option value="center">Center</option>
+                </select>
+              </div>
+              <div style={{ display: "flex", alignItems: "flex-end" }}>
+                <button type="button" className="btn btn-ghost" style={{ fontSize: 12 }} onClick={() => setStyle(DEFAULT_STYLE)}>
+                  Reset to default
+                </button>
+              </div>
+            </div>
+          </div>
+
           <div className="card" style={{ padding: 0 }}>
             <div style={{ padding: "12px 16px", display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid var(--border)" }}>
               <div style={{ display: "flex", gap: 4, background: "#f3f4f6", padding: 3, borderRadius: 8 }}>
@@ -200,17 +304,20 @@ export default function Form() {
             </div>
             <div style={{ padding: 20 }}>
               {viewMode === "preview" ? (
-                <form className="preview-form" onSubmit={(e) => { e.preventDefault(); alert("Form submitted (demo)"); }}>
-                  <h2 style={{ marginBottom: 6 }}>{title}</h2>
-                  {description && <p style={{ color: "#6b7280", fontSize: 13, marginBottom: 18 }}>{description}</p>}
-                  {fields.map((f) => (
-                    <div className="form-group" key={f.id}>
-                      {f.type !== "checkbox" && <label>{f.label}{f.required && <span style={{ color: "var(--danger)" }}> *</span>}</label>}
-                      <FieldPreview f={f} />
-                    </div>
-                  ))}
-                  <button type="submit" className="btn btn-primary" style={{ width: "100%", marginTop: 8 }}>{submitLabel}</button>
-                </form>
+                <>
+                  <style>{buildFormCss("lnf-preview", style)}</style>
+                  <form className="lnf-preview" onSubmit={(e) => { e.preventDefault(); alert("Form submitted (demo)"); }}>
+                    <h2 style={{ marginBottom: 6 }}>{title}</h2>
+                    {description && <p style={{ fontSize: 13, marginBottom: 18, opacity: 0.7 }}>{description}</p>}
+                    {fields.map((f) => (
+                      <div className="form-group" key={f.id}>
+                        {f.type !== "checkbox" && <label>{f.label}{f.required && <span style={{ color: style.accent }}> *</span>}</label>}
+                        <FieldPreview f={f} />
+                      </div>
+                    ))}
+                    <button type="submit">{submitLabel}</button>
+                  </form>
+                </>
               ) : (
                 <pre style={{ background: "#0f172a", color: "#e2e8f0", padding: 16, borderRadius: 10, fontSize: 12, lineHeight: 1.6, overflow: "auto", margin: 0, fontFamily: "monospace" }}>{html}</pre>
               )}
@@ -222,4 +329,101 @@ export default function Form() {
       {sharing && <ShareModal formId={formId} title={title} onClose={() => setSharing(false)} />}
     </>
   );
+}
+
+/* --------------------------- Forms list --------------------------- */
+function timeAgo(d) {
+  if (!d) return "";
+  try { return new Date(d).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" }); }
+  catch { return ""; }
+}
+
+function FormsList({ onNew, onEdit }) {
+  const [forms, setForms] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const load = useCallback(() => {
+    setLoading(true);
+    api.forms.list().then((r) => setForms(r.forms || [])).catch(() => setForms([])).finally(() => setLoading(false));
+  }, []);
+  useEffect(() => { load(); }, [load]);
+
+  async function remove(formId) {
+    if (!confirm("Delete this form? Its share link will stop working.")) return;
+    try { await api.forms.remove(formId); load(); }
+    catch (err) { alert(err.message || "Failed to delete"); }
+  }
+  function copyLink(formId) {
+    copyText(`${window.location.origin}/form/${formId}`);
+    alert("Share link copied!");
+  }
+
+  return (
+    <>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, flexWrap: "wrap" }}>
+        <div>
+          <h1 className="page-title">Forms</h1>
+          <p className="page-subtitle">Create shareable, embeddable forms. Submissions can trigger Autopilot flows.</p>
+        </div>
+        <button className="btn btn-primary" onClick={onNew}><FiPlus /> Create form</button>
+      </div>
+
+      {loading ? (
+        <div className="card" style={{ padding: 28, color: "var(--text-muted)" }}>Loading your forms…</div>
+      ) : forms.length === 0 ? (
+        <div className="card" style={{ padding: 48, textAlign: "center" }}>
+          <FiFileText style={{ fontSize: 34, color: "var(--border)", marginBottom: 12 }} />
+          <h3 style={{ margin: "0 0 6px" }}>No forms yet</h3>
+          <p style={{ color: "var(--text-muted)", marginBottom: 18 }}>Build your first form — add fields, style it, and share the link or embed it.</p>
+          <button className="btn btn-primary" onClick={onNew}><FiPlus /> Create form</button>
+        </div>
+      ) : (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 14 }}>
+          {forms.map((f) => (
+            <div key={f.formId} className="card" style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8 }}>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontWeight: 700, fontSize: 15, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{f.title || "Untitled form"}</div>
+                  <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 2 }}>Updated {timeAgo(f.updatedAt)}</div>
+                </div>
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "#4338ca", background: "#eef2ff", padding: "3px 8px", borderRadius: 20, whiteSpace: "nowrap" }}>
+                  <FiInbox size={12} /> {f.submissions}
+                </span>
+              </div>
+              <div style={{ fontSize: 12, color: "var(--text-muted)" }}>{f.fields} field{f.fields === 1 ? "" : "s"}</div>
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: "auto" }}>
+                <button className="btn btn-primary" style={{ fontSize: 12 }} onClick={() => onEdit(f.formId)}><FiEdit2 /> Edit</button>
+                <button className="btn btn-outline" style={{ fontSize: 12 }} onClick={() => copyLink(f.formId)}><FiCopy /> Link</button>
+                <a className="btn btn-outline" style={{ fontSize: 12 }} href={`/form/${f.formId}`} target="_blank" rel="noreferrer"><FiExternalLink /> Open</a>
+                <button className="btn btn-ghost" style={{ fontSize: 12, color: "#dc2626", marginLeft: "auto" }} onClick={() => remove(f.formId)}><FiTrash2 /></button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </>
+  );
+}
+
+export default function Form() {
+  const [view, setView] = useState("list");   // "list" | "builder"
+  const [editing, setEditing] = useState(null); // form object when editing, null when new
+  const [loadingForm, setLoadingForm] = useState(false);
+
+  function openNew() { setEditing(null); setView("builder"); }
+  async function openEdit(formId) {
+    setLoadingForm(true);
+    try {
+      const r = await api.forms.get(formId);
+      setEditing(r.form);
+      setView("builder");
+    } catch (err) {
+      alert(err.message || "Could not open form");
+    } finally { setLoadingForm(false); }
+  }
+  function back() { setEditing(null); setView("list"); }
+
+  if (loadingForm) return <p style={{ padding: 40, color: "var(--text-muted)" }}>Loading form…</p>;
+  if (view === "builder") return <FormBuilder initialForm={editing} onBack={back} />;
+  return <FormsList onNew={openNew} onEdit={openEdit} />;
 }

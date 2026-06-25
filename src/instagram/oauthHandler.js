@@ -2,6 +2,7 @@ import { igApi } from "../api/instagram";
 import { refreshInstagramStatus } from "./useInstagramStatus";
 import { getToken } from "../api/client";
 import { notify } from "../globalComponents/Toast/Toast";
+import { instagramRedirectUri } from "./constants";
 
 const CODE_KEY = "leadnator_ig_oauth_code";
 
@@ -28,7 +29,9 @@ export async function exchangePendingInstagramCode() {
   sessionStorage.removeItem(CODE_KEY);
 
   try {
-    const result = await igApi.oauthCallback(code);
+    // Same redirect_uri that was used for the authorize step — Instagram
+    // requires an exact match during the code→token exchange.
+    const result = await igApi.oauthCallback(code, instagramRedirectUri());
     await refreshInstagramStatus();
     notify.success(
       result?.connection?.username

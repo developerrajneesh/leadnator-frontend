@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { FiMessageCircle, FiRefreshCw, FiSend } from "react-icons/fi";
-import { igApi } from "../../api/instagram";
+import { FiMessageCircle, FiRefreshCw, FiSend, FiTrash2 } from "react-icons/fi";
+import { igApi, igMediaPictureUrl } from "../../api/instagram";
 
 export default function Comments() {
   const [comments, setComments] = useState([]);
@@ -29,6 +29,14 @@ export default function Comments() {
     } catch (err) { alert(err.message); }
   }
 
+  async function deleteReply(id) {
+    if (!confirm("Delete this reply?")) return;
+    try {
+      await igApi.deleteReply(id);
+      await load();
+    } catch (err) { alert(err.message); }
+  }
+
   return (
     <>
       <h1 className="page-title">Instagram — Comments</h1>
@@ -45,15 +53,28 @@ export default function Comments() {
         <div className="table-wrap">
           <table>
             <thead>
-              <tr><th>User</th><th>Comment</th><th>Status</th><th style={{ width: 200 }}>Actions</th></tr>
+              <tr><th>Post</th><th>User</th><th>Comment</th><th>Status</th><th style={{ width: 200 }}>Actions</th></tr>
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan={4} style={{ padding: 24, color: "var(--text-muted)" }}>Loading…</td></tr>
+                <tr><td colSpan={5} style={{ padding: 24, color: "var(--text-muted)" }}>Loading…</td></tr>
               ) : comments.length === 0 ? (
-                <tr><td colSpan={4} style={{ padding: 24, color: "var(--text-muted)" }}>No comments yet.</td></tr>
+                <tr><td colSpan={5} style={{ padding: 24, color: "var(--text-muted)" }}>No comments yet.</td></tr>
               ) : comments.map((c) => (
                 <tr key={c.id}>
+                  <td>
+                    {c.mediaId ? (
+                      <img
+                        src={igMediaPictureUrl(c.mediaId)}
+                        alt="post"
+                        title={c.mediaId}
+                        style={{ width: 40, height: 40, borderRadius: 6, objectFit: "cover", background: "var(--border)" }}
+                        onError={(e) => { e.currentTarget.style.visibility = "hidden"; }}
+                      />
+                    ) : (
+                      <span style={{ fontSize: 12, color: "var(--text-muted)" }}>—</span>
+                    )}
+                  </td>
                   <td>@{c.igUsername}</td>
                   <td>{c.text}</td>
                   <td>
@@ -67,7 +88,18 @@ export default function Comments() {
                   </td>
                   <td>
                     {c.replied ? (
-                      <span style={{ fontSize: 12, color: "var(--text-muted)" }}>{c.replyText}</span>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <span style={{ fontSize: 12, color: "var(--text-muted)" }}>{c.replyText}</span>
+                        <button
+                          type="button"
+                          className="btn btn-ghost"
+                          title="Delete reply"
+                          style={{ padding: "4px 8px", color: "#dc2626" }}
+                          onClick={() => deleteReply(c.id)}
+                        >
+                          <FiTrash2 />
+                        </button>
+                      </div>
                     ) : replying === c.id ? (
                       <div style={{ display: "flex", gap: 6 }}>
                         <input value={text} onChange={(e) => setText(e.target.value)} placeholder="Reply…" style={{ flex: 1, fontSize: 12 }} />

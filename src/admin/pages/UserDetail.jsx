@@ -128,22 +128,77 @@ function Overview({ stats, organizations }) {
         <Kpi icon={<FiZap size={20} />}           label="Autopilots"        value={stats.autopilots}     color="#ec4899" />
       </div>
 
-      <div className="card" style={{ marginTop: 16 }}>
-        <div className="card-header"><div className="card-title"><FiBriefcase /> Workspaces ({organizations.length})</div></div>
-        {organizations.length === 0 ? (
-          <div style={{ color: "var(--text-muted)", fontSize: 13 }}>No workspaces.</div>
-        ) : (
-          <div style={{ display: "grid", gap: 8 }}>
-            {organizations.map((o) => (
-              <div key={o.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 12px", border: "1px solid var(--border)", borderRadius: 10 }}>
-                <span style={{ fontWeight: 600 }}>{o.name}</span>
-                <span style={{ fontSize: 12, textTransform: "capitalize", color: "#64748b" }}>{o.role}</span>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+      <Workspaces organizations={organizations} />
     </>
+  );
+}
+
+function Workspaces({ organizations }) {
+  const [selectedId, setSelectedId] = useState(organizations[0]?.id || null);
+  const selected = organizations.find((o) => o.id === selectedId) || null;
+
+  const fmtDate = (d) => (d ? new Date(d).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) : "—");
+
+  return (
+    <div className="card" style={{ marginTop: 16 }}>
+      <div className="card-header"><div className="card-title"><FiBriefcase /> Workspaces ({organizations.length})</div></div>
+      {organizations.length === 0 ? (
+        <div style={{ color: "var(--text-muted)", fontSize: 13 }}>No workspaces.</div>
+      ) : (
+        <>
+          {/* Selected workspace details — shown above the list */}
+          {selected && (
+            <div style={{ border: "1px solid #c4b5fd", background: "#faf9ff", borderRadius: 12, padding: 16, marginBottom: 14 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8, marginBottom: 12 }}>
+                <div style={{ fontSize: 16, fontWeight: 700 }}>{selected.name}</div>
+                <span style={{ fontSize: 12, fontWeight: 600, textTransform: "capitalize", color: "#5b21b6", background: "#ede9fe", padding: "3px 10px", borderRadius: 999 }}>{selected.role}</span>
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))", gap: 10 }}>
+                <MiniStat icon={<FiUsers size={16} />}     label="Leads"   value={selected.leads ?? 0} color="#7c3aed" />
+                <MiniStat icon={<FiUserCheck size={16} />} label="Members" value={selected.members ?? 0} color="#10b981" />
+                <MiniStat icon={<FiCalendar size={16} />}  label="Created" value={fmtDate(selected.createdAt)} color="#0ea5e9" />
+              </div>
+            </div>
+          )}
+
+          {/* Selectable list */}
+          <div style={{ display: "grid", gap: 8 }}>
+            {organizations.map((o) => {
+              const active = o.id === selectedId;
+              return (
+                <div
+                  key={o.id}
+                  onClick={() => setSelectedId(o.id)}
+                  style={{
+                    display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 12px",
+                    border: `1px solid ${active ? "#a78bfa" : "var(--border)"}`, borderRadius: 10, cursor: "pointer",
+                    background: active ? "#f5f3ff" : "transparent", transition: "0.12s",
+                  }}
+                >
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: 8, fontWeight: 600 }}>
+                    <FiBriefcase size={14} style={{ color: active ? "#7c3aed" : "#94a3b8" }} />
+                    {o.name}
+                  </span>
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: 10 }}>
+                    <span style={{ fontSize: 12, color: "#64748b" }}>{o.leads ?? 0} leads</span>
+                    <span style={{ fontSize: 12, textTransform: "capitalize", color: "#64748b" }}>{o.role}</span>
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+function MiniStat({ icon, label, value, color }) {
+  return (
+    <div style={{ background: "#fff", border: "1px solid var(--border)", borderRadius: 10, padding: "10px 12px" }}>
+      <div style={{ display: "inline-flex", alignItems: "center", gap: 6, color, fontSize: 12, fontWeight: 600 }}>{icon}{label}</div>
+      <div style={{ fontSize: 18, fontWeight: 700, marginTop: 4 }}>{value}</div>
+    </div>
   );
 }
 

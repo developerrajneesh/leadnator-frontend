@@ -89,7 +89,7 @@ export default function OrgSwitcher() {
         }}
       >
         <FiBriefcase />
-        <span style={{ maxWidth: 140, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+        <span className="org-switch-name" style={{ maxWidth: 140, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
           {current?.name || "Workspace"}
         </span>
         <FiChevronDown size={14} />

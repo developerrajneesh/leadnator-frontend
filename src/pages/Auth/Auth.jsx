@@ -1,10 +1,12 @@
 import { useState } from "react";
+import { FiEye, FiEyeOff } from "react-icons/fi";
 import { api } from "../../api/client";
 
 export default function Auth({ mode = "login", onAuth, onSwitch }) {
   const [form, setForm] = useState({ name: "", email: "", phone: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   // Local-only "forgot password" view — no route change needed. When a user
   // clicks Forgot password we flip `localMode` to "forgot", and inside that
   // view they can submit their email and then return to login.
@@ -105,12 +107,12 @@ export default function Auth({ mode = "login", onAuth, onSwitch }) {
           </>
         ) : (
           <>
-            <h1>{activeMode === "login" ? "Welcome back" : "Create your account"}</h1>
-            <p className="sub">
-              {activeMode === "login"
-                ? "Sign in with your account email or your workspace login email (set when you created an organization)."
-                : "Start your 14-day trial — no credit card needed."}
-            </p>
+            {activeMode === "signup" && (
+              <>
+                <h1>Create your account</h1>
+                <p className="sub">Start your 14-day trial — no credit card needed.</p>
+              </>
+            )}
             <form onSubmit={handleSubmit}>
               {activeMode === "signup" && (
                 <div className="form-group">
@@ -127,7 +129,28 @@ export default function Auth({ mode = "login", onAuth, onSwitch }) {
               )}
               <div className="form-group">
                 <label>Password</label>
-                <input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required />
+                <div style={{ position: "relative" }}>
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    value={form.password}
+                    onChange={(e) => setForm({ ...form, password: e.target.value })}
+                    required
+                    style={{ paddingRight: 42, width: "100%" }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((s) => !s)}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    title={showPassword ? "Hide password" : "Show password"}
+                    style={{
+                      position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)",
+                      background: "transparent", border: "none", cursor: "pointer", color: "#94a3b8",
+                      display: "grid", placeItems: "center", padding: 4,
+                    }}
+                  >
+                    {showPassword ? <FiEyeOff size={18} /> : <FiEye size={18} />}
+                  </button>
+                </div>
               </div>
               {error && (
                 <div style={{ color: "#b91c1c", fontSize: 13, marginBottom: 10, padding: "8px 12px", background: "#fee2e2", borderRadius: 8 }}>

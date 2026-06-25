@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { FiInbox, FiRefreshCw, FiSearch, FiSend } from "react-icons/fi";
+import { FiInbox, FiRefreshCw, FiSearch, FiSend, FiAlertTriangle, FiMessageSquare, FiFileText, FiExternalLink, FiMic, FiImage } from "react-icons/fi";
 import { igApi } from "../../api/instagram";
 import { useInstagramStatus } from "../useInstagramStatus";
 import { avatarColors, initials, timeShort } from "./inboxUtils";
@@ -18,6 +18,60 @@ function Avatar({ name, size = 40 }) {
   );
 }
 
+function Attachment({ a, outgoing }) {
+  const wrap = { marginBottom: 6, borderRadius: 12, overflow: "hidden", maxWidth: 240 };
+  const linkColor = outgoing ? "white" : "#e1306c";
+
+  if (a.type === "unsupported") {
+    return (
+      <div style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, opacity: 0.85 }}>
+        <FiImage /> Photo, video or reaction — open in Instagram
+      </div>
+    );
+  }
+
+  if (a.type === "image" && (a.previewUrl || a.url)) {
+    return (
+      <a href={a.url || a.previewUrl} target="_blank" rel="noreferrer" style={{ display: "block", ...wrap }}>
+        <img src={a.previewUrl || a.url} alt="" style={{ display: "block", width: "100%", maxHeight: 280, objectFit: "cover" }}
+          onError={(e) => { e.currentTarget.parentElement.style.display = "none"; }} />
+      </a>
+    );
+  }
+
+  if (a.type === "video" && a.url) {
+    return (
+      <video src={a.url} poster={a.previewUrl || undefined} controls
+        style={{ ...wrap, width: "100%", maxHeight: 280, background: "#000" }} />
+    );
+  }
+
+  if (a.type === "audio" && a.url) {
+    return (
+      <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
+        <FiMic style={{ flexShrink: 0 }} />
+        <audio src={a.url} controls style={{ height: 32, maxWidth: 200 }} />
+      </div>
+    );
+  }
+
+  // share / story / file → link card
+  const label = a.type === "share" ? (a.name || "Shared post")
+    : a.type === "story" ? "Story"
+    : (a.name || "Attachment");
+  const Icon = a.type === "story" ? FiExternalLink : FiFileText;
+  return a.url ? (
+    <a href={a.url} target="_blank" rel="noreferrer"
+      style={{ display: "inline-flex", alignItems: "center", gap: 6, marginBottom: 6, color: linkColor, textDecoration: "underline", fontSize: 13 }}>
+      <Icon /> {label}
+    </a>
+  ) : (
+    <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginBottom: 6, opacity: 0.85, fontSize: 13 }}>
+      <Icon /> {label}
+    </div>
+  );
+}
+
 export default function Inbox() {
   const { status } = useInstagramStatus();
   const [conversations, setConversations] = useState([]);
@@ -27,6 +81,7 @@ export default function Inbox() {
   const [loadingList, setLoadingList] = useState(true);
   const [loadingMsgs, setLoadingMsgs] = useState(false);
   const [sending, setSending] = useState(false);
+  const [sendError, setSendError] = useState("");
   const [listError, setListError] = useState("");
   const [msgError, setMsgError] = useState("");
   const [search, setSearch] = useState("");
@@ -62,6 +117,7 @@ export default function Inbox() {
     if (!conv?.id) return;
     setLoadingMsgs(true);
     setMsgError("");
+    setSendError("");
     try {
       const r = await igApi.messages(conv.id, {
         igUserId: conv.igUserId,
@@ -105,20 +161,19 @@ export default function Inbox() {
     e.preventDefault();
     if (!reply.trim() || !active || sending) return;
     setSending(true);
+    setSendError("");
     try {
       const r = await igApi.sendMessage(active.id, {
         text: reply.trim(),
         igUserId: active.igUserId,
         igUsername: active.igUsername,
       });
-      if (r.sendError) {
-        alert(`Message saved locally but Instagram send failed: ${r.sendError}`);
-      }
       setReply("");
       await loadMessages(active);
       await loadConversations(true);
+      if (r.sendError) setSendError(r.sendError);
     } catch (err) {
-      alert(err.message || "Failed to send");
+      setSendError(err.message || "Failed to send");
     } finally {
       setSending(false);
     }
@@ -135,14 +190,25 @@ export default function Inbox() {
       </p>
 
       {listError && (
-        <div className="card" style={{ padding: "12px 16px", marginBottom: 12, fontSize: 13, color: "#b45309", borderColor: "#fde68a", background: "#fffbeb" }}>
-          {listError}. Connect Facebook (Meta) for the same page, or ensure <strong>instagram_business_manage_messages</strong> is granted.
+        <div style={{
+          display: "flex", gap: 12, alignItems: "flex-start",
+          padding: "12px 16px", marginBottom: 14, borderRadius: 10,
+          fontSize: 13, color: "#92400e", border: "1px solid #fde68a", background: "#fffbeb",
+        }}>
+          <FiAlertTriangle style={{ flexShrink: 0, marginTop: 2, fontSize: 18, color: "#d97706" }} />
+          <div>
+            <div style={{ fontWeight: 600, marginBottom: 2 }}>Can't load Instagram DMs</div>
+            <div style={{ color: "#b45309" }}>{listError}</div>
+            <div style={{ marginTop: 4, color: "#a16207" }}>
+              Connect Facebook (Meta) for the same page, or ensure <strong>instagram_business_manage_messages</strong> is granted.
+            </div>
+          </div>
         </div>
       )}
 
       <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 12 }}>
         <button type="button" className="btn btn-outline" onClick={() => loadConversations(true)} disabled={loadingList}>
-          <FiRefreshCw /> Refresh
+          <FiRefreshCw className={loadingList ? "spin" : ""} /> Refresh
         </button>
       </div>
 
@@ -163,13 +229,17 @@ export default function Inbox() {
             <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 10, display: "flex", alignItems: "center", gap: 8 }}>
               <FiInbox style={{ color: "#e1306c" }} /> Conversations
             </div>
-            <div style={{ position: "relative" }}>
-              <FiSearch style={{ position: "absolute", left: 10, top: 10, color: "var(--text-muted)" }} />
+            <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+              <FiSearch style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "var(--text-muted)", pointerEvents: "none" }} />
               <input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search…"
-                style={{ width: "100%", paddingLeft: 32, fontSize: 13 }}
+                style={{
+                  width: "100%", padding: "9px 12px 9px 32px", fontSize: 13,
+                  border: "1px solid var(--border)", borderRadius: 8, outline: "none",
+                  background: "var(--bg, #fff)",
+                }}
               />
             </div>
           </div>
@@ -178,9 +248,12 @@ export default function Inbox() {
               <p style={{ padding: 16, color: "var(--text-muted)", fontSize: 13 }}>Loading conversations…</p>
             )}
             {!loadingList && filtered.length === 0 && (
-              <p style={{ padding: 16, color: "var(--text-muted)", fontSize: 13 }}>
-                No conversations yet. DMs will appear here when customers message you on Instagram.
-              </p>
+              <div style={{ padding: "40px 20px", textAlign: "center", color: "var(--text-muted)" }}>
+                <FiInbox style={{ fontSize: 30, color: "var(--border)", marginBottom: 10 }} />
+                <p style={{ fontSize: 13, margin: 0 }}>
+                  {search ? "No conversations match your search." : "No conversations yet. DMs will appear here when customers message you on Instagram."}
+                </p>
+              </div>
             )}
             {filtered.map((c) => {
               const name = displayName(c);
@@ -260,7 +333,13 @@ export default function Inbox() {
                       border: m.direction === "out" ? "none" : "1px solid var(--border)",
                       boxShadow: m.direction === "out" ? "0 2px 8px rgba(225,48,108,0.25)" : "0 1px 3px rgba(0,0,0,0.06)",
                     }}>
-                      <div>{m.text}</div>
+                      {(m.attachments || []).map((a, i) => (
+                        <Attachment key={i} a={a} outgoing={m.direction === "out"} />
+                      ))}
+                      {m.text && <div>{m.text}</div>}
+                      {!m.text && !(m.attachments || []).length && (
+                        <div style={{ opacity: 0.6, fontStyle: "italic" }}>Unsupported message</div>
+                      )}
                       <div style={{
                         fontSize: 10, marginTop: 6, opacity: 0.75,
                         textAlign: m.direction === "out" ? "right" : "left",
@@ -272,6 +351,11 @@ export default function Inbox() {
                 ))}
                 <div ref={messagesEndRef} />
               </div>
+              {sendError && (
+                <div style={{ padding: "8px 14px", fontSize: 12, color: "#b45309", background: "#fffbeb", borderTop: "1px solid #fde68a", display: "flex", gap: 6, alignItems: "center" }}>
+                  <FiAlertTriangle style={{ flexShrink: 0 }} /> {sendError}
+                </div>
+              )}
               <form onSubmit={sendReply} style={{ padding: 12, borderTop: "1px solid var(--border)", display: "flex", gap: 8 }}>
                 <input
                   value={reply}
@@ -286,8 +370,21 @@ export default function Inbox() {
               </form>
             </>
           ) : (
-            <div style={{ padding: 48, textAlign: "center", color: "var(--text-muted)" }}>
-              Select a conversation to view messages
+            <div style={{
+              flex: 1, display: "flex", flexDirection: "column",
+              alignItems: "center", justifyContent: "center",
+              padding: 48, textAlign: "center", color: "var(--text-muted)", gap: 12,
+            }}>
+              <div style={{
+                width: 64, height: 64, borderRadius: "50%", display: "flex",
+                alignItems: "center", justifyContent: "center", background: "rgba(225,48,108,0.08)",
+              }}>
+                <FiMessageSquare style={{ fontSize: 28, color: "#e1306c" }} />
+              </div>
+              <div>
+                <div style={{ fontWeight: 600, color: "var(--text)", marginBottom: 4 }}>No conversation selected</div>
+                <div style={{ fontSize: 13 }}>Pick a conversation from the left to view and reply to messages.</div>
+              </div>
             </div>
           )}
         </div>

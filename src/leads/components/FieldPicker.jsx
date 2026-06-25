@@ -5,8 +5,8 @@ import { humanize } from "../leadFields";
 export default function FieldPicker({ ordered, visible, onToggle, onReset, onClose, title = "Manage fields", hint }) {
   return (
     <>
-      <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 40 }} />
-      <div style={{
+      <div className="field-picker-backdrop" onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 40 }} />
+      <div className="field-picker-pop" style={{
         position: "absolute", top: "calc(100% + 6px)", right: 0, zIndex: 41, width: 290, maxHeight: 400,
         overflowY: "auto", background: "white", border: "1px solid var(--border)", borderRadius: 12,
         boxShadow: "0 12px 32px rgba(15,23,42,0.16)", padding: 12,

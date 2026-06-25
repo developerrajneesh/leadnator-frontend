@@ -5,7 +5,7 @@ import {
   FiSend, FiRefreshCw, FiSearch, FiMessageCircle,
   FiPhone, FiVideo, FiMoreVertical, FiCheck, FiSmile, FiPaperclip,
   FiImage, FiFile, FiMusic, FiMapPin, FiList, FiCornerUpRight, FiLink, FiCopy, FiCpu,
-  FiClipboard, FiX, FiExternalLink, FiTag, FiTrash2, FiLayers, FiPlus,
+  FiClipboard, FiX, FiExternalLink, FiTag, FiTrash2, FiLayers, FiPlus, FiArrowLeft,
 } from "react-icons/fi";
 import { FaWhatsapp } from "react-icons/fa";
 import { waApi } from "../../api/whatsapp";
@@ -819,7 +819,7 @@ export default function Inbox() {
         }}>{error}</div>
       )}
 
-      <div className="card" style={{
+      <div className={`card wa-inbox ${activePhone ? "wa-chat-open" : ""}`} style={{
         padding: 0, display: "grid", gridTemplateColumns: "300px 1fr",
         // Negative margins cancel .content-pad's 24px padding so the chat
         // fills the entire viewport width + height below the main header.
@@ -831,7 +831,7 @@ export default function Inbox() {
         borderLeft: "none", borderRight: "none", borderBottom: "none",
       }}>
         {/* ---- LEFT: Conversations ---- */}
-        <div style={{ display: "flex", flexDirection: "column", borderRight: "1px solid var(--border)", background: "#fafbfc", minHeight: 0, height: "100%" }}>
+        <div className="wa-pane-list" style={{ display: "flex", flexDirection: "column", borderRight: "1px solid var(--border)", background: "#fafbfc", minHeight: 0, height: "100%" }}>
           {/* Sidebar header: brand + conversation count + refresh */}
           <div style={{
             display: "flex", alignItems: "center", justifyContent: "space-between",
@@ -965,7 +965,7 @@ export default function Inbox() {
 
         {/* ---- RIGHT: Chat area ---- */}
         {!activePhone ? (
-          <div style={{
+          <div className="wa-pane-thread" style={{
             display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
             background: "#f9fafb", color: "var(--text-muted)", textAlign: "center", padding: 40,
           }}>
@@ -984,12 +984,15 @@ export default function Inbox() {
             </p>
           </div>
         ) : (
-          <div style={{ display: "flex", flexDirection: "column", minWidth: 0, minHeight: 0, height: "100%" }}>
+          <div className="wa-pane-thread" style={{ display: "flex", flexDirection: "column", minWidth: 0, minHeight: 0, height: "100%" }}>
             {/* Chat header */}
             <div style={{
               padding: "8px 14px", borderBottom: "1px solid var(--border)",
               display: "flex", alignItems: "center", gap: 12, background: "#f9fafb",
             }}>
+              <button type="button" className="wa-back-btn icon-btn" onClick={() => setActivePhone("")} title="Back" aria-label="Back to conversations">
+                <FiArrowLeft />
+              </button>
               <Avatar name={activeName} size={36} online />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>

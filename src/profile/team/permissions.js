@@ -42,7 +42,8 @@ export const MODULE_PERMISSIONS = [
   {
     key: "meta", label: "Meta Ads", color: "#1877f2", Icon: FiTarget,
     routes: [
-      { key: "overview",  label: "Overview" },
+      { key: "overview",     label: "Overview" },
+      { key: "account-info", label: "Account info" },
       { key: "campaigns", label: "Campaigns" },
       { key: "create",    label: "Create campaign" },
       { key: "analytics", label: "Analytics" },
@@ -254,7 +255,7 @@ export function canAccess(user, moduleKey, subRouteKey) {
   // Module-level "overview" pages are read-only landing pages that just
   // describe what's inside. Anyone with ANY access to the module can see
   // them — the granular sub-route grants then control real actions.
-  if (subRouteKey === "overview") {
+  if (subRouteKey === "overview" || subRouteKey === "account-info") {
     return Object.values(perms[moduleKey]).some((v) => v);
   }
   return !!perms[moduleKey][subRouteKey];
