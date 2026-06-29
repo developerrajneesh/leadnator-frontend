@@ -3,7 +3,6 @@ import { FaInstagram } from "react-icons/fa";
 import { FiSave, FiLogOut } from "react-icons/fi";
 import { igApi } from "../../api/instagram";
 import { refreshInstagramStatus } from "../useInstagramStatus";
-import ConnectInstagram from "../components/ConnectInstagram";
 
 export default function Settings() {
   const [connection, setConnection] = useState(null);
@@ -47,16 +46,6 @@ export default function Settings() {
   }
 
   if (loading) return <p style={{ padding: 40, color: "var(--text-muted)" }}>Loading…</p>;
-
-  if (!connection) {
-    return (
-      <>
-        <h1 className="page-title">Instagram — Settings</h1>
-        <p className="page-subtitle">Connect your account to manage automations.</p>
-        <ConnectInstagram compact />
-      </>
-    );
-  }
 
   return (
     <>

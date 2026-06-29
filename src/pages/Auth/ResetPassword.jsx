@@ -40,8 +40,60 @@ export default function ResetPassword() {
     } finally { setSaving(false); }
   }
 
+  // Contextual copy for the decorative left panel.
+  const hero =
+    status === "done"
+      ? { title: "All set!", sub: "Your password has been updated — you're good to go." }
+      : status === "invalid"
+        ? { title: "Hmm, that link.", sub: "It's expired or already used. Request a fresh reset link to continue." }
+        : status === "verifying"
+          ? { title: "One moment…", sub: "We're just checking your reset link." }
+          : { title: "Almost done.", sub: "Choose a strong new password to secure your account." };
+
   return (
     <div className="auth-wrap">
+      {/* Faint shapes behind the card */}
+      <div className="auth-bg" aria-hidden="true">
+        <span className="auth-bg-circle auth-bg-circle-1" />
+        <span className="auth-bg-circle auth-bg-circle-2" />
+        <span className="auth-bg-circle auth-bg-circle-3" />
+        <span className="auth-bg-square" />
+      </div>
+
+      <div className="auth-shell">
+        <aside className="auth-aside">
+          <div className="auth-aside-blobs" aria-hidden="true">
+            <span className="auth-blob auth-blob-1" />
+            <span className="auth-blob auth-blob-2" />
+
+            <svg className="auth-topo auth-topo-tl" viewBox="0 0 240 150" fill="none" preserveAspectRatio="none">
+              {[0, 15, 30, 45, 60, 75, 90].map((y, i) => (
+                <path key={i} d={`M-20 ${28 + y} C 35 ${8 + y}, 85 ${8 + y}, 140 ${28 + y} S 235 ${58 + y}, 275 ${38 + y}`} />
+              ))}
+            </svg>
+
+            <svg className="auth-topo auth-topo-br" viewBox="0 0 200 200" fill="none">
+              {[1, 0.82, 0.64, 0.46, 0.28].map((s, i) => (
+                <path
+                  key={i}
+                  d="M104 26 C 150 32, 172 80, 156 126 C 142 164, 82 178, 52 146 C 26 118, 44 50, 104 26 Z"
+                  transform={`translate(100 105) scale(${s}) translate(-100 -105)`}
+                />
+              ))}
+            </svg>
+
+            <span className="auth-dotgrid" />
+            <span className="auth-ring auth-ring-1" />
+            <span className="auth-ring auth-ring-2" />
+            <span className="auth-plus auth-plus-1">+</span>
+            <span className="auth-plus auth-plus-2">+</span>
+          </div>
+          <div className="auth-aside-content">
+            <h2>{hero.title}</h2>
+            <p>{hero.sub}</p>
+          </div>
+        </aside>
+
       <div className="auth-card">
         <div className="auth-logo" style={{ flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4 }}>
           <div className="brand-name" style={{ marginLeft: 0, alignItems: "center" }}>
@@ -107,6 +159,7 @@ export default function ResetPassword() {
             </button>
           </>
         )}
+      </div>
       </div>
     </div>
   );

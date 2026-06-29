@@ -3,7 +3,7 @@ import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import {
   FiGrid, FiUsers, FiAward, FiDollarSign, FiTarget,
   FiLifeBuoy, FiSettings, FiLogOut, FiBell,
-  FiChevronDown, FiMenu, FiActivity, FiUserPlus, FiCreditCard,
+  FiChevronDown, FiMenu, FiActivity, FiUserPlus, FiCreditCard, FiMail,
 } from "react-icons/fi";
 import { api, getStoredUser } from "../api/client";
 import { onSocket } from "../api/socket";
@@ -22,6 +22,7 @@ const ADMIN_NAV = [
   { to: "/admin/revenue",   Icon: FiDollarSign, label: "Revenue",    section: "Manage" },
   { to: "/admin/support",   Icon: FiLifeBuoy,   label: "Support",       section: "Operations" },
   { to: "/admin/logs",      Icon: FiActivity,   label: "Activity logs", section: "Operations" },
+  { to: "/admin/email-templates", Icon: FiMail, label: "Email templates", section: "Operations" },
   { to: "/admin/settings",  Icon: FiSettings,   label: "Settings",      section: "Operations" },
 ];
 

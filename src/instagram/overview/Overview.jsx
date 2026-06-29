@@ -2,26 +2,17 @@ import {
   FiInbox, FiMessageCircle, FiZap, FiBarChart2, FiLink, FiSettings, FiImage,
 } from "react-icons/fi";
 import ModuleOverview from "../../globalComponents/ModuleOverview/ModuleOverview";
-import ConnectInstagram from "../components/ConnectInstagram";
-import { useInstagramStatus } from "../useInstagramStatus";
 
 export default function InstagramOverview() {
-  const { status, loading } = useInstagramStatus();
-
   return (
     <>
-      {!loading && !status?.connected && (
-        <div style={{ marginBottom: 24 }}>
-          <ConnectInstagram compact />
-        </div>
-      )}
       <ModuleOverview
         title="Instagram"
         subtitle="DMs, comments & automations in one place"
         illustration="/Chatting-bro-flat.png"
         accent="pink"
         intro="Connect your Instagram Business account to manage direct messages, reply to comments, and run automations — welcome DMs, keyword triggers, comment-to-DM flows, and more."
-        primary={{ label: "Connect Instagram", to: "/instagram/settings" }}
+        primary={{ label: "Connect Instagram", to: "/instagram/connect" }}
         secondary={{ label: "Set up automation", to: "/instagram/automation" }}
         features={[
           { icon: <FiInbox />,         color: "pink",   title: "DM Inbox",      desc: "Read and reply to Instagram direct messages from a unified team inbox.",           to: "/instagram/inbox" },

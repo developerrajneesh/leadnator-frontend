@@ -1,4 +1,7 @@
 const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8080/api";
+// Exposed so OAuth flows can build a redirect URI from the SAME base as the API
+// (set VITE_API_URL once and the whole flow — local or prod — follows).
+export const API_BASE_URL = BASE_URL;
 const TOKEN_KEY = "leadnator_token";
 const USER_KEY = "leadnator_user";
 const ORG_KEY = "leadnator_org";
@@ -120,6 +123,8 @@ export const api = {
   auth: {
     login:  (email, password) => request("/auth/login",  { method: "POST", body: { email, password } }),
     signup: (name, email, password, phone = "") => request("/auth/signup", { method: "POST", body: { name, email, password, phone } }),
+    verifyOtp: (email, otp) => request("/auth/verify-otp", { method: "POST", body: { email, otp } }),
+    resendOtp: (email)      => request("/auth/resend-otp", { method: "POST", body: { email } }),
     me:     () => request("/auth/me"),
     forgotPassword:   (email)           => request("/auth/forgot-password", { method: "POST", body: { email } }),
     verifyResetToken: (token)           => request(`/auth/verify-reset-token/${encodeURIComponent(token)}`),
@@ -134,6 +139,7 @@ export const api = {
     remove: (id)      => request(`/leads/${id}`, { method: "DELETE" }),
     settings:     ()     => request("/lead-settings"),
     saveSettings: (body) => request("/lead-settings", { method: "PUT", body }),
+    import:       (rows) => request("/leads/import", { method: "POST", body: { rows } }),
   },
   campaigns: {
     list: () => request("/campaigns"),
@@ -173,6 +179,10 @@ export const api = {
     replyTicket:(id, body) => request(`/support/admin/tickets/${id}/reply`, { method: "POST", body: { body } }),
     updateTicket: (id, body) => request(`/support/admin/tickets/${id}`, { method: "PUT", body }),
     deleteTicket: (id) => request(`/support/admin/tickets/${id}`, { method: "DELETE" }),
+    emailTemplates:      () => request("/admin/email-templates"),
+    updateEmailTemplate: (key, body) => request(`/admin/email-templates/${key}`, { method: "PUT", body }),
+    resetEmailTemplate:  (key) => request(`/admin/email-templates/${key}/reset`, { method: "POST" }),
+    testEmailTemplate:   (key, to) => request(`/admin/email-templates/${key}/test`, { method: "POST", body: { to } }),
     faqs:       () => request("/support/admin/faqs"),
     createFaq:  (body) => request("/support/admin/faqs", { method: "POST", body }),
     updateFaq:  (id, body) => request(`/support/admin/faqs/${id}`, { method: "PUT", body }),

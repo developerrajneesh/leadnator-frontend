@@ -9,7 +9,7 @@ export default function Translator() {
       Icon={FiGlobe}
       color="#0ea5e9"
       initialState={{
-        text: "Stop chasing cold leads. Leadnator's AI sends every prospect to the right pipeline in seconds — try free for 14 days.",
+        text: "Stop chasing cold leads. Leadnator's AI sends every prospect to the right pipeline in seconds — try free for 2 days.",
         target: "Hindi",
         tone: "Match the original",
         keepBrandTerms: "Yes",

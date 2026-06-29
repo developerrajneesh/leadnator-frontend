@@ -199,7 +199,7 @@ function Switching({ onGoto }) {
             <ul className="ln-cta-list">
               <li><FiCheck /> Free migration from any WhatsApp CRM</li>
               <li><FiCheck /> White-glove onboarding included</li>
-              <li><FiCheck /> 14-day extended trial for switchers</li>
+              <li><FiCheck /> 2-day extended trial for switchers</li>
             </ul>
           </div>
           <div className="ln-cta-actions">

@@ -653,7 +653,7 @@ function ContactCta({ onGoto }) {
             <h2>Ready to 10× your sales on WhatsApp?</h2>
             <p>
               We'd love to know your WhatsApp use-case and help your business
-              grow. Start your 14-day free trial — no credit card needed.
+              grow. Start your 2-day free trial — no credit card needed.
             </p>
             <ul className="ln-cta-list">
               <li><FiCheck /> Official WhatsApp API + Blue Tick help</li>

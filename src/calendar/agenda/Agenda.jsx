@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { FiCalendar } from "react-icons/fi";
 import { typeMeta, fmtTime } from "../constants";
 import { useEvents } from "../../api/calendar";
 import EventModal from "../components/EventModal";
@@ -24,6 +25,13 @@ export default function Agenda() {
       <h1 className="page-title">Calendar — Agenda</h1>
       <p className="page-subtitle">A chronological list of every scheduled event.</p>
       <div className="card" style={{ padding: 0 }}>
+        {sorted.length === 0 && (
+          <div style={{ padding: "56px 20px", textAlign: "center", color: "var(--text-muted)" }}>
+            <FiCalendar style={{ fontSize: 34, marginBottom: 12, opacity: 0.5 }} />
+            <div style={{ fontWeight: 600, color: "var(--text)", marginBottom: 4 }}>No records found</div>
+            <div style={{ fontSize: 13 }}>No scheduled events yet — created events and bookings will appear here.</div>
+          </div>
+        )}
         {Object.entries(grouped).map(([day, evs]) => (
           <div key={day}>
             <div style={{ padding: "12px 20px", background: "#f9fafb", fontSize: 12, fontWeight: 700, color: "#6b7280", textTransform: "uppercase", letterSpacing: 0.05 }}>

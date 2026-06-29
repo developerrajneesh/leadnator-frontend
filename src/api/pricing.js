@@ -9,6 +9,7 @@ export const pricingApi = {
   invoices:  ()       => api.get("/pricing/invoices"),
   history:   ()       => api.get("/pricing/history"),
   cancel:    ()       => api.post("/pricing/cancel"),
+  paymentFailed: (body) => api.post("/pricing/payment-failed", body),
 };
 
 let razorpayLoading = null;

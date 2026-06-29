@@ -3,6 +3,7 @@ import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
 import { sameDay, typeMeta, fmtTime } from "../constants";
 import { useEvents } from "../../api/calendar";
 import EventModal from "../components/EventModal";
+import GoogleSyncButton from "../components/GoogleSyncButton";
 
 export default function Week() {
   const { events, removeEvent } = useEvents();
@@ -15,8 +16,13 @@ export default function Week() {
 
   return (
     <>
-      <h1 className="page-title">Calendar — Week</h1>
-      <p className="page-subtitle">Seven days at a glance.</p>
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+        <div>
+          <h1 className="page-title">Calendar — Week</h1>
+          <p className="page-subtitle">Seven days at a glance.</p>
+        </div>
+        <GoogleSyncButton />
+      </div>
       <div className="cal-toolbar">
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <button className="mini-btn" onClick={() => { const d = new Date(anchor); d.setDate(d.getDate() - 7); setAnchor(d); }}><FiChevronLeft /></button>

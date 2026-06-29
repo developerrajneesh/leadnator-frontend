@@ -1,5 +1,7 @@
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import UpgradeAds from "./UpgradeAds";
 import { useWhatsAppStatus } from "../../whatsapp/useWhatsAppStatus";
+import { useInstagramStatus } from "../../instagram/useInstagramStatus";
 import { useMetaStatus }     from "../../meta/useMetaStatus";
 import { useEmailStatus }    from "../../email/useEmailStatus";
 import { useStorageStatus }  from "../../storage/useStorageStatus";
@@ -244,18 +246,22 @@ export default function Sidebar({ open, onToggle }) {
   const navigate = useNavigate();
   const conf = currentSection(pathname);
   const user = useCurrentUser();
+  // Already on Pro → no upgrade ad to show.
+  const isProUser = user?.planKey === "pro" || user?.plan === "Pro";
   const { status }     = useWhatsAppStatus();
+  const { status: igs } = useInstagramStatus();
   const { status: ms } = useMetaStatus();
   const { status: es } = useEmailStatus();
   const { status: ss } = useStorageStatus();
 
   // Integration modules: hide sub-sidebar until credentials are set up.
-  // Instagram always shows its full route list — gated pages show connect UI in content.
+  // Gated pages show the connect UI in the main content area instead.
   const seg = pathname.split("/")[1];
-  if (seg === "whatsapp" && !status?.connected) return null;
-  if (seg === "meta"     && !ms?.connected)     return null;
-  if (seg === "email"    && !es?.configured)    return null;
-  if (seg === "storage"  && !ss?.configured)    return null;
+  if (seg === "whatsapp"  && !status?.connected) return null;
+  if (seg === "instagram" && !igs?.connected)    return null;
+  if (seg === "meta"      && !ms?.connected)     return null;
+  if (seg === "email"     && !es?.configured)    return null;
+  if (seg === "storage"   && !ss?.configured)    return null;
 
   const moduleKey = seg in SECTIONS ? seg : "dashboard";
   const visibleItems = conf.items.filter(({ to }) => canAccess(user, moduleKey, to));
@@ -281,13 +287,9 @@ export default function Sidebar({ open, onToggle }) {
           </li>
         ))}
       </ul>
-      {!isOrganizationLogin() && (
+      {!isOrganizationLogin() && !isProUser && (
         <div className="sidebar-footer">
-          <div className="upgrade-card">
-            <h4>Unlock Pro</h4>
-            <p>Unlimited leads, AI automation & API access.</p>
-            <button onClick={() => navigate("/pricing/plans")}>Upgrade</button>
-          </div>
+          <UpgradeAds />
         </div>
       )}
     </div>

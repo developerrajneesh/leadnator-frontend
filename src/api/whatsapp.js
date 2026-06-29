@@ -9,6 +9,12 @@ export const waApi = {
   embeddedConnect:  (body)  => api.post("/wa/embedded-connect", body),
   disconnect:       ()      => api.post("/wa/disconnect"),
 
+  // Add a phone number via the raw API flow (add → OTP → verify → register)
+  addPhoneNumber:     (body)     => api.post("/wa/phone-numbers", body),
+  requestPhoneCode:   (id, body) => api.post(`/wa/phone-numbers/${id}/request-code`, body),
+  verifyPhoneCode:    (id, body) => api.post(`/wa/phone-numbers/${id}/verify-code`, body),
+  registerPhoneNumber:(id, body) => api.post(`/wa/phone-numbers/${id}/register`, body),
+
   templates:     ()        => api.get("/wa/templates"),
   createTemplate:(body)    => api.post("/wa/templates", body),
   deleteTemplate:(name, id)=> api.del("/wa/templates", id ? { name, hsm_id: id } : { name }),

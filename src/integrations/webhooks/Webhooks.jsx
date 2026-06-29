@@ -13,6 +13,12 @@ export default function Webhooks() {
     setHooks(hooks.map((h) => h.id === id ? { ...h, status: h.status === "active" ? "paused" : "active" } : h));
   }
   function remove(id) { setHooks(hooks.filter((h) => h.id !== id)); }
+  function copyUrl(url) {
+    navigator.clipboard?.writeText(url);
+    setCopied(url);
+    setTimeout(() => setCopied(""), 1500);
+  }
+  const [copied, setCopied] = useState("");
 
   return (
     <>
@@ -43,7 +49,7 @@ export default function Webhooks() {
                   <td style={{ color: "#6b7280", fontSize: 12 }}>{h.lastDelivery}</td>
                   <td style={{ display: "flex", gap: 6 }}>
                     <button className="btn btn-outline" onClick={() => toggle(h.id)}>{h.status === "active" ? <FiPause /> : <FiPlay />}</button>
-                    <button className="btn btn-outline"><FiCopy /></button>
+                    <button className="btn btn-outline" onClick={() => copyUrl(h.url)} title="Copy URL">{copied === h.url ? "✓" : <FiCopy />}</button>
                     <button className="btn btn-danger" onClick={() => remove(h.id)}><FiTrash2 /></button>
                   </td>
                 </tr>

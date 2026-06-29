@@ -12,6 +12,7 @@ const SCOPES = [
   "pages_read_engagement",
   "pages_show_list",
   "pages_manage_ads",
+  "pages_manage_metadata", // required to verify a Page's WhatsApp number (FB err #283)
   "leads_retrieval",
   "email",
   "public_profile",

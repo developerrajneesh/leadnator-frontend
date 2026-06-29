@@ -1,16 +1,40 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FiPhone, FiLink, FiFileText, FiArrowRight } from "react-icons/fi";
+import {
+  FiPhone, FiLink, FiFileText, FiArrowRight,
+  FiZap, FiPhoneCall, FiTrendingUp, FiUsers, FiGlobe,
+} from "react-icons/fi";
 import { FaWhatsapp } from "react-icons/fa";
 import { metaApi } from "../../api/meta";
+import "./Create.css";
 
 // Launchpad — pick an ad goal (LCM "Click to …" flow). Each goal opens its own
 // Campaign → Ad Set → Creative → Launch wizard.
 const GOALS = [
-  { title: "Click to WhatsApp", desc: "Drive chats straight to your WhatsApp", Icon: FaWhatsapp, color: "#25D366", route: "/meta/create/whatsapp/campaign" },
-  { title: "Click to Call", desc: "Get phone calls from your ads", Icon: FiPhone, color: "#F97316", route: "/meta/create/call/campaign" },
-  { title: "Click to Website", desc: "Send traffic to your website", Icon: FiLink, color: "#EC4899", route: "/meta/create/link/campaign" },
-  { title: "Lead Form Ads", desc: "Collect leads with instant forms", Icon: FiFileText, color: "#3B82F6", route: "/meta/create/lead-form/campaign" },
+  {
+    title: "Click to WhatsApp", desc: "Drive valuable conversations straight to your WhatsApp",
+    Icon: FaWhatsapp, DecoIcon: FaWhatsapp, color: "#22C55E",
+    chip: "High engagement", ChipIcon: FiZap,
+    route: "/meta/create/whatsapp/campaign",
+  },
+  {
+    title: "Click to Call", desc: "Get more phone calls from your ads",
+    Icon: FiPhone, DecoIcon: FiPhone, color: "#F97316",
+    chip: "Boost call volume", ChipIcon: FiPhoneCall,
+    route: "/meta/create/call/campaign",
+  },
+  {
+    title: "Click to Website", desc: "Send more people to your website or landing page",
+    Icon: FiLink, DecoIcon: FiGlobe, color: "#EC4899",
+    chip: "Increase traffic", ChipIcon: FiTrendingUp,
+    route: "/meta/create/link/campaign",
+  },
+  {
+    title: "Lead Form Ads", desc: "Collect leads and grow your customer base",
+    Icon: FiFileText, DecoIcon: FiFileText, color: "#3B82F6",
+    chip: "Generate quality leads", ChipIcon: FiUsers,
+    route: "/meta/create/lead-form/campaign",
+  },
 ];
 
 export default function Create() {
@@ -50,28 +74,33 @@ export default function Create() {
   }
 
   return (
-    <>
-      <h1 className="page-title">Create campaign</h1>
-      <p className="page-subtitle">Pick a goal to start building your Meta ad.</p>
-      <div className="grid-2" style={{ marginTop: 14 }}>
+    <div className="mc-wrap">
+      <div className="mc-head">
+        <div className="mc-head-left">
+          <h1>Create campaign</h1>
+          <p>Choose a goal to get started with your Meta ad campaign.</p>
+        </div>
+      </div>
+
+      <div className="mc-grid">
         {GOALS.map((g) => (
           <button
             key={g.title}
             onClick={() => navigate(g.route)}
-            className="card"
-            style={{ display: "flex", alignItems: "center", gap: 16, textAlign: "left", cursor: "pointer", padding: 20, border: "1px solid var(--border)" }}
+            className="mc-card"
+            style={{ "--mc-accent": g.color }}
           >
-            <span style={{ width: 50, height: 50, borderRadius: 12, display: "grid", placeItems: "center", background: `${g.color}1a`, color: g.color, fontSize: 24, flexShrink: 0 }}>
-              <g.Icon />
+            <span className="mc-deco" aria-hidden="true"><g.DecoIcon /></span>
+            <span className="mc-icon"><g.Icon /></span>
+            <span className="mc-body">
+              <span className="mc-title">{g.title}</span>
+              <span className="mc-desc">{g.desc}</span>
+              <span className="mc-chip"><g.ChipIcon /> {g.chip}</span>
             </span>
-            <span style={{ flex: 1, minWidth: 0 }}>
-              <span style={{ display: "block", fontWeight: 700, fontSize: 15 }}>{g.title}</span>
-              <span style={{ display: "block", fontSize: 13, color: "var(--text-muted)", marginTop: 2 }}>{g.desc}</span>
-            </span>
-            <FiArrowRight style={{ color: "var(--text-muted)", flexShrink: 0 }} />
+            <span className="mc-arrow"><FiArrowRight /></span>
           </button>
         ))}
       </div>
-    </>
+    </div>
   );
 }

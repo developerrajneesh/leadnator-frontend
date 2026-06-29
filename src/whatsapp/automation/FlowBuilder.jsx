@@ -134,10 +134,12 @@ export default function FlowBuilder() {
         ...f,
         nodes: f.nodes.map((n) => n.id === d.nodeId ? { ...n, x: finalX, y: finalY } : n),
       }));
-      // Clean up the inline transform; React's re-render will set left/top freshly.
+      // Keep the DOM transform at the final position. (Blanking it would snap the
+      // node to 0,0 on a plain click, since React skips re-applying an unchanged
+      // transform value.)
       const el = nodeRefs.current.get(d.nodeId);
       if (el) {
-        el.style.transform = "";
+        el.style.transform = `translate3d(${finalX}px, ${finalY}px, 0)`;
         el.style.willChange = "";
       }
       dragRef.current = null;

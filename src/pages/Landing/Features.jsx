@@ -226,7 +226,7 @@ function CtaBanner({ onGoto }) {
       <div className="ln-container">
         <div className="ln-cta-card">
           <div className="ln-cta-copy">
-            <h2>Try every module free for 14 days</h2>
+            <h2>Try every module free for 2 days</h2>
             <p>All features unlocked. No credit card. Setup in 12 minutes.</p>
           </div>
           <div className="ln-cta-actions">

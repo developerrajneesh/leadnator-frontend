@@ -23,6 +23,22 @@ function newItem() {
   };
 }
 
+// Custom adjustment field (e.g. Shipping +500, Rebate -200, Surcharge ×1.1, Markup 5%).
+const FIELD_OPS = [
+  { id: "add",      label: "Add +" },
+  { id: "subtract", label: "Subtract −" },
+  { id: "multiply", label: "Multiply ×" },
+  { id: "percent",  label: "Percent %" },
+];
+function newCustomField() {
+  return {
+    id: `cf_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+    label: "",
+    value: 0,
+    op: "add",
+  };
+}
+
 function defaultState() {
   const today = new Date();
   const due = new Date(Date.now() + 14 * 86400000);
@@ -55,6 +71,7 @@ function defaultState() {
     ],
     discount: 0,
     taxRate: 18,
+    customFields: [],
     notes: "Thank you for your business!",
     terms: "Payment due within 14 days. Late payments attract 2% monthly interest.",
   };
@@ -71,9 +88,22 @@ export default function Invoice() {
     const discountAmount = subtotal * ((Number(inv.discount) || 0) / 100);
     const taxable = subtotal - discountAmount;
     const taxAmount = taxable * ((Number(inv.taxRate) || 0) / 100);
-    const total = taxable + taxAmount;
-    return { subtotal, discountAmount, taxable, taxAmount, total };
-  }, [inv.items, inv.discount, inv.taxRate]);
+
+    // Apply custom fields to the running total in order.
+    let running = taxable + taxAmount;
+    const customLines = (inv.customFields || []).map((f) => {
+      const v = Number(f.value) || 0;
+      let delta = 0;
+      if (f.op === "add") delta = v;
+      else if (f.op === "subtract") delta = -v;
+      else if (f.op === "multiply") delta = running * v - running;
+      else if (f.op === "percent") delta = running * (v / 100);
+      running += delta;
+      return { id: f.id, label: f.label || "Adjustment", op: f.op, value: v, delta };
+    });
+
+    return { subtotal, discountAmount, taxable, taxAmount, customLines, total: running };
+  }, [inv.items, inv.discount, inv.taxRate, inv.customFields]);
 
   function update(patch) {
     setInv((s) => ({ ...s, ...patch }));
@@ -95,6 +125,15 @@ export default function Invoice() {
   }
   function removeItem(id) {
     setInv((s) => ({ ...s, items: s.items.filter((it) => it.id !== id) }));
+  }
+  function addCustomField() {
+    setInv((s) => ({ ...s, customFields: [...(s.customFields || []), newCustomField()] }));
+  }
+  function updateCustomField(id, patch) {
+    setInv((s) => ({ ...s, customFields: (s.customFields || []).map((f) => (f.id === id ? { ...f, ...patch } : f)) }));
+  }
+  function removeCustomField(id) {
+    setInv((s) => ({ ...s, customFields: (s.customFields || []).filter((f) => f.id !== id) }));
   }
   function reset() {
     if (confirm("Reset invoice to default values?")) setInv(defaultState());
@@ -331,6 +370,57 @@ export default function Invoice() {
                 <input type="number" min="0" max="100" value={inv.taxRate} onChange={(e) => update({ taxRate: e.target.value })} />
               </div>
             </div>
+
+            <div className="form-group">
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                <label style={{ margin: 0 }}>Custom fields</label>
+                <button type="button" className="btn btn-secondary" style={{ fontSize: 12, padding: "4px 10px" }} onClick={addCustomField}>
+                  <FiPlus /> Add field
+                </button>
+              </div>
+              {(inv.customFields || []).length === 0 ? (
+                <div style={{ fontSize: 12, color: "var(--text-muted)" }}>
+                  Add charges or adjustments to the total — e.g. Shipping (+), Rebate (−), Surcharge (×) or Markup (%).
+                </div>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  {(inv.customFields || []).map((f) => (
+                    <div key={f.id} style={{ display: "grid", gridTemplateColumns: "1fr 100px 120px 34px", gap: 8, alignItems: "center" }}>
+                      <input
+                        value={f.label}
+                        placeholder="Label e.g. Shipping"
+                        onChange={(e) => updateCustomField(f.id, { label: e.target.value })}
+                        style={{ padding: 9, border: "1px solid var(--border)", borderRadius: 8 }}
+                      />
+                      <input
+                        type="number" step="0.01"
+                        value={f.value}
+                        onChange={(e) => updateCustomField(f.id, { value: e.target.value })}
+                        style={{ padding: 9, border: "1px solid var(--border)", borderRadius: 8, textAlign: "right" }}
+                      />
+                      <select
+                        value={f.op}
+                        onChange={(e) => updateCustomField(f.id, { op: e.target.value })}
+                        style={{ padding: 9, border: "1px solid var(--border)", borderRadius: 8 }}
+                      >
+                        {FIELD_OPS.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
+                      </select>
+                      <button
+                        type="button"
+                        onClick={() => removeCustomField(f.id)}
+                        title="Remove field"
+                        style={{
+                          background: "white", border: "1px solid var(--border)", borderRadius: 8,
+                          cursor: "pointer", color: "#b91c1c", padding: 8,
+                          display: "inline-flex", alignItems: "center", justifyContent: "center",
+                        }}
+                      ><FiTrash2 /></button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <div className="form-group">
               <label>Notes</label>
               <textarea rows="2" value={inv.notes} onChange={(e) => update({ notes: e.target.value })}

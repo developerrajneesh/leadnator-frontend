@@ -22,7 +22,7 @@ const SECTIONS = [
     title: "Actions — make things happen",
     color: "#10b981",
     items: [
-      { Icon: FiMail, title: "Send email", desc: "Send a templated email from your verified domain (Amazon SES) — pick the field that holds the recipient." },
+      { Icon: FiMail, title: "Send email", desc: "Send a templated email from your verified domain — pick the field that holds the recipient." },
       { Icon: FaWhatsapp, title: "Send WhatsApp", desc: "Send a WhatsApp template or text message to the contact." },
       { Icon: FiUserPlus, title: "Create / update contact", desc: "Upsert the payload into your CRM as a lead (auto-detects email/name/phone)." },
       { Icon: FiTag, title: "Add tag", desc: "Tag the contact to segment them or trigger other flows." },

@@ -13,6 +13,7 @@ import AdminRevenue from "./admin/pages/Revenue";
 import AdminSupport from "./admin/pages/Support";
 import AdminLogs from "./admin/pages/Logs";
 import AdminSettings from "./admin/pages/Settings";
+import AdminEmailTemplates from "./admin/pages/EmailTemplates";
 
 // Public pages
 import PublicForm from "./pages/PublicForm/PublicForm";
@@ -68,6 +69,7 @@ import LinkAdCreative from "./meta/create/metaManagement/LinkAdCreative";
 import LinkLaunch from "./meta/create/metaManagement/LinkLaunch";
 import LeadFormCampaign from "./meta/create/metaManagement/LeadFormCampaign";
 import LeadFormForm from "./meta/create/metaManagement/LeadFormForm";
+import LeadFormBuilder from "./meta/create/metaManagement/LeadFormBuilder";
 import LeadFormAdSet from "./meta/create/metaManagement/LeadFormAdSet";
 import LeadFormAdCreative from "./meta/create/metaManagement/LeadFormAdCreative";
 import LeadFormLaunch from "./meta/create/metaManagement/LeadFormLaunch";
@@ -89,6 +91,7 @@ import WaContacts from "./whatsapp/contacts/Contacts";
 import WaSettings from "./whatsapp/settings/Settings";
 import WaChatbot from "./whatsapp/chatbot/Chatbot";
 import WaChatbotBuilder from "./whatsapp/chatbot/ChatbotBuilder";
+import WaAiChatbotBuilder from "./whatsapp/chatbot/AiChatbotBuilder";
 import WaWebhook from "./whatsapp/webhook/Webhook";
 import WaAnalytics from "./whatsapp/analytics/Analytics";
 import WaReports   from "./whatsapp/reports/Reports";
@@ -114,12 +117,25 @@ import IgSettings from "./instagram/settings/Settings";
 import WaFormBuilder from "./whatsapp/forms/FormBuilder";
 import WhatsAppGate from "./whatsapp/components/WhatsAppGate";
 import InstagramGate from "./instagram/components/InstagramGate";
+import IgConnect from "./instagram/components/ConnectPage";
 import MetaGate     from "./meta/components/MetaGate";
+import MetaConnect  from "./meta/components/ConnectPage";
 import EmailGate    from "./email/components/EmailGate";
+import EmailConnect  from "./email/components/ConnectPage";
+import PlanGate from "./plan/PlanGate";
 
-// Shorthand — wraps any WhatsApp feature page in the connection gate. When
-// not connected the gate shows only the "Login with Facebook" Embedded Signup.
-const gated      = (el) => <WhatsAppGate>{el}</WhatsAppGate>;
+const WA_PERKS = ["Unlimited WhatsApp broadcasts", "Shared team inbox", "Automations & flows", "Templates & analytics"];
+const AI_PERKS = ["AI ad copy, emails & rewriting", "AI translator & hashtags", "AI lead scoring", "Powered by the latest models"];
+
+// Plan-access gate: shows an upgrade screen when the plan doesn't include it.
+const waPlan = (el) => <PlanGate feature="whatsapp" title="WhatsApp marketing" perks={WA_PERKS}>{el}</PlanGate>;
+const aiPlan = (el) => <PlanGate feature="aiTools" title="AI tools" perks={AI_PERKS}>{el}</PlanGate>;
+const waBotPlan = (el) => <PlanGate feature="whatsappChatbot" title="The WhatsApp chatbot" perks={["Build automated reply flows", "Buttons & quick replies", "Keyword triggers"]}>{el}</PlanGate>;
+const waAiBotPlan = (el) => <PlanGate feature="aiChatbot" title="The WhatsApp AI chatbot" perks={["AI answers from your knowledge base", "Natural, human-like replies", "Smart CTAs & handover"]}>{el}</PlanGate>;
+
+// Shorthand — wraps any WhatsApp feature page in the plan gate (WhatsApp is a
+// Growth+ feature) then the connection gate. Not connected → Embedded Signup.
+const gated      = (el) => waPlan(<WhatsAppGate>{el}</WhatsAppGate>);
 const igGated    = (el) => <InstagramGate>{el}</InstagramGate>;
 const metaGated  = (el) => <MetaGate>{el}</MetaGate>;
 const emailGated = (el) => <EmailGate>{el}</EmailGate>;
@@ -248,6 +264,7 @@ export function buildRouter(onLogout, role = "user") {
         { path: "revenue",      element: <AdminRevenue /> },
         { path: "support",      element: <AdminSupport /> },
         { path: "logs",         element: <AdminLogs /> },
+        { path: "email-templates", element: <AdminEmailTemplates /> },
         { path: "settings",     element: <AdminSettings /> },
       ],
     },
@@ -284,6 +301,7 @@ export function buildRouter(onLogout, role = "user") {
         { path: "leads/settings",         element: g("leads", "settings",   <LeadSettings />) },
 
         { path: "meta",                    element: <Navigate to="/meta/overview" replace /> },
+        { path: "meta/connect",            element: g("meta", "overview",     <MetaConnect />) },
         { path: "meta/overview",           element: g("meta", "overview",     <MetaOverview />) },
         { path: "meta/account-info",       element: g("meta", "account-info", metaGated(<MetaAccountInfo />)) },
         { path: "meta/campaigns",          element: g("meta", "campaigns", metaGated(<MetaCampaigns />)) },
@@ -311,15 +329,17 @@ export function buildRouter(onLogout, role = "user") {
           { path: "link/launch",              element: <LinkLaunch /> },
           { path: "lead-form/campaign",       element: <LeadFormCampaign /> },
           { path: "lead-form/form",           element: <LeadFormForm /> },
+          { path: "lead-form/builder",        element: <LeadFormBuilder /> },
           { path: "lead-form/adset",          element: <LeadFormAdSet /> },
           { path: "lead-form/creative",       element: <LeadFormAdCreative /> },
           { path: "lead-form/launch",         element: <LeadFormLaunch /> },
           { path: "lead-form/subscribe-webhooks", element: <LeadFormSubscribeWebhooks /> },
         ] },
-        { path: "meta/accounts",           element: g("meta", "accounts",  <MetaAccounts />) },
+        { path: "meta/accounts",           element: g("meta", "accounts",  metaGated(<MetaAccounts />)) },
         { path: "meta/audiences",          element: g("meta", "audiences", metaGated(<MetaAudiences />)) },
 
         { path: "instagram",                  element: <Navigate to="/instagram/overview" replace /> },
+        { path: "instagram/connect",          element: g("instagram", "overview",   <IgConnect />) },
         { path: "instagram/overview",         element: g("instagram", "overview",   <IgOverview />) },
         { path: "instagram/inbox",            element: g("instagram", "inbox",      igGated(<IgInbox />)) },
         { path: "instagram/comments",         element: g("instagram", "comments",   igGated(<IgComments />)) },
@@ -329,26 +349,28 @@ export function buildRouter(onLogout, role = "user") {
         { path: "instagram/content/:mediaId", element: g("instagram", "content",    igGated(<IgContentDetail />)) },
         { path: "instagram/analytics",        element: g("instagram", "analytics",  igGated(<IgAnalytics />)) },
         { path: "instagram/webhook",          element: g("instagram", "webhook",    igGated(<IgWebhook />)) },
-        { path: "instagram/settings",         element: g("instagram", "settings",   <IgSettings />) },
+        { path: "instagram/settings",         element: g("instagram", "settings",   igGated(<IgSettings />)) },
 
         { path: "whatsapp",                  element: <Navigate to="/whatsapp/overview" replace /> },
-        { path: "whatsapp/overview",         element: g("whatsapp", "overview",   <WaOverview />) },
+        { path: "whatsapp/overview",         element: g("whatsapp", "overview",   waPlan(<WaOverview />)) },
         { path: "whatsapp/broadcasts",       element: g("whatsapp", "broadcasts", gated(<WaBroadcasts />)) },
         { path: "whatsapp/templates",        element: g("whatsapp", "templates",  gated(<WaTemplates />)) },
         { path: "whatsapp/inbox",            element: g("whatsapp", "inbox",      gated(<WaInbox />)) },
         { path: "whatsapp/automation",       element: g("whatsapp", "automation", gated(<WaAutomation />)) },
         { path: "whatsapp/automation/:id",   element: g("whatsapp", "automation", gated(<WaFlowBuilder />)) },
         { path: "whatsapp/contacts",         element: g("whatsapp", "contacts",   gated(<WaContacts />)) },
-        { path: "whatsapp/chatbot",          element: g("whatsapp", "chatbot",    gated(<WaChatbot />)) },
-        { path: "whatsapp/chatbot/:id",      element: g("whatsapp", "chatbot",    gated(<WaChatbotBuilder />)) },
+        { path: "whatsapp/chatbot",          element: g("whatsapp", "chatbot",    gated(waBotPlan(<WaChatbot />))) },
+        { path: "whatsapp/chatbot/ai/:id",   element: g("whatsapp", "chatbot",    gated(waAiBotPlan(<WaAiChatbotBuilder />))) },
+        { path: "whatsapp/chatbot/:id",      element: g("whatsapp", "chatbot",    gated(waBotPlan(<WaChatbotBuilder />))) },
         { path: "whatsapp/webhook",          element: g("whatsapp", "webhook",    gated(<WaWebhook />)) },
         { path: "whatsapp/analytics",        element: g("whatsapp", "analytics",  gated(<WaAnalytics />)) },
         { path: "whatsapp/reports",          element: g("whatsapp", "analytics",  gated(<WaReports />)) },
         { path: "whatsapp/forms",            element: g("whatsapp", "forms",      gated(<WaForms />)) },
         { path: "whatsapp/forms/:id",        element: g("whatsapp", "forms",      gated(<WaFormBuilder />)) },
-        { path: "whatsapp/settings",         element: g("whatsapp", "settings",   <WaSettings />) },
+        { path: "whatsapp/settings",         element: g("whatsapp", "settings",   waPlan(<WaSettings />)) },
 
         { path: "email",              element: <Navigate to="/email/overview" replace /> },
+        { path: "email/connect",      element: g("email", "config",      <EmailConnect />) },
         { path: "email/overview",     element: g("email", "overview",    <EmailOverview />) },
         { path: "email/inbox",        element: g("email", "inbox",       emailGated(<EmailInbox />)) },
         { path: "email/campaigns",    element: g("email", "campaigns",   emailGated(<EmailCampaigns />)) },
@@ -359,7 +381,7 @@ export function buildRouter(onLogout, role = "user") {
         { path: "email/automation/:id", element: g("email", "automation", emailGated(<EmailFlowEditor />)) },
         { path: "email/subscribers",  element: g("email", "subscribers", emailGated(<EmailSubscribers />)) },
         { path: "email/analytics",    element: g("email", "analytics",   emailGated(<EmailAnalytics />)) },
-        { path: "email/config",       element: g("email", "config",      <EmailConfig />) },
+        { path: "email/config",       element: g("email", "config",      emailGated(<EmailConfig />)) },
         { path: "email/signature",    element: g("email", "signature",   emailGated(<EmailSignature />)) },
 
         { path: "integrations",            element: <Navigate to="/integrations/overview" replace /> },
@@ -387,12 +409,12 @@ export function buildRouter(onLogout, role = "user") {
 
         { path: "tools",               element: <Navigate to="/tools/overview" replace /> },
         { path: "tools/overview",      element: g("tools", "overview",      <ToolsOverview />) },
-        { path: "tools/ai-ad-copy",    element: g("tools", "ai-ad-copy",    <ToolAiAdCopy />) },
-        { path: "tools/ai-email",      element: g("tools", "ai-email",      <ToolAiEmail />) },
-        { path: "tools/ai-rewriter",   element: g("tools", "ai-rewriter",   <ToolAiRewriter />) },
-        { path: "tools/ai-translator", element: g("tools", "ai-translator", <ToolAiTranslator />) },
-        { path: "tools/ai-hashtags",   element: g("tools", "ai-hashtags",   <ToolAiHashtags />) },
-        { path: "tools/ai-lead-score", element: g("tools", "ai-lead-score", <ToolAiLeadScore />) },
+        { path: "tools/ai-ad-copy",    element: g("tools", "ai-ad-copy",    aiPlan(<ToolAiAdCopy />)) },
+        { path: "tools/ai-email",      element: g("tools", "ai-email",      aiPlan(<ToolAiEmail />)) },
+        { path: "tools/ai-rewriter",   element: g("tools", "ai-rewriter",   aiPlan(<ToolAiRewriter />)) },
+        { path: "tools/ai-translator", element: g("tools", "ai-translator", aiPlan(<ToolAiTranslator />)) },
+        { path: "tools/ai-hashtags",   element: g("tools", "ai-hashtags",   aiPlan(<ToolAiHashtags />)) },
+        { path: "tools/ai-lead-score", element: g("tools", "ai-lead-score", aiPlan(<ToolAiLeadScore />)) },
         { path: "tools/form",          element: g("tools", "form",          <ToolForm />) },
         { path: "tools/invoice",       element: g("tools", "invoice",       <ToolInvoice />) },
         { path: "tools/utm",           element: g("tools", "utm",           <ToolUtm />) },

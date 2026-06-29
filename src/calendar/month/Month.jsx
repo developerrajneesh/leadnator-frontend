@@ -3,6 +3,7 @@ import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
 import { EVENT_TYPES, typeMeta, sameDay, fmtTime } from "../constants";
 import { useEvents } from "../../api/calendar";
 import EventModal from "../components/EventModal";
+import GoogleSyncButton from "../components/GoogleSyncButton";
 
 export default function Month() {
   const { events, loading, removeEvent } = useEvents();
@@ -31,8 +32,13 @@ export default function Month() {
 
   return (
     <>
-      <h1 className="page-title">Calendar — Month</h1>
-      <p className="page-subtitle">Full month view with all your events and filters.</p>
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+        <div>
+          <h1 className="page-title">Calendar — Month</h1>
+          <p className="page-subtitle">Full month view with all your events and filters.</p>
+        </div>
+        <GoogleSyncButton />
+      </div>
 
       <div className="cal-toolbar">
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>

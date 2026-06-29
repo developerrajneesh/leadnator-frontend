@@ -131,18 +131,21 @@ export default function OrgSwitcher() {
                   )}
                 </div>
               </div>
-              <div style={{ marginLeft: 12 }}>
-                <button
-                  type="button"
-                  onClick={(e) => { e.stopPropagation(); if (!busy) deleteOrg(o.id); }}
-                  title="Delete organization"
-                  className="icon-btn trash"
-                  aria-label={`Delete ${o.name}`}
-                  style={{ padding: 6, border: "none", background: "transparent", cursor: busy ? "wait" : "pointer" }}
-                >
-                  <FiTrash2 />
-                </button>
-              </div>
+              {/* Keep at least one organization — hide delete when it's the last. */}
+              {orgs.length > 1 && (
+                <div style={{ marginLeft: 12 }}>
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); if (!busy) deleteOrg(o.id); }}
+                    title="Delete organization"
+                    className="icon-btn trash"
+                    aria-label={`Delete ${o.name}`}
+                    style={{ padding: 6, border: "none", background: "transparent", cursor: busy ? "wait" : "pointer" }}
+                  >
+                    <FiTrash2 />
+                  </button>
+                </div>
+              )}
             </button>
           ))}
           <div className="popover-item" style={{ borderTop: "1px solid #e5e7eb" }}>

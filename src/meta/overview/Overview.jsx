@@ -75,7 +75,7 @@ export default function MetaOverview() {
           </button>
           {connected
             ? <button className="btn btn-primary" onClick={() => navigate("/meta/create")}>Create campaign <FiArrowRight style={{ marginLeft: 6 }} /></button>
-            : <button className="btn btn-primary" onClick={() => navigate("/meta/accounts")}><SiMeta style={{ marginRight: 6 }} /> Connect Meta</button>}
+            : <button className="btn btn-primary" onClick={() => navigate("/meta/connect")}><SiMeta style={{ marginRight: 6 }} /> Connect Meta</button>}
         </div>
       </div>
 
@@ -128,7 +128,7 @@ export default function MetaOverview() {
         {GOALS.map((g) => (
           <button
             key={g.title}
-            onClick={() => navigate(connected ? g.route : "/meta/accounts")}
+            onClick={() => navigate(connected ? g.route : "/meta/connect")}
             className="card"
             style={{ display: "flex", alignItems: "center", gap: 16, textAlign: "left", cursor: "pointer", padding: 20, border: "1px solid var(--border)", margin: 0 }}
           >
@@ -154,7 +154,7 @@ export default function MetaOverview() {
           <button className="btn btn-outline" onClick={() => navigate("/meta/analytics")}><FiActivity style={{ marginRight: 6 }} /> Analytics</button>
           {connected
             ? <button className="btn btn-primary" onClick={() => navigate("/meta/create")}>Create campaign <FiArrowRight style={{ marginLeft: 6 }} /></button>
-            : <button className="btn btn-primary" onClick={() => navigate("/meta/accounts")}>Connect Meta <FiArrowRight style={{ marginLeft: 6 }} /></button>}
+            : <button className="btn btn-primary" onClick={() => navigate("/meta/connect")}>Connect Meta <FiArrowRight style={{ marginLeft: 6 }} /></button>}
         </div>
       </div>
     </div>

@@ -91,7 +91,13 @@ export default function Reports() {
                 <tr key={r.name}>
                   <td>
                     <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                      <div className={`stat-icon ${r.color}`} style={{ width: 36, height: 36, margin: 0, flexShrink: 0 }}>
+                      <div
+                        className={`stat-icon ${r.color}`}
+                        style={{
+                          width: 36, height: 36, margin: 0, flexShrink: 0, borderRadius: 10,
+                          display: "inline-flex", alignItems: "center", justifyContent: "center",
+                        }}
+                      >
                         <r.Icon />
                       </div>
                       <div>

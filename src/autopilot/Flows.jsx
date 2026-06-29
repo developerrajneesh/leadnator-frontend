@@ -106,8 +106,29 @@ const CATALOG = [
     fields: [{ key: "mappings", label: "Field mappings", type: "mapping" }] },
 
   // ---- Logic ----
-  { type: "wait.delay",            group: "Logic", kind: "logic", icon: FiClock,     title: "Wait / delay",   desc: "Pause before the next step",
-    fields: [{ key: "amount", label: "Amount", type: "number", placeholder: "1" }, { key: "unit", label: "Unit", type: "select", options: ["minutes", "hours", "days"] }] },
+  { type: "wait.delay",            group: "Logic", kind: "logic", icon: FiClock,     title: "Wait / delay",   desc: "Pause, or wait until the customer replies",
+    fields: [
+      { key: "mode", label: "Wait type", type: "select", default: "delay", options: [
+        { value: "delay", label: "Wait for a time delay" },
+        { value: "reply", label: "Wait until customer replies" },
+      ] },
+      // Time-delay mode
+      { key: "amount", label: "Amount", type: "number", placeholder: "1", showIf: (c) => (c.mode || "delay") === "delay" },
+      { key: "unit", label: "Unit", type: "select", options: ["minutes", "hours", "days"], showIf: (c) => (c.mode || "delay") === "delay" },
+      // Wait-for-reply mode
+      { key: "replyChannel", label: "Reply on channel", type: "select", default: "any", options: [
+        { value: "any", label: "Any channel" },
+        { value: "whatsapp", label: "WhatsApp" },
+        { value: "email", label: "Email" },
+        { value: "sms", label: "SMS" },
+      ], showIf: (c) => c.mode === "reply" },
+      { key: "timeoutAmount", label: "Wait up to", type: "number", placeholder: "24", showIf: (c) => c.mode === "reply" },
+      { key: "timeoutUnit", label: "Timeout unit", type: "select", default: "hours", options: ["minutes", "hours", "days"], showIf: (c) => c.mode === "reply" },
+      { key: "onTimeout", label: "If no reply within the timeout", type: "select", default: "continue", options: [
+        { value: "continue", label: "Continue to next step" },
+        { value: "stop", label: "Stop the workflow" },
+      ], showIf: (c) => c.mode === "reply" },
+    ] },
   { type: "condition.if_else",     group: "Logic", kind: "logic", icon: FiGitBranch, title: "If / else",      desc: "Branch on a field value",
     fields: [{ key: "field", label: "Field", type: "text", placeholder: "status" }, { key: "op", label: "Operator", type: "select", options: ["equals", "not equals", "contains", "is empty"] }, { key: "value", label: "Value", type: "text", placeholder: "won" }] },
 
@@ -131,16 +152,22 @@ function metaFor(type) {
 function blankConfig(type) {
   return metaFor(type).fields.reduce((acc, f) => {
     if (f.default != null) acc[f.key] = f.default;
-    else if (f.type === "select") acc[f.key] = f.options?.[0] || "";
-    else if (f.type === "mapping") acc[f.key] = [{ from: "", to: "" }];
+    else if (f.type === "select") {
+      const first = f.options?.[0];
+      acc[f.key] = first == null ? "" : (typeof first === "string" ? first : first.value);
+    } else if (f.type === "mapping") acc[f.key] = [{ from: "", to: "" }];
     return acc;
   }, {});
 }
 // One-line summary shown under the step title.
 function summarize(node) {
   const meta = metaFor(node.type);
-  if (node.type === "wait.delay" && node.config?.amount) {
-    return `Wait ${node.config.amount} ${node.config.unit || "minutes"}`;
+  if (node.type === "wait.delay") {
+    const c = node.config || {};
+    if (c.mode === "reply") {
+      return `Wait for reply${c.replyChannel && c.replyChannel !== "any" ? ` (${c.replyChannel})` : ""}`;
+    }
+    if (c.amount) return `Wait ${c.amount} ${c.unit || "minutes"}`;
   }
   if (node.type === "action.field_mapper") {
     const rows = (node.config?.mappings || []).filter((m) => m.from && m.to);
@@ -832,7 +859,9 @@ function ConfigDrawer({ node, onClose, onTitle, onField, onDelete }) {
           {meta.fields.length === 0 ? (
             <div style={{ color: "var(--text-muted)", fontSize: 13 }}>No configuration required for this step.</div>
           ) : (
-            meta.fields.map((field) => (
+            meta.fields
+              .filter((field) => !field.showIf || field.showIf(node.config || {}))
+              .map((field) => (
               <div className="form-group" key={field.key}>
                 <label>{field.label}</label>
                 {field.type === "mapping" ? (
@@ -845,7 +874,11 @@ function ConfigDrawer({ node, onClose, onTitle, onField, onDelete }) {
                     onChange={(e) => onField(field.key, e.target.value)} />
                 ) : field.type === "select" ? (
                   <select value={node.config[field.key] || ""} onChange={(e) => onField(field.key, e.target.value)}>
-                    {field.options.map((opt) => <option key={opt} value={opt}>{opt}</option>)}
+                    {field.options.map((opt) => {
+                      const val = typeof opt === "string" ? opt : opt.value;
+                      const lbl = typeof opt === "string" ? opt : opt.label;
+                      return <option key={val} value={val}>{lbl}</option>;
+                    })}
                   </select>
                 ) : field.type === "formPicker" ? (
                   formsLoading ? (

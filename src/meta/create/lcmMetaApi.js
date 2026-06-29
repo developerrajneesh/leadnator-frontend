@@ -544,12 +544,8 @@ class MetaApiService {
    * @param {string} version - API version (default: v24.0)
    * @returns {Promise<Object>} Search results
    */
-  async searchDetailedTargeting(accessToken, type, query, version = 'v24.0') {
+  async searchDetailedTargeting(accessToken, type, query) {
     try {
-      if (!accessToken) {
-        throw new Error('Access token is required');
-      }
-
       if (!type || !query) {
         throw new Error('Type and query are required');
       }
@@ -559,26 +555,21 @@ class MetaApiService {
         throw new Error(`Invalid type. Must be one of: ${validTypes.join(', ')}`);
       }
 
-      const url = `https://graph.facebook.com/${version}/search`;
-      const params = new URLSearchParams({
-        type: type,
-        q: query,
-        access_token: accessToken
+      // Go through OUR backend — it injects the server-side Meta token. (Calling
+      // Facebook directly fails here because the frontend has no real FB token.)
+      const params = new URLSearchParams({ type, q: query });
+      const response = await fetch(`${API_BASE_URL}/adsets/targeting-search?${params.toString()}`, {
+        headers: { Authorization: getAuthHeader() },
       });
 
-      const response = await fetch(`${url}?${params.toString()}`);
-
+      const json = await response.json().catch(() => ({}));
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error?.message || 'Failed to search Meta Marketing API');
+        throw new Error(json.error?.message || json.error || 'Failed to search Meta Marketing API');
       }
 
-      const data = await response.json();
-      return {
-        success: true,
-        data: data.data || [],
-        paging: data.paging || null
-      };
+      // Backend returns { success, data: [...] }
+      const list = Array.isArray(json.data) ? json.data : (json.data?.data || []);
+      return { success: true, data: list };
     } catch (error) {
       console.error('Meta Marketing API Error:', error);
       return {

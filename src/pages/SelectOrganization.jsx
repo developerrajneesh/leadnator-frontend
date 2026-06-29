@@ -116,7 +116,20 @@ export default function SelectOrganization({ onSelected }) {
   if (loading) {
     return (
       <div className="org-page">
-        <div className="org-loading">Loading workspaces…</div>
+        <div className="org-loading">
+          <div className="org-loading-brand">
+            <div className="brand-name" style={{ marginLeft: 0, alignItems: "center" }}>
+              <div className="brand-name-row" style={{ fontSize: 40, lineHeight: 1, letterSpacing: "-1px" }}>
+                <span className="brand-name-lead">Lead</span><span className="brand-name-nator">nator</span>
+              </div>
+              <div className="brand-name-tag" style={{ marginTop: 6, fontSize: 9, letterSpacing: "1.8px" }}>
+                <span className="brand-name-tag-line" /> AI-POWERED GROWTH PLATFORM <span className="brand-name-tag-line" />
+              </div>
+            </div>
+            <div className="org-loading-spinner" aria-hidden="true" />
+            <div className="org-loading-text">Loading workspaces…</div>
+          </div>
+        </div>
       </div>
     );
   }

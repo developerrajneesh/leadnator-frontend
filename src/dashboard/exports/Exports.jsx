@@ -60,7 +60,13 @@ export default function Exports() {
                   border: active ? "2px solid var(--primary, #7c3aed)" : "1px solid var(--border)",
                 }}
               >
-                <div className={`stat-icon ${k.color}`} style={{ width: 40, height: 40, margin: 0, flexShrink: 0 }}>
+                <div
+                  className={`stat-icon ${k.color}`}
+                  style={{
+                    width: 40, height: 40, margin: 0, flexShrink: 0, borderRadius: 10,
+                    display: "inline-flex", alignItems: "center", justifyContent: "center",
+                  }}
+                >
                   <k.Icon />
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>

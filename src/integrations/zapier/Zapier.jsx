@@ -14,13 +14,13 @@ export default function Zapier() {
           <div style={{ width: 60, height: 60, borderRadius: 14, background: "#ff4a00", color: "white", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 26, fontWeight: 700, marginBottom: 14 }}>Z</div>
           <h3>Zapier</h3>
           <p style={{ fontSize: 13, color: "#6b7280", margin: "6px 0 16px" }}>Connect Leadnator to 6,000+ apps without code.</p>
-          <button className="btn btn-primary">Open Zapier</button>
+          <a className="btn btn-primary" href="https://zapier.com/apps" target="_blank" rel="noreferrer">Open Zapier</a>
         </div>
         <div className="card" style={{ textAlign: "center", padding: 28 }}>
           <div style={{ width: 60, height: 60, borderRadius: 14, background: "#6366f1", color: "white", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 26, fontWeight: 700, marginBottom: 14 }}>M</div>
           <h3>Make (Integromat)</h3>
           <p style={{ fontSize: 13, color: "#6b7280", margin: "6px 0 16px" }}>Visual automation platform for complex workflows.</p>
-          <button className="btn btn-primary">Open Make</button>
+          <a className="btn btn-primary" href="https://www.make.com/en/integrations" target="_blank" rel="noreferrer">Open Make</a>
         </div>
       </div>
       <div className="card" style={{ padding: 0 }}>

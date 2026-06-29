@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { FiFileText, FiArrowLeft, FiSmartphone, FiFacebook, FiX, FiChevronDown, FiChevronUp } from "react-icons/fi";
-import { FaBriefcase, FaHeart, FaBuilding, FaSearch } from "react-icons/fa";
+import { FiFileText, FiArrowLeft, FiArrowRight, FiGlobe, FiSmartphone, FiMonitor, FiFacebook, FiX, FiChevronDown, FiChevronUp, FiCheck, FiCalendar, FiUsers, FiLayout, FiGrid, FiVideo, FiCircle, FiCompass, FiMapPin } from "react-icons/fi";
+import { FaInstagram, FaFacebookMessenger, FaFacebookF, FaBriefcase, FaHeart, FaBuilding, FaSearch } from "react-icons/fa";
 import metaApi from "../lcmMetaApi";
 import { adAPI } from "../lcmApi";
 import PlacesAutocomplete from "../PlacesAutocomplete";
@@ -11,6 +11,13 @@ export default function LeadFormAdSet() {
   const location = useLocation();
   const campaignData = location.state || {};
   const [loading, setLoading] = useState(false);
+  const [step, setStep] = useState(1);
+  const STEPS = [
+    { n: 1, label: "Ad Set Details", desc: "Provide the basic information for your ad set" },
+    { n: 2, label: "Targeting", desc: "Define who should see your ad" },
+    { n: 3, label: "Publisher Platforms", desc: "Choose where your ads appear" },
+    { n: 4, label: "Detailed Targeting", desc: "Refine your audience (optional)" },
+  ];
   const [pages, setPages] = useState([]);
   const [loadingPages, setLoadingPages] = useState(false);
 
@@ -278,15 +285,15 @@ export default function LeadFormAdSet() {
   ];
 
   const devicePlatforms = [
-    { value: "mobile", label: "Mobile", icon: FiSmartphone, color: "blue" },
-    { value: "desktop", label: "Desktop", icon: FiSmartphone, color: "purple" },
+    { value: "mobile", label: "Mobile", icon: FiSmartphone, color: "#3b82f6" },
+    { value: "desktop", label: "Desktop", icon: FiMonitor, color: "#8b5cf6" },
   ];
 
   const publisherPlatforms = [
-    { value: "facebook", label: "Facebook", icon: FiFacebook, color: "blue" },
-    { value: "instagram", label: "Instagram", icon: FiFacebook, color: "pink" },
-    { value: "messenger", label: "Messenger", icon: FiFacebook, color: "blue" },
-    { value: "audience_network", label: "Audience Network", icon: FiFacebook, color: "green" },
+    { value: "facebook", label: "Facebook", icon: FaFacebookF, color: "#1877f2" },
+    { value: "instagram", label: "Instagram", icon: FaInstagram, color: "#e1306c" },
+    { value: "messenger", label: "Messenger", icon: FaFacebookMessenger, color: "#a334fa" },
+    { value: "audience_network", label: "Audience Network", icon: FiGlobe, color: "#22c55e" },
   ];
 
   const genders = [
@@ -295,15 +302,15 @@ export default function LeadFormAdSet() {
   ];
 
   const facebookPositions = [
-    { value: "feed", label: "Feed" },
-    { value: "instant_article", label: "Instant Article" },
+    { value: "feed", label: "Feed", icon: FiLayout, color: "#1877f2" },
+    { value: "instant_article", label: "Instant Article", icon: FiFileText, color: "#0ea5e9" },
   ];
 
   const instagramPositions = [
-    { value: "stream", label: "Feed" },
-    { value: "reels", label: "Reels" },
-    { value: "story", label: "Story" },
-    { value: "explore", label: "Explore" },
+    { value: "stream", label: "Feed", icon: FiGrid, color: "#e1306c" },
+    { value: "reels", label: "Reels", icon: FiVideo, color: "#c026d3" },
+    { value: "story", label: "Story", icon: FiCircle, color: "#f59e0b" },
+    { value: "explore", label: "Explore", icon: FiCompass, color: "#8b5cf6" },
   ];
 
   const handleInputChange = (e) => {
@@ -486,7 +493,7 @@ export default function LeadFormAdSet() {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
 
     if (!formData.name.trim()) {
       alert("Please enter ad set name");
@@ -639,49 +646,82 @@ export default function LeadFormAdSet() {
     }
   };
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto">
-        <button
-          onClick={() => navigate("/meta/create/lead-form/form", { state: campaignData })}
-          className="flex items-center gap-2 text-gray-700 hover:text-gray-900 mb-6 transition-colors"
-        >
-          <FiArrowLeft className="w-5 h-5" />
-          <span className="font-medium">Back</span>
-        </button>
+  const validateStep = (s) => {
+    if (s === 1) {
+      if (!formData.name.trim()) { alert("Please enter ad set name"); return false; }
+      if (!formData.daily_budget || parseFloat(formData.daily_budget) <= 0) { alert("Please enter a valid daily budget"); return false; }
+      if (!formData.page_id.trim()) { alert("Please select a Facebook Page"); return false; }
+    }
+    if (s === 2) {
+      if (formData.targeting.geo_locations.countries.length === 0 && customLocations.length === 0) { alert("Select at least one country or add a custom location"); return false; }
+      if (!formData.min_age || !formData.max_age) { alert("Please enter Min and Max age"); return false; }
+    }
+    if (s === 3) {
+      if (formData.targeting.publisher_platforms.length === 0) { alert("Select at least one publisher platform"); return false; }
+    }
+    return true;
+  };
+  const goNext = () => { if (validateStep(step)) setStep((s) => Math.min(4, s + 1)); };
+  const goBack = () => setStep((s) => Math.max(1, s - 1));
+  const goToStep = (s) => { if (s <= step) setStep(s); else if (validateStep(step)) setStep(Math.min(s, step + 1)); };
 
-        <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8">
-          <div className="flex items-center gap-4 mb-8">
-            <div className="w-16 h-16 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center shadow-lg">
-              <FiFileText className="w-8 h-8 text-white" />
+  return (
+    <div className="py-4 px-4 sm:px-6 max-w-6xl mx-auto">
+      <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 sm:p-8">
+        <div className="flex items-start justify-between gap-4 mb-6">
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 bg-gradient-to-br from-blue-400 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/30 flex-shrink-0">
+              <FiFileText className="w-7 h-7 text-white" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Create Ad Set - Lead Form Campaign</h1>
-              <p className="text-gray-600 mt-1">Configure your ad set settings for the lead form campaign</p>
+              <h1 className="text-2xl font-bold text-gray-900">Create Ad Set — Lead Form Campaign</h1>
+              <p className="text-gray-500 text-sm mt-0.5">Configure your ad set settings for the lead form campaign</p>
             </div>
           </div>
+          <button
+            onClick={() => navigate("/meta/create/lead-form/form", { state: campaignData })}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gray-50 border border-gray-200 text-gray-600 text-sm font-medium hover:bg-gray-100 hover:text-gray-900 transition-all flex-shrink-0"
+          >
+            <FiArrowLeft className="w-4 h-4" /> Back
+          </button>
+        </div>
 
-          <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-6 mb-6 border border-gray-200">
-            <h3 className="font-semibold text-gray-900 mb-4">Campaign Summary</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-              <div className="bg-white rounded-lg p-3 border border-gray-200">
-                <div className="text-gray-500 text-xs mb-1">Campaign Name</div>
-                <div className="text-gray-900 font-semibold">{campaignData.name || "N/A"}</div>
-              </div>
-              <div className="bg-white rounded-lg p-3 border border-gray-200">
-                <div className="text-gray-500 text-xs mb-1">Objective</div>
-                <div className="text-gray-900 font-semibold">{campaignData.objective || "N/A"}</div>
-              </div>
+        <div className="flex items-center gap-3 bg-gradient-to-br from-blue-50 to-indigo-50/40 border border-blue-100 rounded-xl p-4 mb-6">
+          <div className="w-9 h-9 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center flex-shrink-0"><FiFileText className="w-4 h-4" /></div>
+          <div className="flex-1">
+            <div className="font-semibold text-gray-800 text-sm mb-1.5">Campaign Summary</div>
+            <div className="flex flex-wrap gap-x-10 gap-y-1 text-sm">
+              <div><div className="text-[11px] text-gray-400">Name</div><div className="text-gray-800 font-semibold">{campaignData.name || "N/A"}</div></div>
+              <div><div className="text-[11px] text-gray-400">Objective</div><div className="text-gray-800 font-semibold">{campaignData.objective || "N/A"}</div></div>
               {campaignData.leadgen_form_id && (
-                <div className="bg-white rounded-lg p-3 border border-gray-200">
-                  <div className="text-gray-500 text-xs mb-1">Lead Form ID</div>
-                  <div className="text-gray-900 font-semibold">{campaignData.leadgen_form_id}</div>
-                </div>
+                <div><div className="text-[11px] text-gray-400">Lead Form ID</div><div className="text-gray-800 font-semibold">{campaignData.leadgen_form_id}</div></div>
               )}
             </div>
           </div>
+          <div className="w-9 h-9 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center flex-shrink-0"><FiCheck className="w-5 h-5" /></div>
+        </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Stepper — pill style */}
+        <div className="flex items-center mb-5 overflow-x-auto pb-1">
+          {STEPS.map((s, i) => (
+            <div key={s.n} className="flex items-center flex-1 last:flex-none min-w-0">
+              <button type="button" onClick={() => goToStep(s.n)} className={`flex items-center gap-2.5 pl-2 pr-4 py-2 rounded-full transition-all whitespace-nowrap ${step === s.n ? "bg-blue-50" : "bg-gray-50 hover:bg-gray-100"}`}>
+                <span className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${step >= s.n ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-500"}`}>
+                  {step > s.n ? <FiCheck className="w-3.5 h-3.5" /> : s.n}
+                </span>
+                <span className={`text-sm font-semibold ${step === s.n ? "text-blue-600" : "text-gray-500"}`}>{s.label}</span>
+              </button>
+              {i < STEPS.length - 1 && <span className="flex-1 border-t-2 border-dashed border-gray-200 mx-2 min-w-[16px]" />}
+            </div>
+          ))}
+        </div>
+        <p className="text-sm text-gray-500 mb-6 pb-5 border-b border-gray-100">{STEPS[step - 1].desc}</p>
+
+        <form
+          onSubmit={(e) => { e.preventDefault(); if (step < 4) goNext(); else handleSubmit(); }}
+          className="space-y-6"
+        >
+          {step === 1 && (<>
             <div className="space-y-2">
               <label htmlFor="name" className="block text-sm font-semibold text-gray-700">
                 Ad Set Name <span className="text-red-500">*</span>
@@ -692,7 +732,7 @@ export default function LeadFormAdSet() {
                 name="name"
                 value={formData.name}
                 onChange={handleInputChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50/60 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
                 placeholder="Enter ad set name"
                 required
               />
@@ -708,7 +748,7 @@ export default function LeadFormAdSet() {
                 name="daily_budget"
                 value={formData.daily_budget}
                 onChange={handleInputChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50/60 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
                 placeholder="Enter daily budget in rupees (e.g., 500)"
                 min="1"
                 step="1"
@@ -731,7 +771,7 @@ export default function LeadFormAdSet() {
                   name="page_id"
                   value={formData.page_id}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50/60 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
                   required
                 >
                   <option value="">Select a Facebook Page</option>
@@ -765,7 +805,7 @@ export default function LeadFormAdSet() {
                     value={formData.page_id}
                     onChange={handleInputChange}
                     placeholder="Enter Facebook Page ID manually"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50/60 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
                     required
                   />
                 </div>
@@ -788,17 +828,16 @@ export default function LeadFormAdSet() {
               </div>
             </div>
 
-            {/* Targeting Section */}
-            <div className="space-y-6 border-t pt-6">
-              <h3 className="text-lg font-semibold text-gray-900">Targeting</h3>
+          </>)}
 
+          {step === 2 && (<>
               {/* Google Places Autocomplete - Location Search */}
-              <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Search Location *
+              <div className="mb-6">
+                <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-1">
+                  <FiMapPin className="w-4 h-4 text-gray-400" /> Search Location <span className="text-red-500">*</span>
                 </label>
-                <p className="text-xs text-gray-600 mb-3">
-                  Search for a location using Google Places. You can add multiple locations - each will be automatically added to custom_locations for targeting.
+                <p className="text-xs text-gray-500 mb-2.5">
+                  Search via Google Places — add multiple locations for precise targeting.
                 </p>
                 <PlacesAutocomplete
                   key={`places-${customLocations.length}`}
@@ -807,46 +846,13 @@ export default function LeadFormAdSet() {
                   onPlaceSelect={handlePlaceSelect}
                   showPlaceDetails={false}
                   placeholder="Search for a location (e.g., city, address, landmark)"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                  className="w-full px-4 py-2 border border-gray-200 rounded-xl bg-gray-50/60 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
                 />
               </div>
 
-              {/* Display Selected Place Details (temporary preview) */}
-              {selectedPlace && (
-                <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
-                  <div className="flex items-start justify-between mb-2">
-                    <h5 className="font-semibold text-gray-900 text-sm">
-                      Preview:
-                    </h5>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSelectedPlace(null);
-                      }}
-                      className="text-gray-400 hover:text-gray-600"
-                    >
-                      <FiX className="w-4 h-4" />
-                    </button>
-                  </div>
-                  <div className="space-y-1 text-sm text-gray-700">
-                    {selectedPlace.name && (
-                      <div><strong>Name:</strong> {selectedPlace.name}</div>
-                    )}
-                    {selectedPlace.address && (
-                      <div><strong>Address:</strong> {selectedPlace.address}</div>
-                    )}
-                    {selectedPlace.location && (
-                      <div className="text-xs text-gray-500">
-                        <strong>Coordinates:</strong> {selectedPlace.location.lat.toFixed(6)}, {selectedPlace.location.lng.toFixed(6)}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
               {/* Display All Custom Locations - Each card is an accordion */}
               {customLocations.length > 0 && (
-                <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="mb-6 p-4 rounded-xl border border-gray-200 bg-gray-50/60">
                   <div className="flex items-center justify-between mb-3">
                     <h5 className="font-semibold text-gray-900 text-sm">
                       Custom Locations ({customLocations.length})
@@ -986,56 +992,46 @@ export default function LeadFormAdSet() {
               {/* Age Range */}
               <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
                     Min Age <span className="text-red-500">*</span>
                   </label>
-                  <input
-                    type="number"
-                    name="min_age"
-                    value={formData.min_age}
-                    onChange={handleInputChange}
-                    min="13"
-                    max="65"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    required
-                  />
+                  <div className="relative">
+                    <FiCalendar className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+                    <input type="number" name="min_age" value={formData.min_age} onChange={handleInputChange} min="13" max="65" required
+                      className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl bg-gray-50/60 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                  </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
                     Max Age <span className="text-red-500">*</span>
                   </label>
-                  <input
-                    type="number"
-                    name="max_age"
-                    value={formData.max_age}
-                    onChange={handleInputChange}
-                    min="13"
-                    max="65"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    required
-                  />
+                  <div className="relative">
+                    <FiUsers className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+                    <input type="number" name="max_age" value={formData.max_age} onChange={handleInputChange} min="13" max="65" required
+                      className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl bg-gray-50/60 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                  </div>
                 </div>
               </div>
 
               {/* Genders */}
               <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Genders (Optional)
-                </label>
-                <div className="flex gap-4">
-                  {genders.map((gender) => (
-                    <label key={gender.value} className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={formData.genders.includes(gender.value)}
-                        onChange={() => handleGenderToggle(gender.value)}
-                        className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                      />
-                      <span className="text-sm text-gray-700">{gender.label}</span>
-                    </label>
-                  ))}
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Genders (Optional)</label>
+                <div className="grid grid-cols-2 gap-3">
+                  {genders.map((gender) => {
+                    const sel = formData.genders.includes(gender.value);
+                    return (
+                      <button type="button" key={gender.value} onClick={() => handleGenderToggle(gender.value)}
+                        className={`flex items-center justify-between gap-2 p-3.5 rounded-xl border-2 transition-all ${sel ? "border-blue-500 bg-blue-50" : "border-gray-200 bg-white hover:border-gray-300"}`}>
+                        <span className="flex items-center gap-2.5">
+                          <span className="w-7 h-7 rounded-lg flex items-center justify-center text-white text-sm" style={{ background: gender.value === 1 ? "#3b82f6" : "#ec4899" }}>{gender.value === 1 ? "♂" : "♀"}</span>
+                          <span className="text-sm font-semibold text-gray-800">{gender.label}</span>
+                        </span>
+                        <span className={`w-5 h-5 rounded-md border flex items-center justify-center ${sel ? "bg-blue-500 border-blue-500 text-white" : "border-gray-300 text-transparent"}`}><FiCheck className="w-3 h-3" /></span>
+                      </button>
+                    );
+                  })}
                 </div>
-                <p className="text-xs text-gray-500 mt-1">Leave empty to target all genders</p>
+                <p className="text-xs text-gray-500 mt-1.5">Leave empty to target all genders</p>
               </div>
 
               <div className="space-y-2">
@@ -1043,31 +1039,25 @@ export default function LeadFormAdSet() {
                   Countries <span className="text-red-500">*</span>
                 </label>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  {countries.map((country) => (
-                    <button
-                      key={country.code}
-                      type="button"
-                      onClick={() => handleCountryToggle(country.code)}
-                      className={`p-3 border-2 rounded-lg transition-all ${
-                        formData.targeting.geo_locations.countries.includes(country.code)
-                          ? "border-blue-500 bg-blue-50"
-                          : "border-gray-200 hover:border-gray-300"
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <span className="text-xl">{country.flag}</span>
-                          <span className="font-medium text-gray-900">{country.name}</span>
+                  {countries.map((country) => {
+                    const sel = formData.targeting.geo_locations.countries.includes(country.code);
+                    return (
+                      <button key={country.code} type="button" onClick={() => handleCountryToggle(country.code)}
+                        className={`p-3.5 border-2 rounded-xl transition-all flex items-center justify-between ${sel ? "border-blue-500 bg-blue-50" : "border-gray-200 hover:border-gray-300"}`}>
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <img src={`https://flagcdn.com/24x18/${country.code.toLowerCase()}.png`} srcSet={`https://flagcdn.com/48x36/${country.code.toLowerCase()}.png 2x`} width="24" height="18" alt={country.code} className="rounded-sm shadow-sm flex-shrink-0" />
+                          <span className="text-sm font-semibold text-gray-800 truncate">{country.name}</span>
                         </div>
-                        {formData.targeting.geo_locations.countries.includes(country.code) && (
-                          <span className="text-green-500">✓</span>
-                        )}
-                      </div>
-                    </button>
-                  ))}
+                        <span className={`w-5 h-5 rounded-md border flex items-center justify-center flex-shrink-0 ${sel ? "bg-blue-500 border-blue-500 text-white" : "border-gray-300 text-transparent"}`}><FiCheck className="w-3 h-3" /></span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
+          </>)}
+
+          {step === 3 && (<>
               <div className="space-y-2">
                 <label className="block text-sm font-semibold text-gray-700">
                   Device Platforms <span className="text-red-500">*</span>
@@ -1075,24 +1065,15 @@ export default function LeadFormAdSet() {
                 <div className="grid grid-cols-2 gap-3">
                   {devicePlatforms.map((device) => {
                     const IconComponent = device.icon;
+                    const sel = formData.targeting.device_platforms.includes(device.value);
                     return (
-                      <button
-                        key={device.value}
-                        type="button"
-                        onClick={() => handleDeviceToggle(device.value)}
-                        className={`p-4 border-2 rounded-lg transition-all flex items-center justify-between ${
-                          formData.targeting.device_platforms.includes(device.value)
-                            ? `border-${device.color}-500 bg-${device.color}-50`
-                            : "border-gray-200 hover:border-gray-300"
-                        }`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <IconComponent className={`w-5 h-5 text-${device.color}-600`} />
-                          <span className="font-medium text-gray-900">{device.label}</span>
+                      <button key={device.value} type="button" onClick={() => handleDeviceToggle(device.value)}
+                        className={`p-3.5 border-2 rounded-xl transition-all flex items-center justify-between ${sel ? "border-blue-500 bg-blue-50" : "border-gray-200 hover:border-gray-300"}`}>
+                        <div className="flex items-center gap-2.5">
+                          <span className="w-8 h-8 rounded-lg flex items-center justify-center text-white" style={{ background: device.color }}><IconComponent className="w-4 h-4" /></span>
+                          <span className="font-semibold text-sm text-gray-800">{device.label}</span>
                         </div>
-                        {formData.targeting.device_platforms.includes(device.value) && (
-                          <span className="text-green-500">✓</span>
-                        )}
+                        <span className={`w-5 h-5 rounded-md border flex items-center justify-center ${sel ? "bg-blue-500 border-blue-500 text-white" : "border-gray-300 text-transparent"}`}><FiCheck className="w-3 h-3" /></span>
                       </button>
                     );
                   })}
@@ -1106,25 +1087,15 @@ export default function LeadFormAdSet() {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   {publisherPlatforms.map((publisher) => {
                     const IconComponent = publisher.icon;
+                    const sel = formData.targeting.publisher_platforms.includes(publisher.value);
                     return (
-                      <label
-                        key={publisher.value}
-                        className={`p-4 border-2 rounded-lg cursor-pointer transition-all flex items-center justify-between ${
-                          formData.targeting.publisher_platforms.includes(publisher.value)
-                            ? "border-blue-500 bg-blue-50"
-                            : "border-gray-200 hover:border-gray-300"
-                        }`}
-                      >
-                        <div className="flex items-center gap-2">
-                          <IconComponent className="w-5 h-5" />
-                          <span className="font-medium text-sm">{publisher.label}</span>
+                      <label key={publisher.value}
+                        className={`p-3.5 border-2 rounded-xl cursor-pointer transition-all flex items-center justify-between ${sel ? "border-blue-500 bg-blue-50" : "border-gray-200 hover:border-gray-300"}`}>
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <span className="w-8 h-8 rounded-lg flex items-center justify-center text-white flex-shrink-0" style={{ background: publisher.color }}><IconComponent className="w-4 h-4" /></span>
+                          <span className="font-semibold text-sm text-gray-800 truncate">{publisher.label}</span>
                         </div>
-                        <input
-                          type="checkbox"
-                          checked={formData.targeting.publisher_platforms.includes(publisher.value)}
-                          onChange={() => handlePublisherToggle(publisher.value)}
-                          className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                        />
+                        <input type="checkbox" checked={sel} onChange={() => handlePublisherToggle(publisher.value)} className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 flex-shrink-0" />
                       </label>
                     );
                   })}
@@ -1133,102 +1104,57 @@ export default function LeadFormAdSet() {
 
               {/* Facebook Positions */}
               <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Facebook Positions (Optional)
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Facebook Positions <span className="text-gray-400 font-normal">(Optional)</span>
                 </label>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  {facebookPositions.map((position) => (
-                    <label
-                      key={position.value}
-                      className={`p-3 border-2 rounded-lg cursor-pointer transition-all flex items-center justify-between ${
-                        formData.targeting.facebook_positions.includes(position.value)
-                          ? "border-blue-500 bg-blue-50"
-                          : "border-gray-200 hover:border-gray-300"
-                      }`}
-                    >
-                      <span className="text-sm font-medium">{position.label}</span>
-                      <input
-                        type="checkbox"
-                        checked={formData.targeting.facebook_positions.includes(position.value)}
-                        onChange={() => handleFacebookPositionToggle(position.value)}
-                        className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                      />
-                    </label>
-                  ))}
+                  {facebookPositions.map((position) => {
+                    const Icon = position.icon;
+                    const sel = formData.targeting.facebook_positions.includes(position.value);
+                    return (
+                      <label key={position.value}
+                        className={`p-3.5 border-2 rounded-xl cursor-pointer transition-all flex items-center justify-between ${sel ? "border-blue-500 bg-blue-50" : "border-gray-200 hover:border-gray-300"}`}>
+                        <span className="flex items-center gap-2.5">
+                          <span className="w-8 h-8 rounded-lg flex items-center justify-center text-white" style={{ background: position.color }}><Icon className="w-4 h-4" /></span>
+                          <span className="text-sm font-semibold text-gray-800">{position.label}</span>
+                        </span>
+                        <input type="checkbox" checked={sel} onChange={() => handleFacebookPositionToggle(position.value)} className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" />
+                      </label>
+                    );
+                  })}
                 </div>
                 <p className="text-xs text-gray-500 mt-1">Leave empty to use all positions</p>
               </div>
 
               {/* Instagram Positions */}
               <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Instagram Positions (Optional)
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Instagram Positions <span className="text-gray-400 font-normal">(Optional)</span>
                 </label>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  {instagramPositions.map((position) => (
-                    <label
-                      key={position.value}
-                      className={`p-3 border-2 rounded-lg cursor-pointer transition-all flex items-center justify-between ${
-                        formData.targeting.instagram_positions.includes(position.value)
-                          ? "border-blue-500 bg-blue-50"
-                          : "border-gray-200 hover:border-gray-300"
-                      }`}
-                    >
-                      <span className="text-sm font-medium">{position.label}</span>
-                      <input
-                        type="checkbox"
-                        checked={formData.targeting.instagram_positions.includes(position.value)}
-                        onChange={() => handleInstagramPositionToggle(position.value)}
-                        className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                      />
-                    </label>
-                  ))}
-                </div>
-                <p className="text-xs text-gray-500 mt-1">Leave empty to use all positions</p>
-              </div>
-
-              {/* Device Platforms */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Device Platforms (Optional)
-                </label>
-                <div className="grid grid-cols-2 gap-3">
-                  {devicePlatforms.map((device) => {
-                    const IconComponent = device.icon;
+                  {instagramPositions.map((position) => {
+                    const Icon = position.icon;
+                    const sel = formData.targeting.instagram_positions.includes(position.value);
                     return (
-                      <label
-                        key={device.value}
-                        className={`p-4 border-2 rounded-lg cursor-pointer transition-all flex items-center justify-between ${
-                          formData.targeting.device_platforms.includes(device.value)
-                            ? "border-blue-500 bg-blue-50"
-                            : "border-gray-200 hover:border-gray-300"
-                        }`}
-                      >
-                        <div className="flex items-center gap-2">
-                          <IconComponent className="w-5 h-5" />
-                          <span className="font-medium">{device.label}</span>
-                        </div>
-                        <input
-                          type="checkbox"
-                          checked={formData.targeting.device_platforms.includes(device.value)}
-                          onChange={() => handleDeviceToggle(device.value)}
-                          className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                        />
+                      <label key={position.value}
+                        className={`p-3.5 border-2 rounded-xl cursor-pointer transition-all flex items-center justify-between ${sel ? "border-blue-500 bg-blue-50" : "border-gray-200 hover:border-gray-300"}`}>
+                        <span className="flex items-center gap-2.5 min-w-0">
+                          <span className="w-8 h-8 rounded-lg flex items-center justify-center text-white flex-shrink-0" style={{ background: position.color }}><Icon className="w-4 h-4" /></span>
+                          <span className="text-sm font-semibold text-gray-800 truncate">{position.label}</span>
+                        </span>
+                        <input type="checkbox" checked={sel} onChange={() => handleInstagramPositionToggle(position.value)} className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 flex-shrink-0" />
                       </label>
                     );
                   })}
                 </div>
-                <p className="text-xs text-gray-500 mt-1">Leave empty to target all devices</p>
+                <p className="text-xs text-gray-500 mt-1">Leave empty to use all positions</p>
               </div>
 
+          </>)}
+
+          {step === 4 && (<>
               {/* Detailed Targeting Section */}
-              <div className="mt-8 pt-6 border-t">
-                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                  <FaSearch className="text-blue-600" /> Detailed Targeting (Optional)
-                </h3>
-                <p className="text-sm text-gray-600 mb-4">
-                  Add interests, work positions, or employers to refine your audience targeting.
-                </p>
+              <div>
 
                 {/* Interests */}
                 <div className="mb-6">
@@ -1241,7 +1167,7 @@ export default function LeadFormAdSet() {
                       value={interestQuery}
                       onChange={(e) => setInterestQuery(e.target.value)}
                       placeholder="Search interests (e.g., gaming, sports)"
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-200 rounded-xl bg-gray-50/60 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       disabled={loadingInterest}
                     />
                     {loadingInterest && (
@@ -1300,7 +1226,7 @@ export default function LeadFormAdSet() {
                       value={workPositionQuery}
                       onChange={(e) => setWorkPositionQuery(e.target.value)}
                       placeholder="Search work positions (e.g., doctor, engineer)"
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-200 rounded-xl bg-gray-50/60 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       disabled={loadingWorkPosition}
                     />
                     {loadingWorkPosition && (
@@ -1359,7 +1285,7 @@ export default function LeadFormAdSet() {
                       value={employerQuery}
                       onChange={(e) => setEmployerQuery(e.target.value)}
                       placeholder="Search employers/companies (e.g., hospital, tech company)"
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-200 rounded-xl bg-gray-50/60 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       disabled={loadingEmployer}
                     />
                     {loadingEmployer && (
@@ -1407,30 +1333,30 @@ export default function LeadFormAdSet() {
                   )}
                 </div>
               </div>
-            </div>
+          </>)}
 
-            <div className="flex justify-end pt-4">
+          {/* Footer navigation */}
+          <div className="flex items-center justify-between pt-4 mt-2 border-t">
+            {step > 1 ? (
               <button
-                type="submit"
-                disabled={loading}
-                className="px-8 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg font-semibold hover:from-blue-600 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5"
+                type="button"
+                onClick={goBack}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-gray-300 text-gray-700 font-semibold text-sm hover:bg-gray-50 transition-colors"
               >
-                {loading ? (
-                  <>
-                    <span className="animate-spin">⏳</span>
-                    Creating...
-                  </>
-                ) : (
-                  <>
-                    Create Ad Set
-                  </>
-                )}
+                <FiArrowLeft className="w-4 h-4" /> Back
               </button>
-            </div>
+            ) : <span />}
+            <button
+              type="submit"
+              disabled={loading}
+              className="px-7 py-3 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold text-sm shadow-lg shadow-blue-500/30 hover:-translate-y-0.5 hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            >
+              {step < 4 ? <>Next <FiArrowRight /></> : (loading ? <><span className="animate-spin">⏳</span> Creating...</> : <>Create Ad Set <FiArrowRight /></>)}
+            </button>
+          </div>
           </form>
         </div>
       </div>
-    </div>
   );
 }
 

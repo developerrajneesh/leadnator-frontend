@@ -15,14 +15,14 @@ const ITEMS = [
   { to: "/instagram",    moduleKey: "instagram",    Icon: SiInstagram,  label: "Instagram",    brand: "#e1306c" },
   { to: "/whatsapp",     moduleKey: "whatsapp",     Icon: SiWhatsapp,   label: "WhatsApp",     brand: "#25d366" },  // WhatsApp green
   { to: "/email",        moduleKey: "email",        Icon: FiMail,       label: "Email",        brand: "#ea4335" },  // Gmail red
-  { to: "/integrations", moduleKey: "integrations", Icon: FiGrid,       label: "Integrations", brand: "#06b6d4" },  // cyan
+  { to: "/calendar",     moduleKey: "calendar",     Icon: FiCalendar,   label: "Calendar",     brand: "#4285f4" },  // Google blue
   { to: "/storage",      moduleKey: "storage",      Icon: FiFolder,     label: "Storage",      brand: "#facc15" },  // amber/folder yellow
   { to: "/autopilot",    moduleKey: "autopilot",    Icon: FiCpu,        label: "Autopilot",    brand: "#7c3aed" },  // violet
   { to: "/tools",        moduleKey: "tools",        Icon: FiTool,       label: "Tools",        brand: "#f97316" },  // orange
-  { to: "/calendar",     moduleKey: "calendar",     Icon: FiCalendar,   label: "Calendar",     brand: "#4285f4" },  // Google blue
   { to: "/pricing",      moduleKey: "pricing",      Icon: FiStar,       label: "Pricing",      brand: "#fbbf24" },  // gold
   { to: "/support",      moduleKey: "support",      Icon: FiLifeBuoy,   label: "Support",      brand: "#ef4444" },  // red
   { to: "/settings",     moduleKey: "settings",     Icon: FiSettings,   label: "Settings",     brand: "#64748b" },  // slate
+  { to: "/integrations", moduleKey: "integrations", Icon: FiGrid,       label: "Integrations", brand: "#06b6d4" },  // cyan
 ];
 
 export default function MiniSidebar() {

@@ -1,14 +1,28 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  FiSearch, FiPause, FiPlay, FiTrash2, FiMail, FiEdit2, FiX, FiRefreshCw,
+  FiSearch, FiPause, FiPlay, FiTrash2, FiMail, FiEdit2, FiX, FiRefreshCw, FiSlash,
 } from "react-icons/fi";
 import { api } from "../../api/client";
 import { notify } from "../../globalComponents/Toast/Toast";
 
 const PLANS = ["Starter", "Growth", "Pro"];
-const STATUSES = ["active", "paused"];
+const STATUSES = ["active", "paused", "suspended"];
 const ROLES = ["user", "admin"];
+const DURATIONS = [
+  { months: 1,  label: "1 month" },
+  { months: 3,  label: "3 months" },
+  { months: 6,  label: "6 months" },
+  { months: 12, label: "12 months" },
+];
+
+function fmtDate(d) {
+  return d ? new Date(d).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) : "—";
+}
+function daysLeft(d) {
+  if (!d) return null;
+  return Math.ceil((new Date(d).getTime() - Date.now()) / 86400000);
+}
 
 export default function AdminUsers() {
   const navigate = useNavigate();
@@ -59,6 +73,20 @@ export default function AdminUsers() {
     } finally { setBusyId(null); }
   }
 
+  async function toggleSuspend(u) {
+    const next = u.status === "suspended" ? "active" : "suspended";
+    const verb = next === "suspended" ? "Suspend" : "Un-suspend";
+    if (!confirm(`${verb} ${u.name || u.email}? ${next === "suspended" ? "They will be locked out until reactivated." : ""}`)) return;
+    setBusyId(u.id);
+    try {
+      const r = await api.admin.updateUser(u.id, { status: next });
+      setUsers((list) => list.map((x) => x.id === u.id ? { ...x, ...r.user } : x));
+      notify.success(`${u.name || u.email} ${next === "suspended" ? "suspended" : "reactivated"}`);
+    } catch (err) {
+      notify.error(err.message || `Failed to ${verb.toLowerCase()} user`);
+    } finally { setBusyId(null); }
+  }
+
   async function deleteUser(u) {
     if (!confirm(`Permanently delete ${u.name || u.email}? This cannot be undone.`)) return;
     setBusyId(u.id);
@@ -83,6 +111,7 @@ export default function AdminUsers() {
         name:   form.name.trim(),
         email:  form.email.trim(),
         plan:   form.plan,
+        planMonths: Number(form.planMonths) || 1,
         role:   form.role,
         status: form.status,
       });
@@ -124,6 +153,7 @@ export default function AdminUsers() {
           <option value="all">All statuses</option>
           <option value="active">Active</option>
           <option value="paused">Paused</option>
+          <option value="suspended">Suspended</option>
         </select>
       </div>
 
@@ -188,6 +218,14 @@ export default function AdminUsers() {
                             <FiPlay />
                           </button>
                         )}
+                        <button
+                          className={`admin-action ${u.status === "suspended" ? "" : "danger"}`}
+                          title={u.status === "suspended" ? "Un-suspend" : "Suspend account"}
+                          onClick={() => toggleSuspend(u)}
+                          disabled={busyId === u.id}
+                        >
+                          <FiSlash />
+                        </button>
                         <button className="admin-action" title="Edit" onClick={() => setEditing(u)} disabled={busyId === u.id}>
                           <FiEdit2 />
                         </button>
@@ -215,13 +253,18 @@ export default function AdminUsers() {
 }
 
 function EditUserModal({ user, onClose, onSave, saving }) {
+  const sub = user.subscription || null;
   const [form, setForm] = useState({
     name:   user.name   || "",
     email:  user.email  || "",
     plan:   user.plan   || "Starter",
+    planMonths: sub?.months || 1,
     role:   user.role   || "user",
     status: user.status || "active",
   });
+
+  const left = daysLeft(sub?.expiresAt);
+  const trialLeft = daysLeft(user.trialEndsAt);
 
   return (
     <div
@@ -255,17 +298,39 @@ function EditUserModal({ user, onClose, onSave, saving }) {
             </select>
           </div>
           <div className="form-group">
+            <label>Plan duration</label>
+            <select value={form.planMonths} onChange={(e) => setForm({ ...form, planMonths: Number(e.target.value) })}>
+              {DURATIONS.map((d) => <option key={d.months} value={d.months}>{d.label}</option>)}
+            </select>
+          </div>
+        </div>
+
+        {/* Current subscription / trial summary */}
+        <div style={{ fontSize: 12.5, color: "var(--text-muted)", background: "#f8fafc", border: "1px solid var(--border)", borderRadius: 8, padding: "9px 12px", marginBottom: 14 }}>
+          {sub ? (
+            <>Current: <strong style={{ color: "var(--text)" }}>{sub.planName}</strong> · {sub.months} month{sub.months === 1 ? "" : "s"} · expires {fmtDate(sub.expiresAt)}
+              {left != null && <> ({left > 0 ? `${left} day${left === 1 ? "" : "s"} left` : "expired"})</>}
+            </>
+          ) : trialLeft != null && trialLeft > 0 ? (
+            <>On <strong style={{ color: "var(--text)" }}>free trial</strong> · {trialLeft} day{trialLeft === 1 ? "" : "s"} left</>
+          ) : (
+            <>No active paid subscription. Selecting a plan + duration will grant it for that many months.</>
+          )}
+        </div>
+
+        <div className="grid-2-equal">
+          <div className="form-group">
             <label>Role</label>
             <select value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })}>
               {ROLES.map((r) => <option key={r} value={r}>{r}</option>)}
             </select>
           </div>
-        </div>
-        <div className="form-group">
-          <label>Status</label>
-          <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}>
-            {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
-          </select>
+          <div className="form-group">
+            <label>Status</label>
+            <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}>
+              {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
+            </select>
+          </div>
         </div>
 
         <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>

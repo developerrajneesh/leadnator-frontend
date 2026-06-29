@@ -251,7 +251,10 @@ export default function Analytics() {
             { icon: <FiFolder />,        color: "orange", label: "Storage files",      value: (storage.files || 0).toLocaleString() },
           ].map((s, i) => (
             <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, padding: 10, border: "1px solid var(--border)", borderRadius: 10 }}>
-              <div className={`stat-icon ${s.color}`} style={{ width: 36, height: 36, margin: 0, flexShrink: 0 }}>
+              <div
+                className={`stat-icon ${s.color}`}
+                style={{ width: 36, height: 36, margin: 0, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 17, lineHeight: 1 }}
+              >
                 {s.icon}
               </div>
               <div style={{ flex: 1, fontSize: 13, color: "var(--text-muted)" }}>{s.label}</div>

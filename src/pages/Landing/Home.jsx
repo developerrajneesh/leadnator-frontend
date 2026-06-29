@@ -69,7 +69,7 @@ function Hero({ onGoto }) {
           </div>
 
           <ul className="ln-hero-check">
-            <li><FiCheck /> 14-day free trial</li>
+            <li><FiCheck /> 2-day free trial</li>
             <li><FiCheck /> No credit card required</li>
             <li><FiCheck /> Zero-fee WhatsApp setup</li>
             <li><FiCheck /> Cancel anytime</li>
@@ -429,7 +429,7 @@ function PricingPreview({ onGoto }) {
     { name: "Starter", price: "₹0",     period: "Free forever",  desc: "For solo founders validating an offer.",
       features: ["500 leads", "WhatsApp Cloud API", "Email 500/mo"], highlight: false, cta: "Start free" },
     { name: "Growth",  price: "₹1,499", period: "/ month",       desc: "For teams scaling past product-market fit.",
-      features: ["25,000 leads", "All modules included", "AI Studio (GPT-4)"], highlight: true, cta: "Start 14-day trial" },
+      features: ["25,000 leads", "All modules included", "AI Studio (GPT-4)"], highlight: true, cta: "Start 2-day trial" },
     { name: "Pro",     price: "₹3,999", period: "/ month",       desc: "For revenue teams living in the CRM.",
       features: ["Unlimited leads", "API + webhooks", "Dedicated CSM"], highlight: false, cta: "Talk to sales" },
   ];
@@ -504,7 +504,7 @@ function CtaBanner({ onGoto }) {
         <div className="ln-cta-card">
           <div className="ln-cta-copy">
             <h2>Ready to 10× your sales?</h2>
-            <p>Start your 14-day free trial. No credit card. Cancel anytime. Setup in under 12 minutes.</p>
+            <p>Start your 2-day free trial. No credit card. Cancel anytime. Setup in under 12 minutes.</p>
             <ul className="ln-cta-list">
               <li><FiCheck /> All modules unlocked in the trial</li>
               <li><FiCheck /> Personalised onboarding</li>

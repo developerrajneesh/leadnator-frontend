@@ -166,11 +166,6 @@ export default function EmbeddedSignup({ onConnected }) {
       >
         <FaWhatsapp /> {busy ? "Connecting…" : sdkReady ? "Login with Facebook" : "Loading SDK…"}
       </button>
-      {config?.fbAppId && (
-        <span style={{ marginLeft: 12, fontSize: 11, color: "var(--text-muted)" }}>
-          App {String(config.fbAppId).slice(0, 6)}… · WA config {String(config.configId || "").slice(0, 6)}… · SDK {config.apiVersion || "v25.0"}
-        </span>
-      )}
     </div>
   );
 }

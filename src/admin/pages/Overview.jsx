@@ -90,7 +90,7 @@ export default function AdminOverview() {
           icon={<FiDollarSign />} color="green"
           value={fmtINR(totals.mrr)}
           label="MRR"
-          trend={{ up: true, text: `${totals.activeUsers} paying users` }}
+          trend={{ up: true, text: `${totals.payingUsers ?? 0} paying user${(totals.payingUsers ?? 0) === 1 ? "" : "s"}` }}
         />
         <Stat
           icon={<FiTrendingUp />} color="orange"

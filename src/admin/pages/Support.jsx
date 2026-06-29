@@ -60,12 +60,26 @@ function TicketsTab() {
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedId, setSelectedId] = useState(null);
+  const [busyId, setBusyId] = useState(null);
 
   async function load() {
     try {
       const r = await api.admin.tickets();
       setTickets(r.tickets || []);
     } finally { setLoading(false); }
+  }
+
+  async function deleteTicket(e, t) {
+    e.stopPropagation();
+    if (!confirm(`Delete ticket #${t.code} from ${t.user || t.userEmail}? This cannot be undone.`)) return;
+    setBusyId(t.id);
+    try {
+      await api.admin.deleteTicket(t.id);
+      setTickets((list) => list.filter((x) => x.id !== t.id));
+      notify.success(`Ticket #${t.code} deleted`);
+    } catch (err) {
+      notify.error(err.message || "Failed to delete ticket");
+    } finally { setBusyId(null); }
   }
 
   useEffect(() => { load(); }, []);
@@ -109,7 +123,7 @@ function TicketsTab() {
               </thead>
               <tbody>
                 {tickets.map((t) => (
-                  <tr key={t.id} onClick={() => setSelectedId(t.id)} style={{ cursor: "pointer" }}>
+                  <tr key={t.id} onClick={() => setSelectedId(t.id)} style={{ cursor: "pointer", opacity: busyId === t.id ? 0.5 : 1 }}>
                     <td style={{ fontFamily: "monospace", fontSize: 12 }}>#{t.code}</td>
                     <td>
                       <div style={{ fontWeight: 600 }}>{t.user}</div>
@@ -129,7 +143,12 @@ function TicketsTab() {
                     <td style={{ color: "var(--text-muted)", fontSize: 12 }}>
                       {new Date(t.lastMessageAt || t.updatedAt).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" })}
                     </td>
-                    <td><button className="admin-action" title="Open"><FiMessageSquare /></button></td>
+                    <td onClick={(e) => e.stopPropagation()}>
+                      <div style={{ display: "flex", gap: 6 }}>
+                        <button className="admin-action" title="Open" onClick={() => setSelectedId(t.id)}><FiMessageSquare /></button>
+                        <button className="admin-action danger" title="Delete ticket" onClick={(e) => deleteTicket(e, t)} disabled={busyId === t.id}><FiTrash2 /></button>
+                      </div>
+                    </td>
                   </tr>
                 ))}
               </tbody>

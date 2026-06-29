@@ -103,6 +103,14 @@ export default function InvoicePreview({ inv, totals, currency }) {
           {Number(inv.taxRate) > 0 && (
             <Row label={`Tax (${inv.taxRate}%)`} value={money(totals.taxAmount)} />
           )}
+          {(totals.customLines || []).map((c) => (
+            <Row
+              key={c.id}
+              label={c.label}
+              value={`${c.delta < 0 ? "- " : "+ "}${money(Math.abs(c.delta))}`}
+              color={c.delta < 0 ? "#b91c1c" : undefined}
+            />
+          ))}
           <div style={{
             display: "flex", justifyContent: "space-between", alignItems: "center",
             padding: "14px 0 0", marginTop: 8, borderTop: "2px solid #111827",
@@ -130,9 +138,6 @@ export default function InvoicePreview({ inv, totals, currency }) {
         </div>
       )}
 
-      <div style={{ textAlign: "center", color: "#9ca3af", fontSize: 11, marginTop: 28, paddingTop: 16, borderTop: "1px solid #f3f4f6" }}>
-        Generated with Leadnator · leadnator.com
-      </div>
     </div>
   );
 }

@@ -37,6 +37,9 @@ export function buildInvoiceHtml(inv, totals, currency) {
   const taxRow = Number(inv.taxRate) > 0
     ? `<tr><td>Tax (${esc(inv.taxRate)}%)</td><td>${money(totals.taxAmount)}</td></tr>`
     : "";
+  const customRows = (totals.customLines || [])
+    .map((c) => `<tr><td>${esc(c.label)}</td><td${c.delta < 0 ? ' class="neg"' : ""}>${c.delta < 0 ? "- " : "+ "}${money(Math.abs(c.delta))}</td></tr>`)
+    .join("");
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -176,6 +179,7 @@ export function buildInvoiceHtml(inv, totals, currency) {
           <tr><td>Subtotal</td><td>${money(totals.subtotal)}</td></tr>
           ${discountRow}
           ${taxRow}
+          ${customRows}
         </tbody>
       </table>
       <div class="grand">
@@ -189,8 +193,6 @@ export function buildInvoiceHtml(inv, totals, currency) {
     ${inv.notes ? `<div class="section"><div class="label">Notes</div><div class="pre">${esc(inv.notes)}</div></div>` : ""}
     ${inv.terms ? `<div class="section"><div class="label">Terms</div><div class="pre">${esc(inv.terms)}</div></div>` : ""}
   </div>` : ""}
-
-  <div class="foot-brand">Generated with Leadnator · leadnator.com</div>
 </div>
 </body>
 </html>`;

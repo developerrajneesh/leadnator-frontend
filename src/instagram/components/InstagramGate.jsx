@@ -1,4 +1,4 @@
-import ConnectInstagram from "./ConnectInstagram";
+import { Navigate } from "react-router-dom";
 import { useInstagramStatus } from "../useInstagramStatus";
 
 export default function InstagramGate({ children }) {
@@ -12,7 +12,9 @@ export default function InstagramGate({ children }) {
     );
   }
 
-  if (status?.connected) return children;
+  // Not linked yet → send to the dedicated connect screen rather than rendering
+  // the connect UI inside a feature/settings page.
+  if (!status?.connected) return <Navigate to="/instagram/connect" replace />;
 
-  return <ConnectInstagram />;
+  return children;
 }

@@ -22,7 +22,7 @@ export default function EmailOverview() {
         { icon: <FiUserCheck />, color: "purple", title: "Subscribers",       desc: "Manage your mailing lists, opt-ins, suppression list and bounce handling.",                to: "/email/subscribers" },
         { icon: <FiPieChart />,  color: "orange", title: "Analytics",         desc: "Open, click, bounce, unsubscribe — drill down per-campaign or aggregated.",                to: "/email/analytics" },
         { icon: <FiEdit />,      color: "pink",   title: "Signature",         desc: "Branded signature you can append to every outgoing campaign and reply.",                   to: "/email/signature" },
-        { icon: <FiSettings />,  color: "green",  title: "Domain config",     desc: "Attach & verify your sending domain (Amazon SES) — your domain, your reputation.",          to: "/email/config" },
+        { icon: <FiSettings />,  color: "green",  title: "Domain config",     desc: "Attach & verify your sending domain — your domain, your reputation.",          to: "/email/config" },
       ]}
     />
   );

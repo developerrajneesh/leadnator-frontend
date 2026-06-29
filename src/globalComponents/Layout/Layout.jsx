@@ -5,6 +5,7 @@ import Header from "../Header/Header";
 import MiniSidebar from "../MiniSidebar/MiniSidebar";
 import Sidebar from "../Sidebar/Sidebar";
 import MobileTabBar from "../MobileNav/MobileTabBar";
+import WelcomeModal from "../WelcomeModal/WelcomeModal";
 
 export default function Layout({ onLogout }) {
   // Desktop: sub-nav open. Mobile: closed by default (opened via the top menu).
@@ -44,6 +45,9 @@ export default function Layout({ onLogout }) {
 
       {/* App-style bottom tab bar (mobile only — hidden by CSS on desktop). */}
       <MobileTabBar />
+
+      {/* One-time welcome / free-trial modal after a fresh signup. */}
+      <WelcomeModal />
     </div>
   );
 }

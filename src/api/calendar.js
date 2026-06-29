@@ -1,5 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
-import { api } from "./client";
+import { api, API_BASE_URL } from "./client";
+
+// Google's redirect URI, derived from the SAME base as the API (VITE_API_URL).
+// Change VITE_API_URL → this moves with it. Register this exact value in the
+// Google Cloud Console "Authorized redirect URIs".
+const GOOGLE_REDIRECT_URI = `${API_BASE_URL.replace(/\/$/, "")}/public/google/callback`;
 
 export const calApi = {
   events:        (q)        => api.get("/calendar/events", q || undefined),
@@ -17,7 +22,7 @@ export const calApi = {
 
   // Google Calendar / Meet
   googleStatus:        ()        => api.get("/calendar/google/status"),
-  googleConnect:       ()        => api.get("/calendar/google/connect"),
+  googleConnect:       ()        => api.get("/calendar/google/connect", { redirectUri: GOOGLE_REDIRECT_URI }),
   googleDisconnect:    ()        => api.post("/calendar/google/disconnect"),
 };
 

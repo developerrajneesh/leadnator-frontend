@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { FiArrowLeft, FiSend, FiUser, FiShield } from "react-icons/fi";
 import { api } from "../../api/client";
 import { onSocket } from "../../api/socket";
+import { notify } from "../../globalComponents/Toast/Toast";
 
 const STATUS_BADGE = {
   open:        { label: "Open",        cls: "hot" },
@@ -57,7 +58,7 @@ export default function TicketDetail() {
       const r = await api.support.replyTicket(id, body.trim());
       setTicket(r.ticket);
       setBody("");
-    } catch (err) { alert(err.message); }
+    } catch (err) { notify.error(err.message || "Failed to send reply"); }
     finally { setSending(false); }
   }
 

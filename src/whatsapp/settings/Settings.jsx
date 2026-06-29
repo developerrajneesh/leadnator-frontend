@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import {
   FiCheckCircle, FiCreditCard, FiExternalLink, FiAlertTriangle, FiRefreshCw,
-  FiPhone, FiShield, FiSettings as FiGear,
+  FiPhone, FiShield, FiSettings as FiGear, FiPlus,
 } from "react-icons/fi";
 import { FaWhatsapp } from "react-icons/fa";
 import { waApi } from "../../api/whatsapp";
 import EmbeddedSignup from "./EmbeddedSignup";
+import AddNumberModal from "./AddNumberModal";
 
 const META_BILLING_HUB = "https://business.facebook.com/billing_hub";
 const META_WA_SETTINGS = "https://business.facebook.com/wa/manage";
@@ -17,6 +18,7 @@ export default function Settings() {
   const [infoLoading, setInfoLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [showAddNumber, setShowAddNumber] = useState(false);
   const [form, setForm] = useState({
     phoneNumberId: "",
     accessToken: "",
@@ -264,8 +266,20 @@ export default function Settings() {
 
       {/* ---------- PHONE NUMBERS TABLE ---------- */}
       <Section>
-        <SectionTitle><FiPhone style={{ marginRight: 6 }} />Phone numbers</SectionTitle>
-        <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: -6, marginBottom: 10 }}>Numbers linked to this WABA</div>
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+          <div>
+            <SectionTitle><FiPhone style={{ marginRight: 6 }} />Phone numbers</SectionTitle>
+            <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: -6, marginBottom: 10 }}>Numbers linked to this WABA</div>
+          </div>
+          <button
+            className="btn btn-primary"
+            onClick={() => setShowAddNumber(true)}
+            style={{ fontSize: 13, flexShrink: 0 }}
+            title="Add a phone number to this WhatsApp Business Account"
+          >
+            <FiPlus /> Add number
+          </button>
+        </div>
         <div className="table-wrap">
           <table>
             <thead>
@@ -344,6 +358,13 @@ export default function Settings() {
           </Grid>
         </Section>
       </div>
+
+      {showAddNumber && (
+        <AddNumberModal
+          onClose={() => setShowAddNumber(false)}
+          onAdded={loadInfo}
+        />
+      )}
     </>
   );
 }

@@ -94,10 +94,23 @@ export default function App() {
           setPath("/instagram/overview");
         }
       })
-      .catch(() => {
-        clearAuth();
-        setAuthed(false);
-        setOrgReady(false);
+      .catch((err) => {
+        // Only log out on a genuine auth failure (401 = invalid/expired token).
+        // Transient errors — an aborted request from a hard refresh, network
+        // blips, server cold-starts (5xx), or rate limits (429) — must NOT clear
+        // a valid session, otherwise rapid refreshes log the user out.
+        if (err?.status === 401) {
+          clearAuth();
+          setAuthed(false);
+          setOrgReady(false);
+        } else {
+          // Keep the cached session and carry on with the stored user.
+          const stored = getStoredUser();
+          setRole(stored?.role || "user");
+          setAuthed(true);
+          setOrgReady(hasOrgSelected());
+          getSocket();
+        }
       })
       .finally(() => setBooting(false));
   }, []);

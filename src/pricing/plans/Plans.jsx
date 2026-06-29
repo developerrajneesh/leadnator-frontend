@@ -89,6 +89,8 @@ export default function Plans() {
       });
       rzp.on("payment.failed", (resp) => {
         alert("Payment failed: " + (resp?.error?.description || "Unknown"));
+        // Notify the backend so it emails the user a "payment failed" notice.
+        pricingApi.paymentFailed({ planKey: plan.key, amount: orderRes.order?.amount ? orderRes.order.amount / 100 : plan.price }).catch(() => {});
         setPaying("");
       });
       rzp.open();

@@ -188,7 +188,7 @@ export default function Config() {
     return (
       <div className="email-config">
         <h1 className="page-title">Email configuration</h1>
-        <p className="page-subtitle">Attach your sending domain to send via Amazon SES.</p>
+        <p className="page-subtitle">Attach your sending domain to start sending.</p>
         <div className="card" style={{ maxWidth: 720 }}>
           <div style={{ marginTop: 4 }}>
             <span className="skel skel-line skel-line-sm" style={{ width: 140, display: "block", marginBottom: 6 }} />
@@ -209,7 +209,7 @@ export default function Config() {
         <div>
           <h1 className="page-title" style={{ marginBottom: 2 }}>Email configuration</h1>
           <p className="page-subtitle" style={{ marginBottom: 0 }}>
-            Attach your own domain to send your marketing emails via Amazon SES.
+            Attach your own domain to send your marketing emails.
           </p>
         </div>
 
@@ -224,7 +224,7 @@ export default function Config() {
             background: "#fff",
             fontSize: 12,
           }}
-          title="Amazon SES domain status"
+          title="Sending domain status"
         >
           {!sesStatus?.domain ? (
             <span style={{ color: "var(--text-muted)" }}><FiGlobe style={{ verticalAlign: "middle" }} /> Domain not attached</span>
@@ -242,7 +242,7 @@ export default function Config() {
       <div style={{ marginTop: 16 }}>
         <div className="card" style={{ maxWidth: "unset", width: "100%" }}>
           <div className="card-header">
-            <div className="card-title"><FiGlobe /> Amazon SES</div>
+            <div className="card-title"><FiGlobe /> Sending domain</div>
           </div>
           <div style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 16 }}>
             Enter your domain, add the generated DNS records (verification + DKIM) at your DNS provider,
@@ -391,7 +391,7 @@ export default function Config() {
                       })}
 
                       <div style={{ fontSize: 11, color: "var(--text-muted)", padding: "0 4px" }}>
-                        DNS propagation can take minutes to hours. SES may take up to 72 hours to mark DKIM as Success.
+                        DNS propagation can take minutes to hours. DKIM may take up to 72 hours to be marked as verified.
                       </div>
                     </div>
                   )}
@@ -511,7 +511,7 @@ export default function Config() {
                     ? "Attach a domain first."
                     : !sesStatus?.verified
                       ? "Verify your domain before sending."
-                      : `Sends via Amazon SES from ${cfg.sesFromEmail || `support@${sesStatus.domain}`}.`}
+                      : `Sends from ${cfg.sesFromEmail || `support@${sesStatus.domain}`}.`}
                 </p>
               </div>
             </div>

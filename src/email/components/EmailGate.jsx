@@ -1,11 +1,10 @@
-import { FiMail, FiAlertCircle } from "react-icons/fi";
+import { Navigate } from "react-router-dom";
 import { useEmailStatus } from "../useEmailStatus";
-import Config from "../config/Config";
 
 // Gate around every Email child route. Until the user has attached AND verified
-// their sending domain (Amazon SES), all feature pages (campaigns, templates,
-// analytics, etc.) render the domain config form directly — there's nothing
-// they can do with the other pages until we can actually send mail for them.
+// their sending domain, redirect to the dedicated /email/connect
+// screen — there's nothing they can do with the feature pages until we can
+// actually send mail for them.
 export default function EmailGate({ children }) {
   const { status, loading } = useEmailStatus();
 
@@ -17,33 +16,7 @@ export default function EmailGate({ children }) {
     );
   }
 
-  if (status?.configured) return children;
+  if (!status?.configured) return <Navigate to="/email/connect" replace />;
 
-  return (
-    <>
-      <div style={{
-        padding: 14, marginBottom: 16, background: "#eff6ff", color: "#1e3a8a",
-        border: "1px solid #bfdbfe", borderRadius: 10, fontSize: 13, lineHeight: 1.6,
-        display: "flex", gap: 14, alignItems: "center",
-      }}>
-        <img
-          src="/Emails-bro-flat.png"
-          alt=""
-          style={{ width: 110, height: "auto", flexShrink: 0 }}
-        />
-        <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
-          <FiAlertCircle style={{ marginTop: 2, flexShrink: 0, fontSize: 16 }} />
-          <div>
-            <strong><FiMail style={{ verticalAlign: "middle", marginRight: 4 }} /> Connect your domain to unlock Email Marketing.</strong>
-            <div style={{ marginTop: 4, color: "#1e3a8a", opacity: 0.9 }}>
-              Campaigns, templates, automation, subscribers, signatures, and analytics unlock once we
-              can send mail from your domain. Enter your domain below, add the DNS records at your DNS
-              provider, then click <strong>Verify</strong>.
-            </div>
-          </div>
-        </div>
-      </div>
-      <Config />
-    </>
-  );
+  return children;
 }

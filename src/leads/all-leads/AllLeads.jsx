@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { FiUpload, FiPlus, FiRefreshCw, FiColumns } from "react-icons/fi";
 import { useLeads } from "../../api/hooks";
 import { profileApi } from "../../api/profile";
@@ -29,6 +30,7 @@ function humanize(key) {
 }
 
 export default function AllLeads() {
+  const navigate = useNavigate();
   const { leads, loading, error, reload, addLead } = useLeads();
   const { stages } = usePipelineStages();
   const [query, setQuery] = useState("");
@@ -170,7 +172,7 @@ export default function AllLeads() {
         <button className="btn btn-outline" onClick={reload} disabled={loading}>
           <FiRefreshCw /> Refresh
         </button>
-        <button className="btn btn-outline"><FiUpload /> Import CSV</button>
+        <button className="btn btn-outline" onClick={() => navigate("/leads/import")}><FiUpload /> Import CSV</button>
         <button className="btn btn-primary" onClick={() => setShowAdd(true)}><FiPlus /> Add lead</button>
         </div>
       </div>

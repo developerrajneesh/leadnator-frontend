@@ -10,6 +10,36 @@ export default function Campaigns() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [actingId, setActingId] = useState(null);
+  const [selected, setSelected] = useState(() => new Set());
+  const [bulkDeleting, setBulkDeleting] = useState(false);
+
+  const allSelected = campaigns.length > 0 && campaigns.every((c) => selected.has(c.id));
+
+  function toggleSelect(id) {
+    setSelected((prev) => {
+      const n = new Set(prev);
+      n.has(id) ? n.delete(id) : n.add(id);
+      return n;
+    });
+  }
+  function toggleSelectAll() {
+    setSelected(allSelected ? new Set() : new Set(campaigns.map((c) => c.id)));
+  }
+  async function bulkDelete() {
+    const ids = [...selected];
+    if (ids.length === 0) return;
+    if (!confirm(`Delete ${ids.length} campaign${ids.length > 1 ? "s" : ""}? This cannot be undone.`)) return;
+    setBulkDeleting(true);
+    const failed = [];
+    for (const id of ids) {
+      try { await metaApi.deleteCampaign(id); }
+      catch { failed.push(id); }
+    }
+    setCampaigns((list) => list.filter((x) => !ids.includes(x.id) || failed.includes(x.id)));
+    setSelected(new Set(failed));
+    setBulkDeleting(false);
+    if (failed.length) alert(`${failed.length} campaign(s) could not be deleted.`);
+  }
 
   async function loadAll() {
     setLoading(true); setError("");
@@ -22,6 +52,7 @@ export default function Campaigns() {
       } else {
         setCampaigns([]);
       }
+      setSelected(new Set());
     } catch (err) { setError(err.message || "Failed to load campaigns."); }
     finally { setLoading(false); }
   }
@@ -44,6 +75,7 @@ export default function Campaigns() {
     try {
       await metaApi.deleteCampaign(c.id);
       setCampaigns((list) => list.filter((x) => x.id !== c.id));
+      setSelected((prev) => { const n = new Set(prev); n.delete(c.id); return n; });
     } catch (err) { alert(err.message || "Delete failed."); }
     finally { setActingId(null); }
   }
@@ -111,6 +143,20 @@ export default function Campaigns() {
         <button className="btn btn-primary" onClick={() => navigate("/meta/create")}><FiPlus /> New campaign</button>
       </div>
 
+      {selected.size > 0 && (
+        <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 14px", background: "#eef2ff", border: "1px solid #e0e7ff", borderRadius: 10, marginBottom: 12 }}>
+          <strong style={{ fontSize: 13, color: "#4338ca" }}>{selected.size} selected</strong>
+          <button className="btn btn-outline" style={{ padding: "5px 12px", fontSize: 12 }} onClick={() => setSelected(new Set())}>Clear</button>
+          <button
+            onClick={bulkDelete}
+            disabled={bulkDeleting}
+            style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 6, padding: "7px 16px", background: "#dc2626", color: "#fff", border: "none", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: bulkDeleting ? "wait" : "pointer", opacity: bulkDeleting ? 0.6 : 1 }}
+          >
+            <FiTrash2 /> {bulkDeleting ? "Deleting…" : `Delete ${selected.size}`}
+          </button>
+        </div>
+      )}
+
       {error && (
         <div style={{ padding: 12, background: "#fee2e2", color: "#b91c1c", borderRadius: 8, marginBottom: 12, fontSize: 13 }}>{error}</div>
       )}
@@ -120,18 +166,28 @@ export default function Campaigns() {
           <table>
             <thead>
               <tr>
+                <th style={{ width: 38 }}>
+                  <input type="checkbox" checked={allSelected} onChange={toggleSelectAll} aria-label="Select all"
+                    style={{ width: 16, height: 16, accentColor: "#7c3aed", cursor: "pointer" }} />
+                </th>
                 <th>Campaign</th><th>Objective</th><th>Status</th><th>Effective</th><th>Created</th>
                 <th style={{ width: 160 }}>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {campaigns.map((c) => (
+              {campaigns.map((c) => {
+                const isSel = selected.has(c.id);
+                return (
                 <tr
                   key={c.id}
                   onClick={() => navigate(`/meta/campaigns/${c.id}`)}
-                  style={{ cursor: "pointer" }}
+                  style={{ cursor: "pointer", background: isSel ? "#f5f3ff" : undefined }}
                   title="Open campaign"
                 >
+                  <td onClick={(e) => e.stopPropagation()}>
+                    <input type="checkbox" checked={isSel} onChange={() => toggleSelect(c.id)} aria-label={`Select ${c.name}`}
+                      style={{ width: 16, height: 16, accentColor: "#7c3aed", cursor: "pointer" }} />
+                  </td>
                   <td>
                     <strong>{c.name}</strong>
                     <div style={{ fontSize: 11, color: "var(--text-muted)", fontFamily: "monospace" }}>{c.id}</div>
@@ -155,9 +211,10 @@ export default function Campaigns() {
                     </div>
                   </td>
                 </tr>
-              ))}
+                );
+              })}
               {campaigns.length === 0 && (
-                <tr><td colSpan="6" style={{ textAlign: "center", padding: 24, color: "var(--text-muted)" }}>
+                <tr><td colSpan="7" style={{ textAlign: "center", padding: 24, color: "var(--text-muted)" }}>
                   No campaigns yet. Click "New campaign" to create one.
                 </td></tr>
               )}
